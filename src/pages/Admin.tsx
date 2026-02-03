@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import kickerLogo from "@/assets/kicker-logo.png";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Lock, UserPlus } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Lock, UserPlus, Layout } from "lucide-react";
+import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -467,27 +468,117 @@ const Admin = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="campaigns" className="space-y-6">
+        <Tabs defaultValue="landing-pages" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="landing-pages">
+              <Layout className="w-4 h-4 mr-2" />
+              Landing Pages
+            </TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns & Pages</TabsTrigger>
-            <TabsTrigger value="preview">Preview Landing Page</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="preview" className="space-y-4">
-            <div className="bg-card rounded-lg border border-border p-4">
-              <h3 className="font-medium text-foreground mb-4">Landing Page Preview</h3>
-              <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                <iframe 
-                  src="/" 
-                  className="w-full h-full border-0"
-                  title="Landing Page Preview"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground mt-4">
-                This is how your base landing page looks. When personalized, names and companies will be dynamically inserted.
+          {/* Landing Pages Tab */}
+          <TabsContent value="landing-pages" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Landing Page Templates</h2>
+              <p className="text-muted-foreground">
+                Choose a landing page template to preview or use for your campaigns.
               </p>
             </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Police Recruitment Landing Page */}
+              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
+                <div className="aspect-video bg-muted relative overflow-hidden">
+                  <img 
+                    src={heroThumbnail} 
+                    alt="Police Recruitment Video Demo" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <span className="inline-block px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-medium rounded">
+                      Default
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold text-foreground mb-1">Police Recruitment Demo</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Recruitment video landing page for law enforcement agencies.
+                  </p>
+                  <div className="flex gap-2">
+                    <a href="/" target="_blank" rel="noopener noreferrer" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
+                      </Button>
+                    </a>
+                    <a href="/" target="_blank" rel="noopener noreferrer" className="flex-1">
+                      <Button size="sm" className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Open
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* B2B Demo Landing Page */}
+              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
+                <div className="aspect-video bg-gradient-to-br from-amber-50 to-amber-100 relative overflow-hidden flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-amber-800 font-medium text-sm">B2B Video Production</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <span className="inline-block px-2 py-1 bg-amber-500/90 text-gray-900 text-xs font-medium rounded">
+                      New
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold text-foreground mb-1">B2B Product Demo</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Professional B2B video production services landing page.
+                  </p>
+                  <div className="flex gap-2">
+                    <a href="/b2b-demo" target="_blank" rel="noopener noreferrer" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
+                      </Button>
+                    </a>
+                    <a href="/b2b-demo" target="_blank" rel="noopener noreferrer" className="flex-1">
+                      <Button size="sm" className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Open
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add New Template Card */}
+              <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden hover:border-primary/50 transition-all flex items-center justify-center min-h-[280px]">
+                <div className="text-center p-6">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Plus className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-medium text-muted-foreground mb-1">Add Template</h3>
+                  <p className="text-sm text-muted-foreground/70">
+                    Coming soon
+                  </p>
+                </div>
+              </div>
+            </div>
           </TabsContent>
+
 
           <TabsContent value="campaigns">
             <div className="grid lg:grid-cols-3 gap-8">
