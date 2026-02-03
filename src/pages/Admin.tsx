@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import kickerLogo from "@/assets/kicker-logo.png";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Lock, UserPlus, Layout } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Lock, UserPlus, Layout, Pencil } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -507,6 +508,14 @@ const Admin = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Recruitment video landing page for law enforcement agencies.
                   </p>
+                  <div className="flex gap-2 mb-2">
+                    <Link to="/admin/edit/police-recruitment" className="flex-1">
+                      <Button variant="default" size="sm" className="w-full">
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit Page
+                      </Button>
+                    </Link>
+                  </div>
                   <div className="flex gap-2">
                     <a href="/" target="_blank" rel="noopener noreferrer" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
@@ -515,7 +524,7 @@ const Admin = () => {
                       </Button>
                     </a>
                     <a href="/" target="_blank" rel="noopener noreferrer" className="flex-1">
-                      <Button size="sm" className="w-full">
+                      <Button variant="ghost" size="sm" className="w-full">
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Open
                       </Button>
@@ -547,6 +556,14 @@ const Admin = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Professional B2B video production services landing page.
                   </p>
+                  <div className="flex gap-2 mb-2">
+                    <Link to="/admin/edit/b2b-demo" className="flex-1">
+                      <Button variant="default" size="sm" className="w-full">
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit Page
+                      </Button>
+                    </Link>
+                  </div>
                   <div className="flex gap-2">
                     <a href="/b2b-demo" target="_blank" rel="noopener noreferrer" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
@@ -555,7 +572,7 @@ const Admin = () => {
                       </Button>
                     </a>
                     <a href="/b2b-demo" target="_blank" rel="noopener noreferrer" className="flex-1">
-                      <Button size="sm" className="w-full">
+                      <Button variant="ghost" size="sm" className="w-full">
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Open
                       </Button>
