@@ -100,6 +100,119 @@ const TemplateEditor = () => {
   }
 
 
+  // Wine Video template
+  if (template.slug === "wine-video") {
+    return (
+      <div className="min-h-screen bg-[#f0f4f8]">
+        {/* Sidebar */}
+        <EditorSidebar
+          templateName={template.name}
+          hasChanges={hasChanges}
+          isSaving={saving}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onPreview={() => window.open("/wine-video", "_blank")}
+          onInsertToken={handleInsertToken}
+        />
+
+        {/* Main content - with right margin for sidebar */}
+        <div className="mr-80">
+          {/* Header */}
+          <header className="py-4 px-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <img src={kickerLogo} alt="Kicker Video" className="h-8" />
+              <span className="text-muted-foreground">×</span>
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-foreground">
+                  <RichTextEditor
+                    value={template.hero_badge || "{{company}}"}
+                    onChange={(value) => updateField("hero_badge", value)}
+                    fieldName="Company Name"
+                    supportsPersonalization
+                    isHeadline
+                  />
+                </span>
+              </div>
+            </div>
+          </header>
+
+          {/* Hero Section */}
+          <section className="py-12 px-6">
+            <div className="max-w-6xl mx-auto">
+              <div className="p-8 md:p-12 bg-white rounded-3xl shadow-sm">
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                  <div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight mb-4">
+                      <RichTextEditor
+                        value={template.hero_headline}
+                        onChange={(value) => updateField("hero_headline", value)}
+                        fieldName="Hero Headline"
+                        supportsPersonalization
+                        isHeadline
+                      />
+                    </h1>
+                    <div className="text-lg text-muted-foreground mb-8">
+                      <RichTextEditor
+                        value={template.hero_subheadline || ""}
+                        onChange={(value) => updateField("hero_subheadline", value)}
+                        fieldName="Hero Subheadline"
+                        supportsPersonalization
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Features Section */}
+          <section className="py-16 px-6">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <RichTextEditor
+                  value={template.features_title || "Simple Video Production"}
+                  onChange={(value) => updateField("features_title", value)}
+                  fieldName="Features Title"
+                  isHeadline
+                />
+              </h2>
+              <div className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+                <RichTextEditor
+                  value={template.features_subtitle || ""}
+                  onChange={(value) => updateField("features_subtitle", value)}
+                  fieldName="Features Subtitle"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Contact Section */}
+          <section className="py-16 px-6 bg-white">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <RichTextEditor
+                  value={template.contact_title || "Let's make {{company}} the obvious choice"}
+                  onChange={(value) => updateField("contact_title", value)}
+                  fieldName="Contact Title"
+                  supportsPersonalization
+                  isHeadline
+                />
+              </h2>
+              <div className="text-lg text-muted-foreground mb-8">
+                <RichTextEditor
+                  value={template.contact_subtitle || ""}
+                  onChange={(value) => updateField("contact_subtitle", value)}
+                  fieldName="Contact Subtitle"
+                  supportsPersonalization
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   // B2B Demo template
   if (template.slug === "b2b-demo") {
     return (

@@ -581,6 +581,54 @@ const Admin = () => {
                 </div>
               </div>
 
+              {/* Wine Video Landing Page */}
+              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
+                <div className="aspect-video bg-gradient-to-br from-cyan-50 to-blue-100 relative overflow-hidden flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-indigo-800 font-medium text-sm">Wine Video Production</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <span className="inline-block px-2 py-1 bg-indigo-500/90 text-white text-xs font-medium rounded">
+                      New
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold text-foreground mb-1">Wine Video Production</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    $20 per wine video landing page for wine marketers.
+                  </p>
+                  <div className="flex gap-2 mb-2">
+                    <Link to="/admin/edit/wine-video" className="flex-1">
+                      <Button variant="default" size="sm" className="w-full">
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit Page
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="flex gap-2">
+                    <a href="/wine-video" target="_blank" rel="noopener noreferrer" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
+                      </Button>
+                    </a>
+                    <a href="/wine-video" target="_blank" rel="noopener noreferrer" className="flex-1">
+                      <Button variant="ghost" size="sm" className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Open
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               {/* Add New Template Card */}
               <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden hover:border-primary/50 transition-all flex items-center justify-center min-h-[280px]">
                 <div className="text-center p-6">
