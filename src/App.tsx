@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Auth from "./pages/Auth";
 import PersonalizedLanding from "./pages/PersonalizedLanding";
 import B2BDemo from "./pages/B2BDemo";
 import TemplateEditor from "./pages/TemplateEditor";
@@ -24,10 +25,12 @@ const App = () => (
           <Route path="/" element={<WineVideoTemplate />} />
           <Route path="/police-recruitment" element={<Index />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/admin/edit/:slug" element={<TemplateEditor />} />
           <Route path="/b2b-demo" element={<B2BDemo />} />
           <Route path="/wine-video" element={<WineVideoTemplate />} />
           <Route path="/view/:token" element={<PersonalizedLanding />} />
+          <Route path="/template-editor/:slug" element={<TemplateEditor />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

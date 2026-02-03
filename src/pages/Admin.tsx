@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import kickerLogo from "@/assets/kicker-logo.png";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Lock, UserPlus, Layout, Pencil } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
+import type { User, Session } from "@supabase/supabase-js";
 import {
   Dialog,
   DialogContent,
@@ -32,8 +34,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 
-const ADMIN_PASSWORD = "green123!";
-
 interface Campaign {
   id: string;
   name: string;
@@ -54,12 +54,14 @@ interface PersonalizedPage {
 }
 
 const Admin = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Password protection state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  // Authentication state
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -85,19 +87,68 @@ const Admin = () => {
   });
   const [addingPerson, setAddingPerson] = useState(false);
 
-  // Check for saved session
+  // Check authentication and admin role
   useEffect(() => {
-    const savedAuth = sessionStorage.getItem("admin_authenticated");
-    if (savedAuth === "true") {
-      setIsAuthenticated(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (!session?.user) {
+          setCheckingAuth(false);
+          navigate("/auth");
+          return;
+        }
+        
+        // Check admin role using setTimeout to avoid deadlock
+        setTimeout(() => {
+          checkAdminRole(session.user.id);
+        }, 0);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (!session?.user) {
+        setCheckingAuth(false);
+        navigate("/auth");
+        return;
+      }
+      
+      checkAdminRole(session.user.id);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .single();
+
+      if (error) {
+        // If no role found, user is not admin
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(data?.role === "admin");
+      }
+    } catch {
+      setIsAdmin(false);
+    } finally {
+      setCheckingAuth(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user && isAdmin) {
       fetchCampaigns();
     }
-  }, [isAuthenticated]);
+  }, [user, isAdmin]);
 
   useEffect(() => {
     if (selectedCampaign) {
@@ -105,20 +156,9 @@ const Admin = () => {
     }
   }, [selectedCampaign]);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem("admin_authenticated", "true");
-      setPasswordError("");
-    } else {
-      setPasswordError("Incorrect password");
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem("admin_authenticated");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   const fetchCampaigns = async () => {
@@ -200,12 +240,12 @@ const Admin = () => {
   };
 
   const createCampaign = async () => {
-    if (!newCampaignName.trim()) return;
+    if (!newCampaignName.trim() || !user) return;
 
     try {
       const { error } = await supabase.from("campaigns").insert({
         name: newCampaignName.trim(),
-        user_id: "00000000-0000-0000-0000-000000000000", // Placeholder for password-only auth
+        user_id: user.id, // Use actual authenticated user ID
       });
 
       if (error) throw error;
@@ -405,43 +445,35 @@ const Admin = () => {
     toast({ title: "Copied to clipboard!" });
   };
 
-  // Password protection screen
-  if (!isAuthenticated) {
+  // Loading state
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Not admin - show access denied
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <img src={kickerLogo} alt="Kicker Video" className="h-10 mx-auto mb-6" />
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Access</h1>
-            <p className="text-muted-foreground mt-2">
-              Enter password to manage landing pages
-            </p>
+        <div className="text-center">
+          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-destructive" />
           </div>
-
-          <form onSubmit={handlePasswordSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter admin password"
-                required
-                className={passwordError ? "border-destructive" : ""}
-              />
-              {passwordError && (
-                <p className="text-sm text-destructive">{passwordError}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full">
-              Access Admin
+          <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
+          <p className="text-muted-foreground mb-6">
+            You don't have admin privileges to access this page.
+          </p>
+          <div className="space-x-4">
+            <Button variant="outline" onClick={handleLogout}>
+              Sign Out
             </Button>
-          </form>
+            <Button onClick={() => navigate("/")}>
+              Go to Home
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -454,6 +486,9 @@ const Admin = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <img src={kickerLogo} alt="Kicker Video" className="h-8" />
           <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground hidden sm:block">
+              {user?.email}
+            </span>
             <a href="/" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="sm">
                 <Eye className="w-4 h-4 mr-2" />
@@ -462,7 +497,7 @@ const Admin = () => {
             </a>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
-              Lock
+              Sign Out
             </Button>
           </div>
         </div>
@@ -499,445 +534,354 @@ const Admin = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
                     <span className="inline-block px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-medium rounded">
-                      Default
+                      Template
                     </span>
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1">Police Recruitment Demo</h3>
+                  <h3 className="font-semibold text-foreground mb-1">Police Recruitment</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Recruitment video landing page for law enforcement agencies.
+                    Professional recruitment video landing page with hero section and video player.
                   </p>
-                  <div className="flex gap-2 mb-2">
-                    <Link to="/admin/edit/police-recruitment" className="flex-1">
-                      <Button variant="default" size="sm" className="w-full">
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Edit Page
-                      </Button>
-                    </Link>
-                  </div>
                   <div className="flex gap-2">
-                    <a href="/" target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Link to="/police-recruitment" target="_blank" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Eye className="w-4 h-4 mr-2" />
                         Preview
                       </Button>
-                    </a>
-                    <a href="/" target="_blank" rel="noopener noreferrer" className="flex-1">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Open
-                      </Button>
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* B2B Demo Landing Page */}
-              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                <div className="aspect-video bg-gradient-to-br from-amber-50 to-amber-100 relative overflow-hidden flex items-center justify-center">
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <span className="text-amber-800 font-medium text-sm">B2B Video Production</span>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <span className="inline-block px-2 py-1 bg-amber-500/90 text-gray-900 text-xs font-medium rounded">
-                      New
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1">B2B Product Demo</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Professional B2B video production services landing page.
-                  </p>
-                  <div className="flex gap-2 mb-2">
-                    <Link to="/admin/edit/b2b-demo" className="flex-1">
-                      <Button variant="default" size="sm" className="w-full">
+                    </Link>
+                    <Link to="/template-editor/police-recruitment" className="flex-1">
+                      <Button size="sm" className="w-full">
                         <Pencil className="w-4 h-4 mr-2" />
-                        Edit Page
+                        Edit
                       </Button>
                     </Link>
-                  </div>
-                  <div className="flex gap-2">
-                    <a href="/b2b-demo" target="_blank" rel="noopener noreferrer" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
-                    </a>
-                    <a href="/b2b-demo" target="_blank" rel="noopener noreferrer" className="flex-1">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Open
-                      </Button>
-                    </a>
                   </div>
                 </div>
               </div>
 
               {/* Wine Video Landing Page */}
               <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                <div className="aspect-video bg-gradient-to-br from-cyan-50 to-blue-100 relative overflow-hidden flex items-center justify-center">
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <span className="text-indigo-800 font-medium text-sm">Wine Video Production</span>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="aspect-video bg-muted relative overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&h=400&fit=crop" 
+                    alt="Wine Video Landing Page" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
-                    <span className="inline-block px-2 py-1 bg-indigo-500/90 text-white text-xs font-medium rounded">
-                      New
+                    <span className="inline-block px-2 py-1 bg-emerald-600/90 text-white text-xs font-medium rounded">
+                      Template
                     </span>
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1">Wine Video Production</h3>
+                  <h3 className="font-semibold text-foreground mb-1">Wine Video</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    $20 per wine video landing page for wine marketers.
+                    Elegant wine-themed landing page with video content and contact form.
                   </p>
-                  <div className="flex gap-2 mb-2">
-                    <Link to="/admin/edit/wine-video" className="flex-1">
-                      <Button variant="default" size="sm" className="w-full">
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Edit Page
-                      </Button>
-                    </Link>
-                  </div>
                   <div className="flex gap-2">
-                    <a href="/wine-video" target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Link to="/" target="_blank" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Eye className="w-4 h-4 mr-2" />
                         Preview
                       </Button>
-                    </a>
-                    <a href="/wine-video" target="_blank" rel="noopener noreferrer" className="flex-1">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Open
+                    </Link>
+                    <Link to="/template-editor/wine-video" className="flex-1">
+                      <Button size="sm" className="w-full">
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit
                       </Button>
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
 
               {/* Add New Template Card */}
-              <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden hover:border-primary/50 transition-all flex items-center justify-center min-h-[280px]">
-                <div className="text-center p-6">
-                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Plus className="w-6 h-6 text-muted-foreground" />
+              <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden hover:border-primary/50 transition-all">
+                <div className="aspect-video bg-muted/30 flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <Plus className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">More templates coming soon</p>
                   </div>
-                  <h3 className="font-medium text-muted-foreground mb-1">Add Template</h3>
-                  <p className="text-sm text-muted-foreground/70">
-                    Coming soon
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold text-muted-foreground mb-1">Create Custom Template</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Design your own landing page template from scratch.
                   </p>
+                  <Button variant="outline" size="sm" className="w-full" disabled>
+                    Coming Soon
+                  </Button>
                 </div>
               </div>
             </div>
           </TabsContent>
 
-
-          <TabsContent value="campaigns">
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Campaigns Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-foreground">Campaigns</h2>
-                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="w-4 h-4 mr-2" />
-                        New
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create Campaign</DialogTitle>
-                        <DialogDescription>
-                          Create a new campaign to organize your personalized landing pages.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="campaignName">Campaign Name</Label>
-                          <Input
-                            id="campaignName"
-                            value={newCampaignName}
-                            onChange={(e) => setNewCampaignName(e.target.value)}
-                            placeholder="e.g., Pittsburgh PD Q1 2024"
-                          />
-                        </div>
-                        <Button onClick={createCampaign} className="w-full">
-                          Create Campaign
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-                <div className="space-y-2">
-                  {loading ? (
-                    <div className="text-muted-foreground text-sm py-4 animate-pulse">
-                      Loading campaigns...
-                    </div>
-                  ) : campaigns.length === 0 ? (
-                    <p className="text-muted-foreground text-sm py-4">
-                      No campaigns yet. Create one to get started.
-                    </p>
-                  ) : (
-                    campaigns.map((campaign) => (
-                      <div
-                        key={campaign.id}
-                        className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                          selectedCampaign?.id === campaign.id
-                            ? "border-primary bg-primary/5"
-                            : "border-border bg-card hover:border-primary/50"
-                        }`}
-                        onClick={() => setSelectedCampaign(campaign)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-medium text-foreground">{campaign.name}</h3>
-                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                              <span>{campaign.page_count} pages</span>
-                              <span className="flex items-center gap-1">
-                                <BarChart3 className="w-3 h-3" />
-                                {campaign.view_count} views
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteCampaign(campaign.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+          {/* Campaigns Tab */}
+          <TabsContent value="campaigns" className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">Campaigns</h2>
+                <p className="text-muted-foreground">
+                  Create personalized landing pages for your prospects
+                </p>
               </div>
 
-              {/* Pages Content */}
-              <div className="lg:col-span-2">
-                {selectedCampaign ? (
-                  <>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-xl font-bold text-foreground">
-                          {selectedCampaign.name}
-                        </h2>
-                        <p className="text-muted-foreground text-sm">
-                          {pages.length} personalized pages
-                        </p>
+              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Campaign
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Campaign</DialogTitle>
+                    <DialogDescription>
+                      Name your campaign to organize personalized pages.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="campaign-name">Campaign Name</Label>
+                      <Input
+                        id="campaign-name"
+                        value={newCampaignName}
+                        onChange={(e) => setNewCampaignName(e.target.value)}
+                        placeholder="e.g., Q1 Outreach"
+                      />
+                    </div>
+                    <Button onClick={createCampaign} className="w-full">
+                      Create Campaign
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="text-center py-12 bg-card rounded-lg border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-2">No campaigns yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create your first campaign to start generating personalized pages.
+                </p>
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Campaign
+                </Button>
+              </div>
+            ) : (
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Campaign List */}
+                <div className="space-y-3">
+                  {campaigns.map((campaign) => (
+                    <div
+                      key={campaign.id}
+                      onClick={() => setSelectedCampaign(campaign)}
+                      className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                        selectedCampaign?.id === campaign.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium text-foreground">{campaign.name}</h3>
+                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                            <span>{campaign.page_count} pages</span>
+                            <span className="flex items-center gap-1">
+                              <BarChart3 className="w-3 h-3" />
+                              {campaign.view_count} views
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteCampaign(campaign.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                        </Button>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {/* Add Single Person Dialog */}
-                        <Dialog open={addPersonDialogOpen} onOpenChange={setAddPersonDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="default">
-                              <UserPlus className="w-4 h-4 mr-2" />
-                              Add Person
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Add Person</DialogTitle>
-                              <DialogDescription>
-                                Create a personalized landing page for one person
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 pt-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor="firstName">First Name *</Label>
-                                  <Input
-                                    id="firstName"
-                                    value={newPerson.first_name}
-                                    onChange={(e) => setNewPerson({ ...newPerson, first_name: e.target.value })}
-                                    placeholder="James"
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="lastName">Last Name</Label>
-                                  <Input
-                                    id="lastName"
-                                    value={newPerson.last_name}
-                                    onChange={(e) => setNewPerson({ ...newPerson, last_name: e.target.value })}
-                                    placeholder="Smith"
-                                  />
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="company">Company</Label>
-                                <Input
-                                  id="company"
-                                  value={newPerson.company}
-                                  onChange={(e) => setNewPerson({ ...newPerson, company: e.target.value })}
-                                  placeholder="ACME Corp"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="customMessage">Custom Message (optional)</Label>
-                                <Textarea
-                                  id="customMessage"
-                                  value={newPerson.custom_message}
-                                  onChange={(e) => setNewPerson({ ...newPerson, custom_message: e.target.value })}
-                                  placeholder="We created this video specifically for your team..."
-                                  rows={3}
-                                />
-                              </div>
-                              <Button 
-                                onClick={addSinglePerson} 
-                                className="w-full"
-                                disabled={!newPerson.first_name.trim() || addingPerson}
-                              >
-                                {addingPerson ? "Creating..." : "Create Page & Copy Link"}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Campaign Details */}
+                <div className="lg:col-span-2">
+                  {selectedCampaign ? (
+                    <div className="bg-card rounded-lg border border-border p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-semibold text-foreground">
+                          {selectedCampaign.name}
+                        </h3>
+                        <div className="flex gap-2">
+                          <Dialog open={addPersonDialogOpen} onOpenChange={setAddPersonDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Person
                               </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                        
-                        {/* Upload CSV Dialog */}
-                        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button>
-                              <Upload className="w-4 h-4 mr-2" />
-                              Upload CSV
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Upload CSV</DialogTitle>
-                              <DialogDescription>
-                                Upload a CSV file with columns: first_name (required), last_name, company, custom_message
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 pt-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="csvFile">CSV File</Label>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Add Person</DialogTitle>
+                                <DialogDescription>
+                                  Create a personalized page for a single person.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 pt-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="first-name">First Name *</Label>
+                                    <Input
+                                      id="first-name"
+                                      value={newPerson.first_name}
+                                      onChange={(e) => setNewPerson({ ...newPerson, first_name: e.target.value })}
+                                      placeholder="John"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="last-name">Last Name</Label>
+                                    <Input
+                                      id="last-name"
+                                      value={newPerson.last_name}
+                                      onChange={(e) => setNewPerson({ ...newPerson, last_name: e.target.value })}
+                                      placeholder="Doe"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="company">Company</Label>
+                                  <Input
+                                    id="company"
+                                    value={newPerson.company}
+                                    onChange={(e) => setNewPerson({ ...newPerson, company: e.target.value })}
+                                    placeholder="Acme Inc."
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="custom-message">Custom Message</Label>
+                                  <Textarea
+                                    id="custom-message"
+                                    value={newPerson.custom_message}
+                                    onChange={(e) => setNewPerson({ ...newPerson, custom_message: e.target.value })}
+                                    placeholder="Optional personalized message..."
+                                    rows={3}
+                                  />
+                                </div>
+                                <Button onClick={addSinglePerson} className="w-full" disabled={addingPerson}>
+                                  {addingPerson ? "Creating..." : "Create Page & Copy Link"}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button size="sm">
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload CSV
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Upload CSV</DialogTitle>
+                                <DialogDescription>
+                                  Upload a CSV file with columns: first_name (required), last_name, company, custom_message
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 pt-4">
                                 <Input
-                                  id="csvFile"
                                   type="file"
                                   accept=".csv"
                                   onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
                                 />
+                                <Button
+                                  onClick={handleCsvUpload}
+                                  disabled={!csvFile || uploading}
+                                  className="w-full"
+                                >
+                                  {uploading ? "Uploading..." : "Upload & Create Pages"}
+                                </Button>
                               </div>
-                              <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                                <p className="font-medium mb-1">Example CSV format:</p>
-                                <code className="text-xs">
-                                  first_name,last_name,company,custom_message<br/>
-                                  James,Smith,ACME Corp,We're excited to share this with you<br/>
-                                  Sarah,Johnson,XYZ Inc,
-                                </code>
-                              </div>
-                              <Button 
-                                onClick={handleCsvUpload} 
-                                className="w-full"
-                                disabled={!csvFile || uploading}
-                              >
-                                {uploading ? "Creating pages..." : "Upload & Create Pages"}
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
-                    </div>
 
-                    {pages.length === 0 ? (
-                      <div className="text-center py-12 bg-card rounded-lg border border-border">
-                        <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-medium text-foreground mb-2">
-                          No pages yet
-                        </h3>
-                        <p className="text-muted-foreground mb-4">
-                          Upload a CSV to create personalized landing pages
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="bg-card rounded-lg border border-border overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Company</TableHead>
-                              <TableHead>Views</TableHead>
-                              <TableHead>Link</TableHead>
-                              <TableHead></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {pages.map((page) => (
-                              <TableRow key={page.id}>
-                                <TableCell>
-                                  {page.first_name} {page.last_name}
-                                </TableCell>
-                                <TableCell>{page.company || "-"}</TableCell>
-                                <TableCell>{page.view_count}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <code className="text-xs bg-muted px-2 py-1 rounded">
-                                      {page.token.substring(0, 8)}...
-                                    </code>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => copyToClipboard(getPageUrl(page.token))}
-                                    >
-                                      Copy
-                                    </Button>
-                                    <a
-                                      href={getPageUrl(page.token)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      <Button variant="ghost" size="sm">
+                      {pages.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No personalized pages yet.</p>
+                          <p className="text-sm">Add people individually or upload a CSV file.</p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Company</TableHead>
+                                <TableHead>Views</TableHead>
+                                <TableHead>Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {pages.map((page) => (
+                                <TableRow key={page.id}>
+                                  <TableCell>
+                                    {page.first_name} {page.last_name}
+                                  </TableCell>
+                                  <TableCell className="text-muted-foreground">
+                                    {page.company || "-"}
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="flex items-center gap-1">
+                                      <BarChart3 className="w-3 h-3" />
+                                      {page.view_count}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => copyToClipboard(getPageUrl(page.token))}
+                                      >
                                         <ExternalLink className="w-4 h-4" />
                                       </Button>
-                                    </a>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => deletePage(page.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4 text-destructive" />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                      Select a campaign
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Choose a campaign from the left to manage its personalized pages
-                    </p>
-                  </div>
-                )}
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => deletePage(page.id)}
+                                      >
+                                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-card rounded-lg border border-border p-6 text-center text-muted-foreground">
+                      <p>Select a campaign to view details</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
