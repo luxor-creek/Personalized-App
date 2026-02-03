@@ -85,18 +85,18 @@ const SampleRequestForm = () => {
   };
 
   return (
-    <section className="py-20 px-6 bg-gray-900">
+    <section className="py-20 px-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           {/* Left side - Info */}
-          <div className="text-white">
-            <p className="text-xs font-medium uppercase tracking-wider text-cyan-400 mb-4">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-primary mb-4">
               GET STARTED
             </p>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Request a Sample Video
             </h2>
-            <p className="text-gray-300 text-lg mb-10">
+            <p className="text-muted-foreground text-lg mb-10">
               See what Viaxo can do with your content. We'll generate a sample video from your existing page—no creative brief required.
             </p>
 
@@ -119,12 +119,12 @@ const SampleRequestForm = () => {
                 },
               ].map((step) => (
                 <div key={step.number} className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-cyan-500 text-white font-bold flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center flex-shrink-0">
                     {step.number}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white mb-1">{step.title}</h3>
-                    <p className="text-gray-400 text-sm">{step.description}</p>
+                    <h3 className="font-semibold text-foreground mb-1">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm">{step.description}</p>
                   </div>
                 </div>
               ))}
@@ -132,28 +132,28 @@ const SampleRequestForm = () => {
           </div>
 
           {/* Right side - Form */}
-          <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+          <div className="bg-white rounded-2xl p-8 border border-border shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-white">Name</Label>
+                  <Label htmlFor="name" className="text-foreground">Name</Label>
                   <Input
                     id="name"
                     placeholder="Your name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     maxLength={100}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company" className="text-white">Company</Label>
+                  <Label htmlFor="company" className="text-foreground">Company</Label>
                   <Input
                     id="company"
                     placeholder="Company name"
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     maxLength={100}
                   />
                 </div>
@@ -161,23 +161,23 @@ const SampleRequestForm = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white">Role</Label>
+                  <Label htmlFor="role" className="text-foreground">Role</Label>
                   <Input
                     id="role"
                     placeholder="Your role"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     maxLength={100}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="audienceType" className="text-white">Audience Type</Label>
+                  <Label htmlFor="audienceType" className="text-foreground">Audience Type</Label>
                   <Select 
                     value={formData.audienceType} 
                     onValueChange={(value) => setFormData({ ...formData, audienceType: value })}
                   >
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectTrigger className="bg-background border-border text-foreground">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -192,12 +192,12 @@ const SampleRequestForm = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="videoVolume" className="text-white">Estimated Video Volume</Label>
+                <Label htmlFor="videoVolume" className="text-foreground">Estimated Video Volume</Label>
                 <Select 
                   value={formData.videoVolume} 
                   onValueChange={(value) => setFormData({ ...formData, videoVolume: value })}
                 >
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Select volume" />
                   </SelectTrigger>
                   <SelectContent>
@@ -210,20 +210,20 @@ const SampleRequestForm = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="productUrl" className="text-white">URL or CSV Upload</Label>
+                <Label htmlFor="productUrl" className="text-foreground">URL or CSV Upload</Label>
                 <Input
                   id="productUrl"
                   placeholder="https://yoursite.com/product"
                   value={formData.productUrl}
                   onChange={(e) => setFormData({ ...formData, productUrl: e.target.value })}
-                  className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                   maxLength={500}
                 />
                 <Button 
                   type="button" 
                   variant="outline" 
                   size="sm" 
-                  className="mt-2 gap-2 border-gray-600 text-gray-300 hover:bg-gray-700"
+                  className="mt-2 gap-2"
                   disabled
                 >
                   <Upload className="w-4 h-4" />
@@ -233,13 +233,13 @@ const SampleRequestForm = () => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-6"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Submitting..." : "Generate My Sample"}
               </Button>
 
-              <p className="text-center text-gray-500 text-sm">
+              <p className="text-center text-muted-foreground text-sm">
                 Sample generated from your existing page. No creative brief required.
               </p>
             </form>
