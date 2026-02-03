@@ -6,7 +6,8 @@ import EditableVideo from "@/components/editor/EditableVideo";
 import { Button } from "@/components/ui/button";
 import kickerLogo from "@/assets/kicker-logo.png";
 import clientLogos from "@/assets/client-logos.png";
-import { ArrowDown, Play, DollarSign } from "lucide-react";
+import portfolioStrip from "@/assets/portfolio-strip.png";
+import { ArrowDown, Play, DollarSign, Mail, ExternalLink } from "lucide-react";
 
 const TemplateEditor = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -151,7 +152,7 @@ const TemplateEditor = () => {
             </div>
           </section>
 
-          {/* Trust Logos - Placeholder */}
+          {/* Trust Logos */}
           <section className="py-12 bg-white border-y border-gray-100">
             <div className="container mx-auto px-4 text-center">
               <p className="text-gray-500 text-sm font-medium mb-6">
@@ -224,7 +225,7 @@ const TemplateEditor = () => {
     );
   }
 
-  // Default template (Police Recruitment)
+  // Default template (Police Recruitment) - Full page with all sections
   return (
     <div className="min-h-screen bg-background">
       <EditorToolbar
@@ -240,6 +241,17 @@ const TemplateEditor = () => {
       <div className="pt-24">
         {/* Hero Section */}
         <section className="min-h-screen hero-gradient relative overflow-hidden">
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div 
+              className="absolute inset-0" 
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, hsl(43 74% 49%) 1px, transparent 0)`,
+                backgroundSize: '40px 40px'
+              }}
+            />
+          </div>
+
           <div className="container mx-auto px-4 py-12 lg:py-20 relative z-10">
             {/* Header */}
             <header className="flex items-center justify-between mb-12 lg:mb-16">
@@ -309,49 +321,174 @@ const TemplateEditor = () => {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-20 bg-card">
+        {/* Logo Carousel Section */}
+        <section className="py-12 bg-secondary/30 border-y border-border/50">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <p className="text-center text-sm text-muted-foreground uppercase tracking-wider mb-8">
+              Trusted by public organizations nationwide
+            </p>
+            
+            <div className="flex justify-center">
+              <img 
+                src={clientLogos} 
+                alt="Trusted by HP, ExxonMobil, Pittsburgh Police, Cenovus, North Central Texas Council of Governments, Ntrepid Intelligence, Novartis, Alameda County, Optum, Pulse Electronics, Harris Utilities, L3 Wescam" 
+                className="max-w-full h-auto"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section id="about" className="py-20 lg:py-32 bg-card relative">
+          {/* Accent line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-primary rounded-full" />
+
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
                 <EditableText
-                  value={template.features_title || "About Our Process"}
+                  value={template.features_title || "Why Departments Choose Kicker Video"}
                   onChange={(value) => updateField("features_title", value)}
-                  fieldName="Features Title"
+                  fieldName="About Section Title"
                 />
               </h2>
-              <div className="text-lg text-muted-foreground mb-12">
-                <EditableText
-                  value={template.features_subtitle || ""}
-                  onChange={(value) => updateField("features_subtitle", value)}
-                  fieldName="Features Subtitle"
-                  multiline
-                />
+            </div>
+
+            <div className="max-w-3xl mx-auto">
+              <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+                <p>
+                  Most police recruitment videos aren't broken.
+                  <br />
+                  They're just outdated.
+                </p>
+                
+                <p>
+                  They were made for a time when interest was high and competition was low. Today, recruits are more cautious, more informed, and quicker to walk away if something feels unrealistic or unclear.
+                </p>
+                
+                <p>
+                  We see the same pattern again and again.
+                  <br />
+                  Departments invest in a video that looks professional, but doesn't answer the questions candidates are really asking. The result. Fewer qualified applicants and more drop-off later in the process.
+                </p>
+                
+                <p className="text-foreground font-semibold">
+                  Kicker builds recruitment videos with one goal.
+                  <br />
+                  Help the right people self-select into the job.
+                </p>
+                
+                <p>
+                  That means showing the work honestly. Letting officers speak in their own words. Being clear about expectations, career paths, and what the job actually demands.
+                </p>
+                
+                <p>
+                  We recently wrapped a recruitment video for the Pittsburgh Police Department using this approach. The department saw stronger engagement and better-fit applicants because the video did its job early in the funnel.
+                </p>
+                
+                <p className="text-foreground font-medium">
+                  If your current recruitment video is more than a few years old, it's worth asking a simple question.
+                  <br />
+                  <span className="text-primary">Is it helping your pipeline. Or quietly hurting it.</span>
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Contact Section */}
-        <section className="py-20 bg-background">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              <EditableText
-                value={template.contact_title || "Let's Talk"}
-                onChange={(value) => updateField("contact_title", value)}
-                fieldName="Contact Title"
-              />
-            </h2>
-            <div className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              <EditableText
-                value={template.contact_subtitle || ""}
-                onChange={(value) => updateField("contact_subtitle", value)}
-                fieldName="Contact Subtitle"
-                multiline
-              />
+        {/* Portfolio Strip */}
+        <section className="bg-background">
+          <div className="w-full">
+            <img 
+              src={portfolioStrip} 
+              alt="Portfolio examples: Alameda County Waste Management Authority, Active Shooter Awareness training video, Police community engagement" 
+              className="w-full h-auto"
+            />
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section id="contact" className="py-20 lg:py-32 hero-gradient relative overflow-hidden">
+          {/* Background accent */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
+
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+                <EditableText
+                  value={template.contact_title || "Ready to Transform Your Recruitment Strategy?"}
+                  onChange={(value) => updateField("contact_title", value)}
+                  fieldName="Contact Title"
+                />
+              </h2>
+              <div className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+                <EditableText
+                  value={template.contact_subtitle || "Let's discuss how Kicker Video can help your department attract the next generation of law enforcement professionals."}
+                  onChange={(value) => updateField("contact_subtitle", value)}
+                  fieldName="Contact Subtitle"
+                  multiline
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <Button variant="hero" size="xl" asChild>
+                  <a href="mailto:hello@kickervideo.com">
+                    <Mail className="w-5 h-5" />
+                    Contact Us
+                  </a>
+                </Button>
+                <Button variant="heroOutline" size="xl" asChild>
+                  <a href="https://kickervideo.com" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-5 h-5" />
+                    Visit Website
+                  </a>
+                </Button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-muted-foreground">
+                <a 
+                  href="mailto:hello@kickervideo.com" 
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <Mail className="w-4 h-4" />
+                  hello@kickervideo.com
+                </a>
+                <span className="hidden sm:block text-border">|</span>
+                <a 
+                  href="https://kickervideo.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  kickervideo.com
+                </a>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* Footer */}
+        <footer className="py-8 bg-background border-t border-border">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <img src={kickerLogo} alt="Kicker Video" className="h-6" />
+
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} Kicker Video. Professional video production.
+              </p>
+
+              <a 
+                href="https://kickervideo.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:text-primary/80 transition-colors"
+              >
+                kickervideo.com
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
