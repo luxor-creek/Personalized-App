@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Check, X, Bold, Italic, Type, Palette, AlignLeft } from "lucide-react";
+import { Check, X, Bold, Italic, Type, Palette, AlignLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -7,12 +7,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface RichTextEditorProps {
@@ -22,6 +21,7 @@ interface RichTextEditorProps {
   className?: string;
   placeholder?: string;
   supportsPersonalization?: boolean;
+  isHeadline?: boolean;
 }
 
 const PERSONALIZATION_TOKENS = [
@@ -32,18 +32,18 @@ const PERSONALIZATION_TOKENS = [
 ];
 
 const FONT_SIZES = [
-  { value: "text-sm", label: "Small" },
-  { value: "text-base", label: "Normal" },
-  { value: "text-lg", label: "Large" },
-  { value: "text-xl", label: "X-Large" },
-  { value: "text-2xl", label: "2X-Large" },
+  { value: "small", label: "Small", marker: "[[size:small]]" },
+  { value: "normal", label: "Normal", marker: "" },
+  { value: "large", label: "Large", marker: "[[size:large]]" },
+  { value: "xlarge", label: "X-Large", marker: "[[size:xlarge]]" },
+  { value: "2xlarge", label: "2X-Large", marker: "[[size:2xlarge]]" },
 ];
 
 const TEXT_COLORS = [
-  { value: "text-foreground", label: "Default", color: "hsl(var(--foreground))" },
-  { value: "text-primary", label: "Primary", color: "hsl(var(--primary))" },
-  { value: "text-muted-foreground", label: "Muted", color: "hsl(var(--muted-foreground))" },
-  { value: "text-destructive", label: "Red", color: "hsl(var(--destructive))" },
+  { value: "default", label: "Default", color: "hsl(var(--foreground))", marker: "" },
+  { value: "primary", label: "Primary (Gold)", color: "hsl(var(--primary))", marker: "[[color:primary]]" },
+  { value: "muted", label: "Muted", color: "hsl(var(--muted-foreground))", marker: "[[color:muted]]" },
+  { value: "destructive", label: "Red", color: "hsl(var(--destructive))", marker: "[[color:destructive]]" },
 ];
 
 const RichTextEditor = ({
@@ -53,6 +53,7 @@ const RichTextEditor = ({
   className,
   placeholder = "Click to edit...",
   supportsPersonalization = false,
+  isHeadline = false,
 }: RichTextEditorProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -121,6 +122,23 @@ const RichTextEditor = ({
     }
   };
 
+  const applyFormatMarker = (marker: string) => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = editValue.substring(start, end);
+      if (selectedText) {
+        // Wrap selection with marker
+        const newValue = editValue.substring(0, start) + marker + selectedText + marker.replace("[[", "[[/") + editValue.substring(end);
+        setEditValue(newValue);
+      }
+      setTimeout(() => {
+        textarea.focus();
+      }, 0);
+    }
+  };
+
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setEditValue(e.target.value);
     // Auto-resize
@@ -128,80 +146,122 @@ const RichTextEditor = ({
     e.target.style.height = e.target.scrollHeight + 'px';
   };
 
-  // Render formatted content for display with proper paragraph spacing
+  // Parse and render formatted content with size, color, bold, italic
   const renderFormattedContent = () => {
     if (!value) return <span className="text-muted-foreground italic">{placeholder}</span>;
+    
+    // For headlines, render inline without paragraph splitting
+    if (isHeadline) {
+      return <span>{renderFormattedText(value)}</span>;
+    }
     
     // Split by double newlines for paragraphs
     const paragraphs = value.split('\n\n');
     
     return paragraphs.map((paragraph, paraIndex) => {
-      // Check for formatting markers
-      const isBoldParagraph = paragraph.startsWith('**') && paragraph.endsWith('**');
-      const isItalicParagraph = paragraph.startsWith('*') && paragraph.endsWith('*') && !isBoldParagraph;
-      
-      if (isBoldParagraph) {
-        const text = paragraph.slice(2, -2);
-        return (
-          <p key={paraIndex} className="text-foreground font-semibold">
-            {text.split('\n').map((line, i) => (
-              <span key={i}>{renderLineWithTokens(line)}{i < text.split('\n').length - 1 && <br />}</span>
-            ))}
-          </p>
-        );
-      }
-      
-      if (isItalicParagraph) {
-        const text = paragraph.slice(1, -1);
-        return (
-          <p key={paraIndex} className="text-foreground font-medium">
-            <span className="text-primary">{text}</span>
-          </p>
-        );
-      }
-      
-      // Regular paragraph - handle inline bold/italic
       return (
         <p key={paraIndex}>
           {paragraph.split('\n').map((line, i) => (
-            <span key={i}>{renderLineWithTokens(line)}{i < paragraph.split('\n').length - 1 && <br />}</span>
+            <span key={i}>{renderFormattedText(line)}{i < paragraph.split('\n').length - 1 && <br />}</span>
           ))}
         </p>
       );
     });
   };
 
-  // Helper to render tokens within a line
-  const renderLineWithTokens = (line: string): React.ReactNode => {
-    const tokenRegex = /({{[^}]+}})/g;
-    const parts = line.split(tokenRegex);
+  // Render text with all formatting applied
+  const renderFormattedText = (text: string): React.ReactNode => {
+    // Process markers in order: size, color, bold, italic, tokens
+    let processed = text;
+    const elements: React.ReactNode[] = [];
+    let key = 0;
+
+    // Regex to match all format markers and tokens
+    const formatRegex = /(\[\[size:(small|large|xlarge|2xlarge)\]\](.+?)\[\[\/size:\2\]\]|\[\[color:(primary|muted|destructive)\]\](.+?)\[\[\/color:\4\]\]|\*\*(.+?)\*\*|\*(.+?)\*|{{[^}]+}})/g;
     
-    return parts.map((part, index) => {
-      if (part.match(/{{[^}]+}}/)) {
-        return (
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = formatRegex.exec(text)) !== null) {
+      // Add text before match
+      if (match.index > lastIndex) {
+        elements.push(text.substring(lastIndex, match.index));
+      }
+      
+      const fullMatch = match[0];
+      
+      // Size markers
+      if (fullMatch.startsWith('[[size:')) {
+        const sizeMatch = fullMatch.match(/\[\[size:(small|large|xlarge|2xlarge)\]\](.+?)\[\[\/size:\1\]\]/);
+        if (sizeMatch) {
+          const sizeClasses: Record<string, string> = {
+            small: 'text-sm',
+            large: 'text-lg',
+            xlarge: 'text-xl',
+            '2xlarge': 'text-2xl'
+          };
+          elements.push(
+            <span key={key++} className={sizeClasses[sizeMatch[1]]}>
+              {renderFormattedText(sizeMatch[2])}
+            </span>
+          );
+        }
+      }
+      // Color markers
+      else if (fullMatch.startsWith('[[color:')) {
+        const colorMatch = fullMatch.match(/\[\[color:(primary|muted|destructive)\]\](.+?)\[\[\/color:\1\]\]/);
+        if (colorMatch) {
+          const colorClasses: Record<string, string> = {
+            primary: 'text-primary',
+            muted: 'text-muted-foreground',
+            destructive: 'text-destructive'
+          };
+          elements.push(
+            <span key={key++} className={colorClasses[colorMatch[1]]}>
+              {renderFormattedText(colorMatch[2])}
+            </span>
+          );
+        }
+      }
+      // Bold
+      else if (fullMatch.startsWith('**') && fullMatch.endsWith('**')) {
+        const innerText = fullMatch.slice(2, -2);
+        elements.push(
+          <strong key={key++} className="font-semibold">
+            {renderFormattedText(innerText)}
+          </strong>
+        );
+      }
+      // Italic
+      else if (fullMatch.startsWith('*') && fullMatch.endsWith('*')) {
+        const innerText = fullMatch.slice(1, -1);
+        elements.push(
+          <em key={key++} className="italic">
+            {renderFormattedText(innerText)}
+          </em>
+        );
+      }
+      // Personalization tokens
+      else if (fullMatch.match(/{{[^}]+}}/)) {
+        elements.push(
           <span 
-            key={index} 
+            key={key++} 
             className="bg-primary/20 text-primary px-1 rounded font-mono text-[0.85em]"
           >
-            {part}
+            {fullMatch}
           </span>
         );
       }
       
-      // Handle inline **bold**
-      if (part.includes('**')) {
-        const boldRegex = /\*\*(.+?)\*\*/g;
-        const segments = part.split(boldRegex);
-        return segments.map((segment, segIndex) => {
-          if (segIndex % 2 === 1) {
-            return <strong key={segIndex} className="font-semibold text-foreground">{segment}</strong>;
-          }
-          return segment;
-        });
-      }
-      
-      return part;
-    });
+      lastIndex = match.index + fullMatch.length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      elements.push(text.substring(lastIndex));
+    }
+    
+    return elements.length > 0 ? elements : text;
   };
 
   if (isEditing) {
@@ -233,13 +293,63 @@ const RichTextEditor = ({
             </Button>
             
             <div className="w-px h-6 bg-border mx-1" />
+
+            {/* Font Size Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8">
+                  <Type className="w-4 h-4 mr-1" />
+                  Size
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {FONT_SIZES.map((size) => (
+                  <DropdownMenuItem
+                    key={size.value}
+                    onClick={() => size.marker && applyFormatMarker(size.marker)}
+                    className="text-sm"
+                  >
+                    {size.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Color Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8">
+                  <Palette className="w-4 h-4 mr-1" />
+                  Color
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {TEXT_COLORS.map((color) => (
+                  <DropdownMenuItem
+                    key={color.value}
+                    onClick={() => color.marker && applyFormatMarker(color.marker)}
+                    className="text-sm flex items-center gap-2"
+                  >
+                    <div 
+                      className="w-4 h-4 rounded-full border border-border" 
+                      style={{ backgroundColor: color.color }}
+                    />
+                    {color.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <div className="w-px h-6 bg-border mx-1" />
             
             {supportsPersonalization && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="h-8">
                     <Type className="w-4 h-4 mr-1" />
-                    Insert Variable
+                    Variable
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-48 p-2" align="start">
