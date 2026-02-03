@@ -108,9 +108,10 @@ const Admin = () => {
   const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
   const [loadingSnovLists, setLoadingSnovLists] = useState(false);
   const [selectedSnovList, setSelectedSnovList] = useState<number | null>(null);
+  const [selectedSnovCampaignList, setSelectedSnovCampaignList] = useState<number | null>(null);
   const [snovEmailConfig, setSnovEmailConfig] = useState({
     subject: "{{first_name}}, check out your personalized video",
-    body: "Hi {{first_name}},\n\nI created a personalized video just for you. Check it out here:\n\n{{page_url}}\n\nLet me know what you think!\n\nBest regards",
+    body: "Hi {{first_name}},\n\nI created a personalized video just for you. Check it out here:\n\n{{country}}\n\nLet me know what you think!\n\nBest regards",
     fromEmail: "",
     fromName: "",
   });
@@ -522,12 +523,10 @@ const Admin = () => {
   };
 
   const sendSnovCampaign = async () => {
-    if (!selectedSnovList || !selectedCampaign) return;
-    
-    if (!snovEmailConfig.fromEmail || !snovEmailConfig.fromName) {
+    if (!selectedSnovList || !selectedSnovCampaignList || !selectedCampaign) {
       toast({
-        title: "Missing sender info",
-        description: "Please enter your sender email and name",
+        title: "Missing selection",
+        description: "Please select both source list and target drip campaign list",
         variant: "destructive",
       });
       return;
@@ -539,10 +538,8 @@ const Admin = () => {
         body: {
           listId: selectedSnovList,
           campaignId: selectedCampaign.id,
-          emailSubject: snovEmailConfig.subject,
-          emailBody: snovEmailConfig.body,
-          fromEmail: snovEmailConfig.fromEmail,
-          fromName: snovEmailConfig.fromName,
+          snovCampaignListId: selectedSnovCampaignList,
+          templateId: selectedCampaign.template_id,
         },
       });
 
@@ -551,7 +548,7 @@ const Admin = () => {
       if (data.success) {
         toast({
           title: "Campaign sent!",
-          description: `Sent ${data.sent} emails. ${data.errors > 0 ? `${data.errors} errors.` : ""}`,
+          description: `Added ${data.added} prospects to Snov.io drip campaign. ${data.errors > 0 ? `${data.errors} errors.` : ""}`,
         });
         setSnovDialogOpen(false);
         fetchCampaigns();
@@ -1020,96 +1017,73 @@ const Admin = () => {
                               <DialogHeader>
                                 <DialogTitle>Send Campaign via Snov.io</DialogTitle>
                                 <DialogDescription>
-                                  Import contacts from a Snov.io list and send personalized landing pages.
+                                  Import contacts from a Snov.io list and add them to a drip campaign.
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4 pt-4">
-                                {/* Snov.io List Selection */}
-                                <div className="space-y-2">
-                                  <Label>Select Snov.io List</Label>
-                                  {loadingSnovLists ? (
-                                    <div className="flex items-center justify-center py-4">
-                                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                                    </div>
-                                  ) : snovLists.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">No lists found. Create a list in Snov.io first.</p>
-                                  ) : (
-                                    <div className="grid gap-2 max-h-40 overflow-y-auto">
-                                      {snovLists.map((list) => (
-                                        <div
-                                          key={list.id}
-                                          onClick={() => setSelectedSnovList(list.id)}
-                                          className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                                            selectedSnovList === list.id
-                                              ? "border-primary bg-primary/10"
-                                              : "border-border hover:border-primary/50"
-                                          }`}
-                                        >
-                                          <div className="flex justify-between items-center">
-                                            <span className="font-medium">{list.name}</span>
-                                            <span className="text-sm text-muted-foreground">{list.contacts} contacts</span>
+                                {loadingSnovLists ? (
+                                  <div className="flex items-center justify-center py-4">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                  </div>
+                                ) : snovLists.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">No lists found. Create a list in Snov.io first.</p>
+                                ) : (
+                                  <>
+                                    {/* Source List Selection */}
+                                    <div className="space-y-2">
+                                      <Label>Source List (get contacts from)</Label>
+                                      <div className="grid gap-2 max-h-32 overflow-y-auto">
+                                        {snovLists.map((list) => (
+                                          <div
+                                            key={list.id}
+                                            onClick={() => setSelectedSnovList(list.id)}
+                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                              selectedSnovList === list.id
+                                                ? "border-primary bg-primary/10"
+                                                : "border-border hover:border-primary/50"
+                                            }`}
+                                          >
+                                            <div className="flex justify-between items-center">
+                                              <span className="font-medium">{list.name}</span>
+                                              <span className="text-sm text-muted-foreground">{list.contacts} contacts</span>
+                                            </div>
                                           </div>
-                                        </div>
-                                      ))}
+                                        ))}
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
 
-                                {/* Sender Info */}
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-2">
-                                    <Label htmlFor="from-name">From Name</Label>
-                                    <Input
-                                      id="from-name"
-                                      value={snovEmailConfig.fromName}
-                                      onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, fromName: e.target.value })}
-                                      placeholder="John Smith"
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="from-email">From Email</Label>
-                                    <Input
-                                      id="from-email"
-                                      type="email"
-                                      value={snovEmailConfig.fromEmail}
-                                      onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, fromEmail: e.target.value })}
-                                      placeholder="john@company.com"
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* Email Subject */}
-                                <div className="space-y-2">
-                                  <Label htmlFor="email-subject">Subject Line</Label>
-                                  <Input
-                                    id="email-subject"
-                                    value={snovEmailConfig.subject}
-                                    onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, subject: e.target.value })}
-                                    placeholder="{{first_name}}, check out your personalized video"
-                                  />
-                                  <p className="text-xs text-muted-foreground">
-                                    Use {"{{first_name}}"}, {"{{last_name}}"}, {"{{company}}"} for personalization
-                                  </p>
-                                </div>
-
-                                {/* Email Body */}
-                                <div className="space-y-2">
-                                  <Label htmlFor="email-body">Email Body</Label>
-                                  <Textarea
-                                    id="email-body"
-                                    value={snovEmailConfig.body}
-                                    onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, body: e.target.value })}
-                                    rows={5}
-                                  />
-                                  <p className="text-xs text-muted-foreground">
-                                    {"{{page_url}}"} will be replaced with each contact's unique landing page URL
-                                  </p>
-                                </div>
+                                    {/* Target Drip Campaign List Selection */}
+                                    <div className="space-y-2">
+                                      <Label>Target List (with drip campaign attached)</Label>
+                                      <p className="text-xs text-muted-foreground">
+                                        This list should have a drip campaign configured in Snov.io. Use {"{{country}}"} in your email template for the landing page URL.
+                                      </p>
+                                      <div className="grid gap-2 max-h-32 overflow-y-auto">
+                                        {snovLists.map((list) => (
+                                          <div
+                                            key={list.id}
+                                            onClick={() => setSelectedSnovCampaignList(list.id)}
+                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                              selectedSnovCampaignList === list.id
+                                                ? "border-green-500 bg-green-500/10"
+                                                : "border-border hover:border-green-500/50"
+                                            }`}
+                                          >
+                                            <div className="flex justify-between items-center">
+                                              <span className="font-medium">{list.name}</span>
+                                              <span className="text-sm text-muted-foreground">{list.contacts} contacts</span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
 
                                 <Button 
                                   onClick={sendSnovCampaign} 
                                   className="w-full" 
-                                  disabled={!selectedSnovList || sendingSnov}
+                                  disabled={!selectedSnovList || !selectedSnovCampaignList || sendingSnov}
                                 >
                                   {sendingSnov ? (
                                     <>
@@ -1119,7 +1093,7 @@ const Admin = () => {
                                   ) : (
                                     <>
                                       <Send className="w-4 h-4 mr-2" />
-                                      Send to Selected List
+                                      Add to Drip Campaign
                                     </>
                                   )}
                                 </Button>
