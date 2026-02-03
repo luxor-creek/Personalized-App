@@ -1,28 +1,3 @@
-import { Video, Award, Users, Zap } from "lucide-react";
-
-const features = [
-  {
-    icon: Video,
-    title: "Cinematic Quality",
-    description: "Hollywood-grade production value that sets your department apart from the competition."
-  },
-  {
-    icon: Users,
-    title: "Authentic Stories",
-    description: "We capture the real stories of your officers, building genuine connection with candidates."
-  },
-  {
-    icon: Award,
-    title: "Proven Results",
-    description: "Our clients see significant increases in qualified applicants within the first month."
-  },
-  {
-    icon: Zap,
-    title: "Fast Turnaround",
-    description: "From concept to final cut in weeks, not months. We respect your timeline."
-  }
-];
-
 const AboutSection = () => {
   return (
     <section id="about" className="py-20 lg:py-32 bg-card relative">
@@ -30,35 +5,51 @@ const AboutSection = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-primary rounded-full" />
 
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-16">
+        <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Why Departments Choose
             <span className="text-gradient"> Kicker Video</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
-            We specialize in law enforcement recruitment videos that don't just inform—they inspire. 
-            Our team understands the unique challenges of police recruitment in today's climate.
-          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <div 
-              key={feature.title}
-              className="group p-6 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <feature.icon className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg text-foreground mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+        <div className="max-w-3xl mx-auto">
+          <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+            <p>
+              Most police recruitment videos aren't broken.
+              <br />
+              They're just outdated.
+            </p>
+            
+            <p>
+              They were made for a time when interest was high and competition was low. Today, recruits are more cautious, more informed, and quicker to walk away if something feels unrealistic or unclear.
+            </p>
+            
+            <p>
+              We see the same pattern again and again.
+              <br />
+              Departments invest in a video that looks professional, but doesn't answer the questions candidates are really asking. The result. Fewer qualified applicants and more drop-off later in the process.
+            </p>
+            
+            <p className="text-foreground font-semibold">
+              Kicker builds recruitment videos with one goal.
+              <br />
+              Help the right people self-select into the job.
+            </p>
+            
+            <p>
+              That means showing the work honestly. Letting officers speak in their own words. Being clear about expectations, career paths, and what the job actually demands.
+            </p>
+            
+            <p>
+              We recently wrapped a recruitment video for the Pittsburgh Police Department using this approach. The department saw stronger engagement and better-fit applicants because the video did its job early in the funnel.
+            </p>
+            
+            <p className="text-foreground font-medium">
+              If your current recruitment video is more than a few years old, it's worth asking a simple question.
+              <br />
+              <span className="text-primary">Is it helping your pipeline. Or quietly hurting it.</span>
+            </p>
+          </div>
         </div>
       </div>
     </section>

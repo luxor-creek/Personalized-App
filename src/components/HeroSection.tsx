@@ -40,12 +40,12 @@ const HeroSection = ({ thumbnailUrl }: HeroSectionProps) => {
             Police Recruitment Video Demo
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 animate-fade-up-delay leading-tight">
-            Recruit the Heroes Your
-            <span className="text-gradient block mt-2">Community Deserves</span>
+            A recruitment video that actually helps your
+            <span className="text-gradient block mt-2">hiring pipeline.</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up-delay-2">
-            Watch how we create compelling recruitment videos that attract 
-            top-tier candidates and showcase the heart of your department.
+            Watch how we create recruitment videos that help the right people 
+            self-select into the job.
           </p>
         </div>
 
