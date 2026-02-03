@@ -119,3 +119,72 @@ export function useTemplateContent(slug: string) {
 
   return { template, loading, error };
 }
+
+export function useTemplateContentById(templateId: string | null) {
+  const [template, setTemplate] = useState<TemplateContent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTemplate = async () => {
+      if (!templateId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("landing_page_templates")
+          .select(`
+            id,
+            slug,
+            name,
+            hero_badge,
+            hero_headline,
+            hero_subheadline,
+            hero_cta_primary_text,
+            hero_cta_secondary_text,
+            hero_video_id,
+            hero_video_thumbnail_url,
+            features_title,
+            features_subtitle,
+            about_content,
+            testimonials_title,
+            testimonials_subtitle,
+            pricing_title,
+            pricing_subtitle,
+            contact_title,
+            contact_subtitle,
+            contact_email,
+            contact_phone,
+            portfolio_strip_url,
+            portfolio_videos
+          `)
+          .eq("id", templateId)
+          .single();
+
+        if (fetchError) {
+          console.error("Error fetching template by ID:", fetchError);
+          setError(fetchError.message);
+        } else {
+          const templateData: TemplateContent = {
+            ...data,
+            portfolio_videos: Array.isArray(data.portfolio_videos) 
+              ? data.portfolio_videos as { title: string; videoId?: string; image?: string }[]
+              : null,
+          };
+          setTemplate(templateData);
+        }
+      } catch (err: any) {
+        console.error("Error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTemplate();
+  }, [templateId]);
+
+  return { template, loading, error };
+}
