@@ -84,17 +84,19 @@ const EditableSampleRequestForm = ({
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-foreground">Name</Label>
+                  <Label className="text-foreground">
+                    First Name <span className="text-destructive">*</span>
+                  </Label>
                   <Input
-                    placeholder="Your name"
+                    placeholder="First name"
                     className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     disabled
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-foreground">Company</Label>
+                  <Label className="text-foreground">Last Name</Label>
                   <Input
-                    placeholder="Company name"
+                    placeholder="Last name"
                     className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     disabled
                   />
@@ -103,45 +105,59 @@ const EditableSampleRequestForm = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-foreground">Role</Label>
+                  <Label className="text-foreground">
+                    Email <span className="text-destructive">*</span>
+                  </Label>
                   <Input
-                    placeholder="Your role"
+                    placeholder="your@email.com"
                     className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     disabled
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-foreground">Audience Type</Label>
-                  <Select disabled>
-                    <SelectTrigger className="bg-background border-border text-foreground">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="b2b">B2B</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-foreground">
+                    Company <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    placeholder="Company name"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                    disabled
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground">Estimated Video Volume</Label>
+                <Label className="text-foreground">
+                  Primary Goal <span className="text-destructive">*</span>
+                </Label>
                 <Select disabled>
                   <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select volume" />
+                    <SelectValue placeholder="Select your primary goal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1-10">1-10 videos</SelectItem>
+                    <SelectItem value="training-video">Training Video</SelectItem>
+                    <SelectItem value="executive-message">Executive Message</SelectItem>
+                    <SelectItem value="social-media-video">Social Media Video</SelectItem>
+                    <SelectItem value="quick-location-shoot">Quick Location Shoot</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground">Paste your product URL here</Label>
-                <Input
-                  placeholder="https://yoursite.com/product"
-                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
-                  disabled
-                />
+                <Label className="text-foreground">
+                  Timeline <span className="text-destructive">*</span>
+                </Label>
+                <Select disabled>
+                  <SelectTrigger className="bg-background border-border text-foreground">
+                    <SelectValue placeholder="Select your timeline" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="this-week">This Week</SelectItem>
+                    <SelectItem value="next-week">Next Week</SelectItem>
+                    <SelectItem value="next-month">Next Month</SelectItem>
+                    <SelectItem value="no-rush">No Rush</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button 
@@ -149,11 +165,11 @@ const EditableSampleRequestForm = ({
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6"
                 disabled
               >
-                Generate My Sample
+                Submit Request
               </Button>
 
               <p className="text-center text-muted-foreground text-sm">
-                Sample generated from your existing page. No creative brief required.
+                We'll get back to you within 24 hours.
               </p>
             </div>
           </div>

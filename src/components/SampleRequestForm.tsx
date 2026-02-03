@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,33 +16,33 @@ const SampleRequestForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
+    email: "",
     company: "",
-    role: "",
-    audienceType: "",
-    videoVolume: "",
-    productUrl: "",
+    primaryGoal: "",
+    timeline: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.company || !formData.productUrl) {
+    // Validate required fields
+    if (!formData.firstName || !formData.email || !formData.company || !formData.primaryGoal || !formData.timeline) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in your name, company, and product URL.",
+        description: "Please fill in First Name, Email, Company, Primary Goal, and Timeline.",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate URL
-    try {
-      new URL(formData.productUrl);
-    } catch {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
       toast({
-        title: "Invalid URL",
-        description: "Please enter a valid URL starting with https://",
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
         variant: "destructive",
       });
       return;
@@ -60,17 +59,17 @@ const SampleRequestForm = () => {
 
       toast({
         title: "Request submitted!",
-        description: "We'll generate your sample video and get back to you soon.",
+        description: "We'll be in touch with you soon.",
       });
 
       // Reset form
       setFormData({
-        name: "",
+        firstName: "",
+        lastName: "",
+        email: "",
         company: "",
-        role: "",
-        audienceType: "",
-        videoVolume: "",
-        productUrl: "",
+        primaryGoal: "",
+        timeline: "",
       });
     } catch (error: any) {
       console.error("Error submitting form:", error);
@@ -104,18 +103,18 @@ const SampleRequestForm = () => {
               {[
                 { 
                   number: 1, 
-                  title: "Submit your URL", 
-                  description: "Share a product or service page you'd like converted." 
+                  title: "Submit your request", 
+                  description: "Tell us about your project and timeline." 
                 },
                 { 
                   number: 2, 
-                  title: "We generate a sample", 
-                  description: "Using our standard template, we'll create a sample video." 
+                  title: "We reach out", 
+                  description: "Our team will contact you to discuss details." 
                 },
                 { 
                   number: 3, 
-                  title: "Review and decide", 
-                  description: "No obligation. See if Viaxo fits your needs." 
+                  title: "Get your video", 
+                  description: "Receive a professional video tailored to your needs." 
                 },
               ].map((step) => (
                 <div key={step.number} className="flex items-start gap-4">
@@ -136,18 +135,50 @@ const SampleRequestForm = () => {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-foreground">Name</Label>
+                  <Label htmlFor="firstName" className="text-foreground">
+                    First Name <span className="text-destructive">*</span>
+                  </Label>
                   <Input
-                    id="name"
-                    placeholder="Your name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    id="firstName"
+                    placeholder="First name"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                    maxLength={50}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-foreground">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Last name"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                    maxLength={50}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-foreground">
+                    Email <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     maxLength={100}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company" className="text-foreground">Company</Label>
+                  <Label htmlFor="company" className="text-foreground">
+                    Company <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="company"
                     placeholder="Company name"
@@ -159,66 +190,44 @@ const SampleRequestForm = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-foreground">Role</Label>
-                  <Input
-                    id="role"
-                    placeholder="Your role"
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
-                    maxLength={100}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="audienceType" className="text-foreground">Audience Type</Label>
-                  <Select 
-                    value={formData.audienceType} 
-                    onValueChange={(value) => setFormData({ ...formData, audienceType: value })}
-                  >
-                    <SelectTrigger className="bg-background border-border text-foreground">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="b2b">B2B</SelectItem>
-                      <SelectItem value="b2c">B2C</SelectItem>
-                      <SelectItem value="ecommerce">E-commerce</SelectItem>
-                      <SelectItem value="saas">SaaS</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="videoVolume" className="text-foreground">Estimated Video Volume</Label>
+                <Label htmlFor="primaryGoal" className="text-foreground">
+                  Primary Goal <span className="text-destructive">*</span>
+                </Label>
                 <Select 
-                  value={formData.videoVolume} 
-                  onValueChange={(value) => setFormData({ ...formData, videoVolume: value })}
+                  value={formData.primaryGoal} 
+                  onValueChange={(value) => setFormData({ ...formData, primaryGoal: value })}
                 >
                   <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select volume" />
+                    <SelectValue placeholder="Select your primary goal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1-10">1-10 videos</SelectItem>
-                    <SelectItem value="11-50">11-50 videos</SelectItem>
-                    <SelectItem value="51-100">51-100 videos</SelectItem>
-                    <SelectItem value="100+">100+ videos</SelectItem>
+                    <SelectItem value="training-video">Training Video</SelectItem>
+                    <SelectItem value="executive-message">Executive Message</SelectItem>
+                    <SelectItem value="social-media-video">Social Media Video</SelectItem>
+                    <SelectItem value="quick-location-shoot">Quick Location Shoot</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="productUrl" className="text-foreground">Paste your product URL here</Label>
-                <Input
-                  id="productUrl"
-                  placeholder="https://yoursite.com/product"
-                  value={formData.productUrl}
-                  onChange={(e) => setFormData({ ...formData, productUrl: e.target.value })}
-                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
-                  maxLength={500}
-                />
+                <Label htmlFor="timeline" className="text-foreground">
+                  Timeline <span className="text-destructive">*</span>
+                </Label>
+                <Select 
+                  value={formData.timeline} 
+                  onValueChange={(value) => setFormData({ ...formData, timeline: value })}
+                >
+                  <SelectTrigger className="bg-background border-border text-foreground">
+                    <SelectValue placeholder="Select your timeline" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="this-week">This Week</SelectItem>
+                    <SelectItem value="next-week">Next Week</SelectItem>
+                    <SelectItem value="next-month">Next Month</SelectItem>
+                    <SelectItem value="no-rush">No Rush</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button 
@@ -226,11 +235,11 @@ const SampleRequestForm = () => {
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Submitting..." : "Generate My Sample"}
+                {isSubmitting ? "Submitting..." : "Submit Request"}
               </Button>
 
               <p className="text-center text-muted-foreground text-sm">
-                Sample generated from your existing page. No creative brief required.
+                We'll get back to you within 24 hours.
               </p>
             </form>
           </div>
