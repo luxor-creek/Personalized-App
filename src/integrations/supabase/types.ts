@@ -38,6 +38,99 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_templates: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          contact_subtitle: string | null
+          contact_title: string | null
+          created_at: string
+          feature_cards: Json | null
+          features_list: Json | null
+          features_subtitle: string | null
+          features_title: string | null
+          hero_badge: string | null
+          hero_cta_primary_text: string | null
+          hero_cta_secondary_text: string | null
+          hero_headline: string
+          hero_subheadline: string | null
+          hero_video_id: string | null
+          hero_video_thumbnail_url: string | null
+          id: string
+          name: string
+          personalization_config: Json | null
+          pricing_subtitle: string | null
+          pricing_tiers: Json | null
+          pricing_title: string | null
+          slug: string
+          testimonials: Json | null
+          testimonials_subtitle: string | null
+          testimonials_title: string | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_subtitle?: string | null
+          contact_title?: string | null
+          created_at?: string
+          feature_cards?: Json | null
+          features_list?: Json | null
+          features_subtitle?: string | null
+          features_title?: string | null
+          hero_badge?: string | null
+          hero_cta_primary_text?: string | null
+          hero_cta_secondary_text?: string | null
+          hero_headline: string
+          hero_subheadline?: string | null
+          hero_video_id?: string | null
+          hero_video_thumbnail_url?: string | null
+          id?: string
+          name: string
+          personalization_config?: Json | null
+          pricing_subtitle?: string | null
+          pricing_tiers?: Json | null
+          pricing_title?: string | null
+          slug: string
+          testimonials?: Json | null
+          testimonials_subtitle?: string | null
+          testimonials_title?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_subtitle?: string | null
+          contact_title?: string | null
+          created_at?: string
+          feature_cards?: Json | null
+          features_list?: Json | null
+          features_subtitle?: string | null
+          features_title?: string | null
+          hero_badge?: string | null
+          hero_cta_primary_text?: string | null
+          hero_cta_secondary_text?: string | null
+          hero_headline?: string
+          hero_subheadline?: string | null
+          hero_video_id?: string | null
+          hero_video_thumbnail_url?: string | null
+          id?: string
+          name?: string
+          personalization_config?: Json | null
+          pricing_subtitle?: string | null
+          pricing_tiers?: Json | null
+          pricing_title?: string | null
+          slug?: string
+          testimonials?: Json | null
+          testimonials_subtitle?: string | null
+          testimonials_title?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           id: string
@@ -79,6 +172,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string | null
+          template_id: string | null
           token: string
         }
         Insert: {
@@ -89,6 +183,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name?: string | null
+          template_id?: string | null
           token?: string
         }
         Update: {
@@ -99,6 +194,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string | null
+          template_id?: string | null
           token?: string
         }
         Relationships: [
@@ -107,6 +203,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalized_pages_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_templates"
             referencedColumns: ["id"]
           },
         ]

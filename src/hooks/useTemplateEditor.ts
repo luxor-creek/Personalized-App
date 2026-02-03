@@ -1,0 +1,191 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+export interface TemplateData {
+  id: string;
+  slug: string;
+  name: string;
+  thumbnail_url: string | null;
+  hero_badge: string | null;
+  hero_headline: string;
+  hero_subheadline: string | null;
+  hero_cta_primary_text: string | null;
+  hero_cta_secondary_text: string | null;
+  hero_video_id: string | null;
+  hero_video_thumbnail_url: string | null;
+  features_title: string | null;
+  features_subtitle: string | null;
+  features_list: any[];
+  feature_cards: any[];
+  testimonials_title: string | null;
+  testimonials_subtitle: string | null;
+  testimonials: any[];
+  pricing_title: string | null;
+  pricing_subtitle: string | null;
+  pricing_tiers: any[];
+  contact_title: string | null;
+  contact_subtitle: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  personalization_config: Record<string, boolean>;
+}
+
+export function useTemplateEditor(slug: string | undefined) {
+  const { toast } = useToast();
+  const [template, setTemplate] = useState<TemplateData | null>(null);
+  const [originalTemplate, setOriginalTemplate] = useState<TemplateData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch template
+  useEffect(() => {
+    const fetchTemplate = async () => {
+      if (!slug) {
+        setError("No template specified");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("landing_page_templates")
+          .select("*")
+          .eq("slug", slug)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Parse JSONB fields with proper type casting
+        const templateData: TemplateData = {
+          id: data.id,
+          slug: data.slug,
+          name: data.name,
+          thumbnail_url: data.thumbnail_url,
+          hero_badge: data.hero_badge,
+          hero_headline: data.hero_headline,
+          hero_subheadline: data.hero_subheadline,
+          hero_cta_primary_text: data.hero_cta_primary_text,
+          hero_cta_secondary_text: data.hero_cta_secondary_text,
+          hero_video_id: data.hero_video_id,
+          hero_video_thumbnail_url: data.hero_video_thumbnail_url,
+          features_title: data.features_title,
+          features_subtitle: data.features_subtitle,
+          features_list: Array.isArray(data.features_list) ? data.features_list : [],
+          feature_cards: Array.isArray(data.feature_cards) ? data.feature_cards : [],
+          testimonials_title: data.testimonials_title,
+          testimonials_subtitle: data.testimonials_subtitle,
+          testimonials: Array.isArray(data.testimonials) ? data.testimonials : [],
+          pricing_title: data.pricing_title,
+          pricing_subtitle: data.pricing_subtitle,
+          pricing_tiers: Array.isArray(data.pricing_tiers) ? data.pricing_tiers : [],
+          contact_title: data.contact_title,
+          contact_subtitle: data.contact_subtitle,
+          contact_email: data.contact_email,
+          contact_phone: data.contact_phone,
+          personalization_config: typeof data.personalization_config === 'object' && data.personalization_config !== null && !Array.isArray(data.personalization_config) 
+            ? data.personalization_config as Record<string, boolean>
+            : {},
+        };
+
+        setTemplate(templateData);
+        setOriginalTemplate(templateData);
+      } catch (err: any) {
+        console.error("Error fetching template:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTemplate();
+  }, [slug]);
+
+  // Check if there are unsaved changes
+  const hasChanges = useCallback(() => {
+    if (!template || !originalTemplate) return false;
+    return JSON.stringify(template) !== JSON.stringify(originalTemplate);
+  }, [template, originalTemplate]);
+
+  // Update a field
+  const updateField = useCallback(<K extends keyof TemplateData>(
+    field: K,
+    value: TemplateData[K]
+  ) => {
+    setTemplate((prev) => {
+      if (!prev) return prev;
+      return { ...prev, [field]: value };
+    });
+  }, []);
+
+  // Save changes
+  const saveChanges = useCallback(async () => {
+    if (!template) return false;
+
+    setSaving(true);
+    try {
+      const { error: updateError } = await supabase
+        .from("landing_page_templates")
+        .update({
+          name: template.name,
+          thumbnail_url: template.thumbnail_url,
+          hero_badge: template.hero_badge,
+          hero_headline: template.hero_headline,
+          hero_subheadline: template.hero_subheadline,
+          hero_cta_primary_text: template.hero_cta_primary_text,
+          hero_cta_secondary_text: template.hero_cta_secondary_text,
+          hero_video_id: template.hero_video_id,
+          hero_video_thumbnail_url: template.hero_video_thumbnail_url,
+          features_title: template.features_title,
+          features_subtitle: template.features_subtitle,
+          features_list: template.features_list,
+          feature_cards: template.feature_cards,
+          testimonials_title: template.testimonials_title,
+          testimonials_subtitle: template.testimonials_subtitle,
+          testimonials: template.testimonials,
+          pricing_title: template.pricing_title,
+          pricing_subtitle: template.pricing_subtitle,
+          pricing_tiers: template.pricing_tiers,
+          contact_title: template.contact_title,
+          contact_subtitle: template.contact_subtitle,
+          contact_email: template.contact_email,
+          contact_phone: template.contact_phone,
+          personalization_config: template.personalization_config,
+        })
+        .eq("id", template.id);
+
+      if (updateError) throw updateError;
+
+      setOriginalTemplate(template);
+      toast({ title: "Changes saved successfully!" });
+      return true;
+    } catch (err: any) {
+      console.error("Error saving template:", err);
+      toast({
+        title: "Error saving changes",
+        description: err.message,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [template, toast]);
+
+  // Discard changes
+  const discardChanges = useCallback(() => {
+    setTemplate(originalTemplate);
+  }, [originalTemplate]);
+
+  return {
+    template,
+    loading,
+    saving,
+    error,
+    hasChanges: hasChanges(),
+    updateField,
+    saveChanges,
+    discardChanges,
+  };
+}
