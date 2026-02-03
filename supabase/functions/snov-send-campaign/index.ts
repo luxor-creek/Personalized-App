@@ -145,9 +145,9 @@ async function addProspectToSnovList(
     formData.append("companyName", prospect.company);
   }
   
-  // Use the "companyWebsite" field to pass the personalized landing page URL
-  // This is available as {{companyWebsite}} in Snov.io email templates
-  formData.append("companyWebsite", prospect.landingPageUrl);
+  // Use the "landing_page" custom field to pass the personalized landing page URL
+  // This is available as {{landing_page}} in Snov.io email templates
+  formData.append("landing_page", prospect.landingPageUrl);
 
   const response = await fetch("https://api.snov.io/v1/add-prospect-to-list", {
     method: "POST",
