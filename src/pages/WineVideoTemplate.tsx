@@ -161,7 +161,7 @@ const WineVideoTemplate = () => {
       {/* Recent Work Section */}
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               Other Examples
             </h2>
@@ -170,25 +170,25 @@ const WineVideoTemplate = () => {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
+          <p className="text-lg text-muted-foreground mb-10 max-w-3xl">
+            Here are a few other videos our automated system produced using only the product webpage URL's. Scripted, voiced, and edited in less than an hour.
+          </p>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
-              { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
-              { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
+              { title: "Product overview", videoId: "1084786498" },
+              { title: "Brand story", videoId: "1084786498" },
+              { title: "Event/trade show", videoId: "1084786498" },
             ].map((item, index) => (
-              <Card key={index} className="overflow-hidden group cursor-pointer">
-                <div className="relative aspect-video">
-                  <img 
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              <Card key={index} className="overflow-hidden group">
+                <div className="relative aspect-video bg-black">
+                  <iframe
+                    src={`https://player.vimeo.com/video/${item.videoId}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                    className="absolute inset-0 w-full h-full"
+                    title={item.title}
                   />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Play className="w-6 h-6 text-white ml-1" />
-                    </div>
-                  </div>
                 </div>
                 <div className="p-4 bg-white">
                   <p className="font-medium text-foreground">{item.title}</p>
