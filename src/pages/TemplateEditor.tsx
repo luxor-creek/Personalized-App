@@ -123,31 +123,32 @@ const TemplateEditor = () => {
               <div className="max-w-4xl mx-auto text-center">
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100/80 rounded-full text-amber-800 text-sm font-medium mb-8">
-                  <EditableText
+                  <RichTextEditor
                     value={template.hero_badge || ""}
                     onChange={(value) => updateField("hero_badge", value)}
                     fieldName="Hero Badge"
                     supportsPersonalization
+                    isHeadline
                   />
                 </div>
 
                 {/* Headline */}
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                  <EditableText
+                  <RichTextEditor
                     value={template.hero_headline}
                     onChange={(value) => updateField("hero_headline", value)}
                     fieldName="Hero Headline"
                     supportsPersonalization
+                    isHeadline
                   />
                 </h1>
 
                 {/* Subheadline */}
                 <div className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                  <EditableText
+                  <RichTextEditor
                     value={template.hero_subheadline || ""}
                     onChange={(value) => updateField("hero_subheadline", value)}
                     fieldName="Hero Subheadline"
-                    multiline
                     supportsPersonalization
                   />
                 </div>
@@ -208,18 +209,18 @@ const TemplateEditor = () => {
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-                  <EditableText
+                  <RichTextEditor
                     value={template.features_title || ""}
                     onChange={(value) => updateField("features_title", value)}
                     fieldName="Features Title"
+                    isHeadline
                   />
                 </h2>
                 <div className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-                  <EditableText
+                  <RichTextEditor
                     value={template.features_subtitle || ""}
                     onChange={(value) => updateField("features_subtitle", value)}
                     fieldName="Features Subtitle"
-                    multiline
                   />
                 </div>
               </div>
@@ -231,18 +232,18 @@ const TemplateEditor = () => {
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto text-center">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  <EditableText
+                  <RichTextEditor
                     value={template.contact_title || "Ready to get started?"}
                     onChange={(value) => updateField("contact_title", value)}
                     fieldName="Contact Title"
+                    isHeadline
                   />
                 </h2>
                 <div className="text-lg text-gray-600 mb-8">
-                  <EditableText
+                  <RichTextEditor
                     value={template.contact_subtitle || ""}
                     onChange={(value) => updateField("contact_subtitle", value)}
                     fieldName="Contact Subtitle"
-                    multiline
                   />
                 </div>
               </div>
@@ -298,29 +299,30 @@ const TemplateEditor = () => {
             {/* Main Content */}
             <div className="max-w-5xl mx-auto text-center mb-12 lg:mb-16">
               <div className="text-primary font-medium tracking-wider uppercase mb-4">
-                <EditableText
+                <RichTextEditor
                   value={template.hero_badge || ""}
                   onChange={(value) => updateField("hero_badge", value)}
                   fieldName="Hero Badge"
                   supportsPersonalization
+                  isHeadline
                 />
               </div>
               
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-                <EditableText
+                <RichTextEditor
                   value={template.hero_headline}
                   onChange={(value) => updateField("hero_headline", value)}
                   fieldName="Hero Headline"
                   supportsPersonalization
+                  isHeadline
                 />
               </h1>
               
               <div className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                <EditableText
+                <RichTextEditor
                   value={template.hero_subheadline || ""}
                   onChange={(value) => updateField("hero_subheadline", value)}
                   fieldName="Hero Subheadline"
-                  multiline
                   supportsPersonalization
                 />
               </div>
@@ -378,11 +380,12 @@ const TemplateEditor = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center mb-12">
               <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                <EditableText
+                <RichTextEditor
                   value={template.features_title || "Why Departments Choose Kicker Video"}
                   onChange={(value) => updateField("features_title", value)}
                   fieldName="About Section Title"
                   supportsPersonalization
+                  isHeadline
                 />
               </h2>
             </div>
@@ -420,19 +423,19 @@ const TemplateEditor = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                <EditableText
+                <RichTextEditor
                   value={template.contact_title || "Ready to Transform Your Recruitment Strategy?"}
                   onChange={(value) => updateField("contact_title", value)}
                   fieldName="Contact Title"
                   supportsPersonalization
+                  isHeadline
                 />
               </h2>
               <div className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-                <EditableText
+                <RichTextEditor
                   value={template.contact_subtitle || "Let's discuss how Kicker Video can help your department attract the next generation of law enforcement professionals."}
                   onChange={(value) => updateField("contact_subtitle", value)}
                   fieldName="Contact Subtitle"
-                  multiline
                   supportsPersonalization
                 />
               </div>
