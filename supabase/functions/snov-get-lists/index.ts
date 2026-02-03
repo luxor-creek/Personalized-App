@@ -117,16 +117,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Get Snov.io access token
     const accessToken = await getSnovAccessToken();
 
-    // Fetch all prospect lists - Snov.io expects access_token in the body, not as Bearer header
-    const formData = new URLSearchParams();
-    formData.append("access_token", accessToken);
+    // Fetch all prospect lists - Snov.io expects GET with access_token as query param
+    const params = new URLSearchParams();
+    params.append("access_token", accessToken);
 
-    const response = await fetch("https://api.snov.io/v1/get-user-lists", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: formData.toString(),
+    const response = await fetch(`https://api.snov.io/v1/get-user-lists?${params.toString()}`, {
+      method: "GET",
     });
 
     if (!response.ok) {
