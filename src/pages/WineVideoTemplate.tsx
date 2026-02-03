@@ -39,7 +39,7 @@ const WineVideoTemplate = () => {
         </div>
         <Button variant="outline" className="gap-2">
           <Phone className="w-4 h-4" />
-          Book a call
+          Contact Us
         </Button>
       </header>
 
@@ -65,9 +65,9 @@ const WineVideoTemplate = () => {
                 </p>
 
                 <div className="flex flex-wrap gap-3">
-                  <Button className="gap-2 bg-gray-900 hover:bg-gray-800">
+                  <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Calendar className="w-4 h-4" />
-                    Book a call
+                    Contact Us
                   </Button>
                   <Button variant="outline" className="gap-2">
                     <PlayCircle className="w-4 h-4" />
@@ -77,14 +77,14 @@ const WineVideoTemplate = () => {
               </div>
 
               <div className="relative">
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-400 to-blue-500">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-amber-400 to-primary">
                   <img 
                     src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&h=450&fit=crop"
                     alt="Wine video production"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-indigo-600/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
                       <Play className="w-6 h-6 text-white ml-1" />
                     </div>
                   </div>
@@ -161,7 +161,7 @@ const WineVideoTemplate = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               Other Examples
             </h2>
-            <Button variant="link" className="gap-2 text-indigo-600 p-0">
+            <Button variant="link" className="gap-2 text-primary p-0">
               Request a tailored reel
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -245,7 +245,7 @@ const WineVideoTemplate = () => {
 
             {/* Solution Side */}
             <Card className="p-8 bg-white border border-gray-200">
-              <p className="text-xs font-medium uppercase tracking-wider text-cyan-500 mb-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-emerald-600 mb-4">
                 THE SOLUTION
               </p>
               <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
@@ -262,7 +262,7 @@ const WineVideoTemplate = () => {
                   "White-label delivery",
                 ].map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-cyan-500 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                     <span className="text-foreground">{item}</span>
                   </div>
                 ))}
@@ -298,7 +298,7 @@ const WineVideoTemplate = () => {
               </ul>
 
               <div className="flex flex-wrap gap-3">
-                <Button className="gap-2 bg-gray-900 hover:bg-gray-800">
+                <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                   Get a tailored quote
                 </Button>
                 <Button variant="outline" className="gap-2">
@@ -319,12 +319,12 @@ const WineVideoTemplate = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-6 bg-gradient-to-br from-indigo-600 to-indigo-700">
+      <section className="py-16 px-6 bg-gradient-to-br from-primary to-primary/80">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Let's work together, <span className="text-amber-400">{firstName}</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+            Let's work together, <span className="text-amber-200">{firstName}</span>
           </h2>
-          <p className="text-lg text-indigo-100 mb-8">
+          <p className="text-lg text-primary-foreground/90 mb-8">
             We're excited to show {companyName} what's possible. Get started in minutes.
           </p>
         </div>
@@ -344,9 +344,9 @@ const WineVideoTemplate = () => {
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button size="lg" className="gap-2 bg-gray-900 hover:bg-gray-800">
+            <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
               <Phone className="w-4 h-4" />
-              Book a call
+              Contact Us
             </Button>
             <Button size="lg" variant="outline" className="gap-2">
               <Film className="w-4 h-4" />
