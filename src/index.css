@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Clean light theme */
+    /* Clean light theme with orange accents */
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
 
@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Professional dark accent */
-    --primary: 222 47% 11%;
+    /* Orange accent */
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 96%;
@@ -26,23 +26,23 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 222 47% 11%;
+    --ring: 24 95% 53%;
 
     --radius: 0.5rem;
 
     /* Custom tokens */
     --hero-gradient: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 96%) 100%);
-    --gold-glow: 0 0 40px hsl(222 47% 11% / 0.1);
+    --orange-glow: 0 0 40px hsl(24 95% 53% / 0.3);
     --card-glow: 0 4px 60px hsl(0 0% 0% / 0.08);
-    --text-gradient: linear-gradient(135deg, hsl(222 47% 20%) 0%, hsl(222 47% 11%) 100%);
+    --text-gradient: linear-gradient(135deg, hsl(24 95% 60%) 0%, hsl(24 95% 45%) 100%);
   }
 
   .dark {
@@ -78,8 +78,8 @@
     background: var(--hero-gradient);
   }
 
-  .gold-glow {
-    box-shadow: var(--gold-glow);
+  .orange-glow {
+    box-shadow: var(--orange-glow);
   }
 
   .card-elevated {
@@ -130,10 +130,10 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px hsl(43 74% 49% / 0.4);
+      box-shadow: 0 0 20px hsl(24 95% 53% / 0.4);
     }
     50% {
-      box-shadow: 0 0 40px hsl(43 74% 49% / 0.6);
+      box-shadow: 0 0 40px hsl(24 95% 53% / 0.6);
     }
   }
 
