@@ -31,7 +31,7 @@ const WineVideoTemplate = () => {
           <span className="text-muted-foreground">×</span>
           <div className="flex items-center gap-1">
             <Sparkles className="w-5 h-5 text-amber-500" />
-            <span className="font-semibold text-foreground">Viaxo</span>
+            <span className="font-semibold text-foreground">{companyName}</span>
           </div>
         </div>
         <Button variant="outline" className="gap-2">
@@ -102,7 +102,7 @@ const WineVideoTemplate = () => {
             Simple Video Production
           </h2>
           <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Viaxo turns your existing wine product pages into short, elegant videos that highlight each bottle, then prepares those videos for modern discovery across search, social, and video platforms.
+            We turn your existing wine product pages into short, elegant videos that highlight each bottle, then prepare those videos for modern discovery across search, social, and video platforms.
           </p>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -126,24 +126,21 @@ const WineVideoTemplate = () => {
       <section className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
-            A simple process built for busy B2B teams
+            A simple process built for busy wine marketers
           </h2>
 
           <div className="grid md:grid-cols-5 gap-6">
             {[
-              { icon: Phone, title: "Kick-off", description: "Align goals and audience." },
-              { icon: FileText, title: "Creative brief", description: "Messaging + script." },
-              { icon: Clapperboard, title: "Production", description: "Live action or animation." },
-              { icon: Scissors, title: "Post", description: "Edit, motion, revisions." },
-              { icon: Send, title: "Delivery", description: "Ready for launch." },
+              { number: 1, title: "Send URLs", description: "Send the URL's of each product. This can be links or a csv spreadsheet." },
+              { number: 2, title: "Template", description: "We create the branded template for your approval and revisions." },
+              { number: 3, title: "Production", description: "We produce all videos within 2-3 days." },
+              { number: 4, title: "Review", description: "You review them." },
+              { number: 5, title: "Delivery", description: "Delivery to you." },
             ].map((step, index) => (
               <div key={index} className="text-center">
                 <div className="relative mb-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
-                    <step.icon className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-amber-500 text-white text-sm font-bold flex items-center justify-center">
-                    {index + 1}
+                  <div className="w-12 h-12 rounded-full bg-amber-500 text-white text-xl font-bold flex items-center justify-center mx-auto">
+                    {step.number}
                   </div>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">{step.title}</h3>
@@ -159,7 +156,7 @@ const WineVideoTemplate = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Recent work your buyers will love
+              Other Examples
             </h2>
             <Button variant="link" className="gap-2 text-indigo-600 p-0">
               Request a tailored reel
@@ -223,7 +220,7 @@ const WineVideoTemplate = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Budgets that fit the brief
+                Want something more custom?
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
                 Project-based pricing with options for scope. Social clips can start under $1k; multi-location shoots may exceed $10k.
