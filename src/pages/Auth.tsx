@@ -177,13 +177,8 @@ const Auth = () => {
             <Lock className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            {isLogin ? "Admin Login" : "Create Account"}
+            Admin Login
           </h1>
-          <p className="text-muted-foreground mt-2">
-            {isLogin 
-              ? "Sign in to manage your landing pages" 
-              : "Create an account to get started"}
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
@@ -248,37 +243,6 @@ const Auth = () => {
             )}
           </Button>
 
-          <div className="text-center text-sm text-muted-foreground">
-            {isLogin ? (
-              <>
-                Don't have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsLogin(false);
-                    setErrors({});
-                  }}
-                  className="text-primary hover:underline font-medium"
-                >
-                  Sign up
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsLogin(true);
-                    setErrors({});
-                  }}
-                  className="text-primary hover:underline font-medium"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
         </form>
       </div>
     </div>
