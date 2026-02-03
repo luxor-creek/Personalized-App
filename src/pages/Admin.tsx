@@ -881,11 +881,20 @@ const Admin = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-medium text-foreground">{campaign.name}</h3>
-                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                             <span>{campaign.page_count} pages</span>
                             <span className="flex items-center gap-1">
                               <BarChart3 className="w-3 h-3" />
                               {campaign.view_count} views
+                            </span>
+                            <span className="text-xs">
+                              {new Date(campaign.created_at).toLocaleDateString(undefined, { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
                             </span>
                           </div>
                         </div>
