@@ -597,6 +597,43 @@ const Admin = () => {
                 </div>
               </div>
 
+              {/* B2B Demo Landing Page */}
+              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
+                <div className="aspect-video bg-muted relative overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop" 
+                    alt="B2B Demo Landing Page" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <span className="inline-block px-2 py-1 bg-amber-600/90 text-white text-xs font-medium rounded">
+                      Template
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold text-foreground mb-1">B2B Product Demo</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Professional B2B landing page with pricing tiers and lead generation form.
+                  </p>
+                  <div className="flex gap-2">
+                    <Link to="/b2b-demo" target="_blank" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
+                      </Button>
+                    </Link>
+                    <Link to="/template-editor/b2b-demo" className="flex-1">
+                      <Button size="sm" className="w-full">
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
               {/* Add New Template Card */}
               <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden hover:border-primary/50 transition-all">
                 <div className="aspect-video bg-muted/30 flex items-center justify-center">
