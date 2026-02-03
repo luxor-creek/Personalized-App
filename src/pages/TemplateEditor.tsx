@@ -125,9 +125,9 @@ const TemplateEditor = () => {
               <div className="flex items-center gap-1">
                 <span className="font-semibold text-foreground">
                   <RichTextEditor
-                    value={template.hero_badge || "{{company}}"}
+                    value={template.hero_badge || "Personalized for {{company}}"}
                     onChange={(value) => updateField("hero_badge", value)}
-                    fieldName="Company Name"
+                    fieldName="Header Company Badge"
                     supportsPersonalization
                     isHeadline
                   />
@@ -153,19 +153,45 @@ const TemplateEditor = () => {
                     </h1>
                     <div className="text-lg text-muted-foreground mb-8">
                       <RichTextEditor
-                        value={template.hero_subheadline || ""}
+                        value={template.hero_subheadline || "$20 each? We will produce a custom video for each of your wine's for $20."}
                         onChange={(value) => updateField("hero_subheadline", value)}
                         fieldName="Hero Subheadline"
                         supportsPersonalization
                       />
                     </div>
+                    <div className="flex flex-wrap gap-3">
+                      <Button className="gap-2 bg-gray-900 hover:bg-gray-800">
+                        <EditableText
+                          value={template.hero_cta_primary_text || "Book a call"}
+                          onChange={(value) => updateField("hero_cta_primary_text", value)}
+                          fieldName="Primary CTA"
+                        />
+                      </Button>
+                      <Button variant="outline" className="gap-2">
+                        <EditableText
+                          value={template.hero_cta_secondary_text || "See portfolio"}
+                          onChange={(value) => updateField("hero_cta_secondary_text", value)}
+                          fieldName="Secondary CTA"
+                        />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Video */}
+                  <div className="relative">
+                    <EditableVideo
+                      videoId={template.hero_video_id || "76979871"}
+                      thumbnailUrl={template.hero_video_thumbnail_url || undefined}
+                      onVideoChange={(videoId) => updateField("hero_video_id", videoId)}
+                      onThumbnailChange={(url) => updateField("hero_video_thumbnail_url", url)}
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Features Section */}
+          {/* Simple Video Production Section */}
           <section className="py-16 px-6">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -178,9 +204,59 @@ const TemplateEditor = () => {
               </h2>
               <div className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
                 <RichTextEditor
-                  value={template.features_subtitle || ""}
+                  value={template.features_subtitle || "We turn your existing wine product pages into short, elegant videos that highlight each bottle, then prepare those videos for modern discovery across search, social, and video platforms."}
                   onChange={(value) => updateField("features_subtitle", value)}
                   fieldName="Features Subtitle"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Process Section */}
+          <section className="py-16 px-6 bg-white">
+            <div className="max-w-5xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
+                <RichTextEditor
+                  value={template.about_content || "A simple process built for busy wine marketers"}
+                  onChange={(value) => updateField("about_content", value)}
+                  fieldName="Process Section Title"
+                  isHeadline
+                />
+              </h2>
+            </div>
+          </section>
+
+          {/* Testimonials Section */}
+          <section className="py-16 px-6 bg-white">
+            <div className="max-w-5xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-10 text-center">
+                <RichTextEditor
+                  value={template.testimonials_title || "What teams like {{company}} say"}
+                  onChange={(value) => updateField("testimonials_title", value)}
+                  fieldName="Testimonials Title"
+                  supportsPersonalization
+                  isHeadline
+                />
+              </h2>
+            </div>
+          </section>
+
+          {/* Pricing Section */}
+          <section className="py-16 px-6">
+            <div className="max-w-5xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <RichTextEditor
+                  value={template.pricing_title || "Want something more custom?"}
+                  onChange={(value) => updateField("pricing_title", value)}
+                  fieldName="Pricing Title"
+                  isHeadline
+                />
+              </h2>
+              <div className="text-lg text-muted-foreground mb-8">
+                <RichTextEditor
+                  value={template.pricing_subtitle || "Project-based pricing with options for scope. Social clips can start under $1k; multi-location shoots may exceed $10k."}
+                  onChange={(value) => updateField("pricing_subtitle", value)}
+                  fieldName="Pricing Subtitle"
                 />
               </div>
             </div>
@@ -200,7 +276,7 @@ const TemplateEditor = () => {
               </h2>
               <div className="text-lg text-muted-foreground mb-8">
                 <RichTextEditor
-                  value={template.contact_subtitle || ""}
+                  value={template.contact_subtitle || "Book a quick brainstorm with a senior producer. We'll scope ideas, timelines, and budget in one call."}
                   onChange={(value) => updateField("contact_subtitle", value)}
                   fieldName="Contact Subtitle"
                   supportsPersonalization

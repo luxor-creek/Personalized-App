@@ -14,6 +14,10 @@ export interface TemplateContent {
   hero_video_thumbnail_url: string | null;
   features_title: string | null;
   features_subtitle: string | null;
+  about_content: string | null;
+  testimonials_title: string | null;
+  pricing_title: string | null;
+  pricing_subtitle: string | null;
   contact_title: string | null;
   contact_subtitle: string | null;
   contact_email: string | null;
@@ -71,6 +75,10 @@ export function useTemplateContent(slug: string) {
             hero_video_thumbnail_url,
             features_title,
             features_subtitle,
+            about_content,
+            testimonials_title,
+            pricing_title,
+            pricing_subtitle,
             contact_title,
             contact_subtitle,
             contact_email,
