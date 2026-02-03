@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import kickerLogo from "@/assets/kicker-logo.png";
 import SampleRequestForm from "@/components/SampleRequestForm";
+import { useTemplateContent } from "@/hooks/useTemplateContent";
 import { 
   Sparkles, 
   Calendar, 
@@ -25,9 +26,26 @@ const WineVideoTemplate = () => {
   const firstName = "Sarah";
   const companyName = "Swift Compass";
 
+  // Fetch template content from database
+  const { template, loading } = useTemplateContent("wine-video");
+
   const scrollToForm = () => {
     document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Default portfolio videos
+  const defaultPortfolioVideos = [
+    { title: "Product overview", videoId: "1084786498" },
+    { title: "Brand story", videoId: "1084786498" },
+    { title: "Event/trade show", videoId: "1084786498" },
+  ];
+
+  const portfolioVideos = template?.portfolio_videos?.length 
+    ? template.portfolio_videos 
+    : defaultPortfolioVideos;
+
+  const portfolioSectionTitle = template?.testimonials_subtitle || "Other Examples";
+  const portfolioSectionDescription = template?.portfolio_strip_url || "Here are a few other videos our automated system produced using only the product webpage URL's. Scripted, voiced, and edited in less than an hour.";
 
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
@@ -163,7 +181,7 @@ const WineVideoTemplate = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Other Examples
+              {portfolioSectionTitle}
             </h2>
             <Button variant="link" className="gap-2 text-primary p-0">
               Request a tailored reel
@@ -171,19 +189,15 @@ const WineVideoTemplate = () => {
             </Button>
           </div>
           <p className="text-lg text-muted-foreground mb-10 max-w-3xl">
-            Here are a few other videos our automated system produced using only the product webpage URL's. Scripted, voiced, and edited in less than an hour.
+            {portfolioSectionDescription}
           </p>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { title: "Product overview", videoId: "1084786498" },
-              { title: "Brand story", videoId: "1084786498" },
-              { title: "Event/trade show", videoId: "1084786498" },
-            ].map((item, index) => (
+            {portfolioVideos.map((item, index) => (
               <Card key={index} className="overflow-hidden group">
                 <div className="relative aspect-video bg-black">
                   <iframe
-                    src={`https://player.vimeo.com/video/${item.videoId}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                    src={`https://player.vimeo.com/video/${item.videoId || "1084786498"}?badge=0&autopause=0&player_id=0&app_id=58479`}
                     frameBorder="0"
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                     className="absolute inset-0 w-full h-full"

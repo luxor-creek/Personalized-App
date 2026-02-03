@@ -16,12 +16,15 @@ export interface TemplateContent {
   features_subtitle: string | null;
   about_content: string | null;
   testimonials_title: string | null;
+  testimonials_subtitle: string | null;
   pricing_title: string | null;
   pricing_subtitle: string | null;
   contact_title: string | null;
   contact_subtitle: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  portfolio_strip_url: string | null;
+  portfolio_videos: { title: string; videoId?: string; image?: string }[] | null;
 }
 
 interface PersonalizationData {
@@ -77,12 +80,15 @@ export function useTemplateContent(slug: string) {
             features_subtitle,
             about_content,
             testimonials_title,
+            testimonials_subtitle,
             pricing_title,
             pricing_subtitle,
             contact_title,
             contact_subtitle,
             contact_email,
-            contact_phone
+            contact_phone,
+            portfolio_strip_url,
+            portfolio_videos
           `)
           .eq("slug", slug)
           .single();
@@ -91,7 +97,14 @@ export function useTemplateContent(slug: string) {
           console.error("Error fetching template:", fetchError);
           setError(fetchError.message);
         } else {
-          setTemplate(data);
+          // Cast portfolio_videos from Json to the expected type
+          const templateData: TemplateContent = {
+            ...data,
+            portfolio_videos: Array.isArray(data.portfolio_videos) 
+              ? data.portfolio_videos as { title: string; videoId?: string; image?: string }[]
+              : null,
+          };
+          setTemplate(templateData);
         }
       } catch (err: any) {
         console.error("Error:", err);

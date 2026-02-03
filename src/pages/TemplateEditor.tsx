@@ -312,55 +312,69 @@ const TemplateEditor = () => {
           {/* Other Examples / Portfolio Section */}
           <section className="py-16 px-6">
             <div className="max-w-6xl mx-auto">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                  Other Examples
+                  <RichTextEditor
+                    value={template.testimonials_subtitle || "Other Examples"}
+                    onChange={(value) => updateField("testimonials_subtitle", value)}
+                    fieldName="Portfolio Section Title"
+                    isHeadline
+                  />
                 </h2>
                 <Button variant="link" className="gap-2 text-indigo-600 p-0">
                   Request a tailored reel
                   <ArrowDown className="w-4 h-4 rotate-[-90deg]" />
                 </Button>
               </div>
+              <div className="text-lg text-muted-foreground mb-10 max-w-3xl">
+                <RichTextEditor
+                  value={template.portfolio_strip_url || "Here are a few other videos our automated system produced using only the product webpage URL's. Scripted, voiced, and edited in less than an hour."}
+                  onChange={(value) => updateField("portfolio_strip_url", value)}
+                  fieldName="Portfolio Section Description"
+                />
+              </div>
 
               <div className="grid md:grid-cols-3 gap-6">
                 {(template.portfolio_videos?.length > 0 
                   ? template.portfolio_videos 
                   : [
-                      { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
-                      { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
-                      { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
+                      { title: "Product overview", videoId: "1084786498" },
+                      { title: "Brand story", videoId: "1084786498" },
+                      { title: "Event/trade show", videoId: "1084786498" },
                     ]
                 ).map((item: any, index: number) => (
-                  <div key={index} className="overflow-hidden rounded-lg group">
-                    <div className="relative aspect-video">
-                      <EditableImage
-                        src={item.image}
-                        alt={item.title}
-                        onImageChange={(url) => {
-                          const newVideos = [...(template.portfolio_videos?.length > 0 
-                            ? template.portfolio_videos 
-                            : [
-                                { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
-                                { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
-                                { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
-                              ])];
-                          newVideos[index] = { ...newVideos[index], image: url };
+                  <div key={index} className="overflow-hidden rounded-lg group bg-white">
+                    <div className="relative aspect-video bg-black">
+                      <EditableVideo
+                        videoId={item.videoId || "1084786498"}
+                        onVideoChange={(videoId) => {
+                          const defaultVideos: Array<{ title: string; videoId: string }> = [
+                            { title: "Product overview", videoId: "1084786498" },
+                            { title: "Brand story", videoId: "1084786498" },
+                            { title: "Event/trade show", videoId: "1084786498" },
+                          ];
+                          const currentVideos = template.portfolio_videos?.length > 0 
+                            ? template.portfolio_videos as Array<{ title: string; videoId: string }>
+                            : defaultVideos;
+                          const newVideos = [...currentVideos];
+                          newVideos[index] = { ...newVideos[index], videoId };
                           updateField("portfolio_videos", newVideos);
                         }}
-                        className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="p-4 bg-white">
                       <EditableText
                         value={item.title}
                         onChange={(value) => {
-                          const newVideos = [...(template.portfolio_videos?.length > 0 
-                            ? template.portfolio_videos 
-                            : [
-                                { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
-                                { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
-                                { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
-                              ])];
+                          const defaultVideos: Array<{ title: string; videoId: string }> = [
+                            { title: "Product overview", videoId: "1084786498" },
+                            { title: "Brand story", videoId: "1084786498" },
+                            { title: "Event/trade show", videoId: "1084786498" },
+                          ];
+                          const currentVideos = template.portfolio_videos?.length > 0 
+                            ? template.portfolio_videos as Array<{ title: string; videoId: string }>
+                            : defaultVideos;
+                          const newVideos = [...currentVideos];
                           newVideos[index] = { ...newVideos[index], title: value };
                           updateField("portfolio_videos", newVideos);
                         }}

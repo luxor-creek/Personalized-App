@@ -39,7 +39,7 @@ export interface TemplateData {
   comparison_solution_description: string | null;
   comparison_solution_items: string[];
   // Portfolio videos and custom section
-  portfolio_videos: { title: string; image: string }[];
+  portfolio_videos: { title: string; videoId?: string; image?: string }[];
   custom_section_image_url: string | null;
 }
 
