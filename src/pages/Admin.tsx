@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import kickerLogo from "@/assets/kicker-logo.png";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Lock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +22,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+
+const ADMIN_PASSWORD = "green123!";
 
 interface Campaign {
   id: string;
@@ -45,14 +51,17 @@ interface PersonalizedPage {
 }
 
 const Admin = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Password protection state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [pages, setPages] = useState<PersonalizedPage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   
   // Create campaign dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -63,23 +72,41 @@ const Admin = () => {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  // Check for saved session
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
+    const savedAuth = sessionStorage.getItem("admin_authenticated");
+    if (savedAuth === "true") {
+      setIsAuthenticated(true);
     }
-  }, [user, authLoading, navigate]);
+  }, []);
 
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       fetchCampaigns();
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (selectedCampaign) {
       fetchPages(selectedCampaign.id);
     }
   }, [selectedCampaign]);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem("admin_authenticated", "true");
+      setPasswordError("");
+    } else {
+      setPasswordError("Incorrect password");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("admin_authenticated");
+  };
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -165,7 +192,7 @@ const Admin = () => {
     try {
       const { error } = await supabase.from("campaigns").insert({
         name: newCampaignName.trim(),
-        user_id: user?.id,
+        user_id: "00000000-0000-0000-0000-000000000000", // Placeholder for password-only auth
       });
 
       if (error) throw error;
@@ -322,10 +349,44 @@ const Admin = () => {
     toast({ title: "Copied to clipboard!" });
   };
 
-  if (authLoading || loading) {
+  // Password protection screen
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <img src={kickerLogo} alt="Kicker Video" className="h-10 mx-auto mb-6" />
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">Admin Access</h1>
+            <p className="text-muted-foreground mt-2">
+              Enter password to manage landing pages
+            </p>
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter admin password"
+                required
+                className={passwordError ? "border-destructive" : ""}
+              />
+              {passwordError && (
+                <p className="text-sm text-destructive">{passwordError}</p>
+              )}
+            </div>
+
+            <Button type="submit" className="w-full">
+              Access Admin
+            </Button>
+          </form>
+        </div>
       </div>
     );
   }
@@ -337,235 +398,269 @@ const Admin = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <img src={kickerLogo} alt="Kicker Video" className="h-8" />
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
-            <Button variant="outline" size="sm" onClick={signOut}>
+            <a href="/" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm">
+                <Eye className="w-4 h-4 mr-2" />
+                View Landing Page
+              </Button>
+            </a>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              Lock
             </Button>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Campaigns Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-foreground">Campaigns</h2>
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create Campaign</DialogTitle>
-                    <DialogDescription>
-                      Create a new campaign to organize your personalized landing pages.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="campaignName">Campaign Name</Label>
-                      <Input
-                        id="campaignName"
-                        value={newCampaignName}
-                        onChange={(e) => setNewCampaignName(e.target.value)}
-                        placeholder="e.g., Pittsburgh PD Q1 2024"
-                      />
-                    </div>
-                    <Button onClick={createCampaign} className="w-full">
-                      Create Campaign
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+        <Tabs defaultValue="campaigns" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="campaigns">Campaigns & Pages</TabsTrigger>
+            <TabsTrigger value="preview">Preview Landing Page</TabsTrigger>
+          </TabsList>
 
-            <div className="space-y-2">
-              {campaigns.length === 0 ? (
-                <p className="text-muted-foreground text-sm py-4">
-                  No campaigns yet. Create one to get started.
-                </p>
-              ) : (
-                campaigns.map((campaign) => (
-                  <div
-                    key={campaign.id}
-                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                      selectedCampaign?.id === campaign.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-card hover:border-primary/50"
-                    }`}
-                    onClick={() => setSelectedCampaign(campaign)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-medium text-foreground">{campaign.name}</h3>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                          <span>{campaign.page_count} pages</span>
-                          <span className="flex items-center gap-1">
-                            <BarChart3 className="w-3 h-3" />
-                            {campaign.view_count} views
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteCampaign(campaign.id);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
+          <TabsContent value="preview" className="space-y-4">
+            <div className="bg-card rounded-lg border border-border p-4">
+              <h3 className="font-medium text-foreground mb-4">Landing Page Preview</h3>
+              <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                <iframe 
+                  src="/" 
+                  className="w-full h-full border-0"
+                  title="Landing Page Preview"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                This is how your base landing page looks. When personalized, names and companies will be dynamically inserted.
+              </p>
             </div>
-          </div>
+          </TabsContent>
 
-          {/* Pages Content */}
-          <div className="lg:col-span-2">
-            {selectedCampaign ? (
-              <>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground">
-                      {selectedCampaign.name}
-                    </h2>
-                    <p className="text-muted-foreground text-sm">
-                      {pages.length} personalized pages
-                    </p>
-                  </div>
-                  <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+          <TabsContent value="campaigns">
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Campaigns Sidebar */}
+              <div className="lg:col-span-1">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-foreground">Campaigns</h2>
+                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload CSV
+                      <Button size="sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        New
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Upload CSV</DialogTitle>
+                        <DialogTitle>Create Campaign</DialogTitle>
                         <DialogDescription>
-                          Upload a CSV file with columns: first_name (required), last_name, company, custom_message
+                          Create a new campaign to organize your personalized landing pages.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
                         <div className="space-y-2">
-                          <Label htmlFor="csvFile">CSV File</Label>
+                          <Label htmlFor="campaignName">Campaign Name</Label>
                           <Input
-                            id="csvFile"
-                            type="file"
-                            accept=".csv"
-                            onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                            id="campaignName"
+                            value={newCampaignName}
+                            onChange={(e) => setNewCampaignName(e.target.value)}
+                            placeholder="e.g., Pittsburgh PD Q1 2024"
                           />
                         </div>
-                        <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                          <p className="font-medium mb-1">Example CSV format:</p>
-                          <code className="text-xs">
-                            first_name,last_name,company,custom_message<br/>
-                            James,Smith,ACME Corp,We're excited to share this with you<br/>
-                            Sarah,Johnson,XYZ Inc,
-                          </code>
-                        </div>
-                        <Button 
-                          onClick={handleCsvUpload} 
-                          className="w-full"
-                          disabled={!csvFile || uploading}
-                        >
-                          {uploading ? "Creating pages..." : "Upload & Create Pages"}
+                        <Button onClick={createCampaign} className="w-full">
+                          Create Campaign
                         </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
                 </div>
 
-                {pages.length === 0 ? (
-                  <div className="text-center py-12 bg-card rounded-lg border border-border">
-                    <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <div className="space-y-2">
+                  {loading ? (
+                    <div className="text-muted-foreground text-sm py-4 animate-pulse">
+                      Loading campaigns...
+                    </div>
+                  ) : campaigns.length === 0 ? (
+                    <p className="text-muted-foreground text-sm py-4">
+                      No campaigns yet. Create one to get started.
+                    </p>
+                  ) : (
+                    campaigns.map((campaign) => (
+                      <div
+                        key={campaign.id}
+                        className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                          selectedCampaign?.id === campaign.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border bg-card hover:border-primary/50"
+                        }`}
+                        onClick={() => setSelectedCampaign(campaign)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium text-foreground">{campaign.name}</h3>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                              <span>{campaign.page_count} pages</span>
+                              <span className="flex items-center gap-1">
+                                <BarChart3 className="w-3 h-3" />
+                                {campaign.view_count} views
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteCampaign(campaign.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Pages Content */}
+              <div className="lg:col-span-2">
+                {selectedCampaign ? (
+                  <>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">
+                          {selectedCampaign.name}
+                        </h2>
+                        <p className="text-muted-foreground text-sm">
+                          {pages.length} personalized pages
+                        </p>
+                      </div>
+                      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload CSV
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Upload CSV</DialogTitle>
+                            <DialogDescription>
+                              Upload a CSV file with columns: first_name (required), last_name, company, custom_message
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 pt-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="csvFile">CSV File</Label>
+                              <Input
+                                id="csvFile"
+                                type="file"
+                                accept=".csv"
+                                onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                              />
+                            </div>
+                            <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                              <p className="font-medium mb-1">Example CSV format:</p>
+                              <code className="text-xs">
+                                first_name,last_name,company,custom_message<br/>
+                                James,Smith,ACME Corp,We're excited to share this with you<br/>
+                                Sarah,Johnson,XYZ Inc,
+                              </code>
+                            </div>
+                            <Button 
+                              onClick={handleCsvUpload} 
+                              className="w-full"
+                              disabled={!csvFile || uploading}
+                            >
+                              {uploading ? "Creating pages..." : "Upload & Create Pages"}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+
+                    {pages.length === 0 ? (
+                      <div className="text-center py-12 bg-card rounded-lg border border-border">
+                        <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">
+                          No pages yet
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Upload a CSV to create personalized landing pages
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-card rounded-lg border border-border overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Company</TableHead>
+                              <TableHead>Views</TableHead>
+                              <TableHead>Link</TableHead>
+                              <TableHead></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {pages.map((page) => (
+                              <TableRow key={page.id}>
+                                <TableCell>
+                                  {page.first_name} {page.last_name}
+                                </TableCell>
+                                <TableCell>{page.company || "-"}</TableCell>
+                                <TableCell>{page.view_count}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <code className="text-xs bg-muted px-2 py-1 rounded">
+                                      {page.token.substring(0, 8)}...
+                                    </code>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(getPageUrl(page.token))}
+                                    >
+                                      Copy
+                                    </Button>
+                                    <a
+                                      href={getPageUrl(page.token)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <Button variant="ghost" size="sm">
+                                        <ExternalLink className="w-4 h-4" />
+                                      </Button>
+                                    </a>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deletePage(page.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-12">
                     <h3 className="text-lg font-medium text-foreground mb-2">
-                      No pages yet
+                      Select a campaign
                     </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Upload a CSV to create personalized landing pages
+                    <p className="text-muted-foreground">
+                      Choose a campaign from the left to manage its personalized pages
                     </p>
                   </div>
-                ) : (
-                  <div className="bg-card rounded-lg border border-border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Company</TableHead>
-                          <TableHead>Views</TableHead>
-                          <TableHead>Link</TableHead>
-                          <TableHead></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pages.map((page) => (
-                          <TableRow key={page.id}>
-                            <TableCell>
-                              {page.first_name} {page.last_name}
-                            </TableCell>
-                            <TableCell>{page.company || "-"}</TableCell>
-                            <TableCell>{page.view_count}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <code className="text-xs bg-muted px-2 py-1 rounded">
-                                  {page.token.substring(0, 8)}...
-                                </code>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => copyToClipboard(getPageUrl(page.token))}
-                                >
-                                  Copy
-                                </Button>
-                                <a
-                                  href={getPageUrl(page.token)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <Button variant="ghost" size="sm">
-                                    <ExternalLink className="w-4 h-4" />
-                                  </Button>
-                                </a>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deletePage(page.id)}
-                              >
-                                <Trash2 className="w-4 h-4 text-destructive" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
                 )}
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Select a campaign
-                </h3>
-                <p className="text-muted-foreground">
-                  Choose a campaign from the left to manage its personalized pages
-                </p>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
