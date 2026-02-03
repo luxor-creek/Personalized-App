@@ -8,6 +8,7 @@ import PortfolioStrip from "@/components/PortfolioStrip";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
+import { useTemplateContent } from "@/hooks/useTemplateContent";
 
 interface PersonalizedPageData {
   id: string;
@@ -15,6 +16,7 @@ interface PersonalizedPageData {
   last_name: string | null;
   company: string | null;
   custom_message: string | null;
+  template_id: string | null;
 }
 
 const PersonalizedLanding = () => {
@@ -22,6 +24,9 @@ const PersonalizedLanding = () => {
   const [pageData, setPageData] = useState<PersonalizedPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Default to police-recruitment template for now
+  const { template } = useTemplateContent("police-recruitment");
 
   useEffect(() => {
     const fetchPageData = async () => {
@@ -35,7 +40,7 @@ const PersonalizedLanding = () => {
         // Fetch the personalized page data
         const { data, error: fetchError } = await supabase
           .from("personalized_pages")
-          .select("id, first_name, last_name, company, custom_message")
+          .select("id, first_name, last_name, company, custom_message, template_id")
           .eq("token", token)
           .single();
 
@@ -85,10 +90,17 @@ const PersonalizedLanding = () => {
   return (
     <div className="min-h-screen bg-background">
       <PersonalizedHeroSection 
-        thumbnailUrl={heroThumbnail}
+        thumbnailUrl={template?.hero_video_thumbnail_url || heroThumbnail}
         firstName={pageData?.first_name}
+        lastName={pageData?.last_name || undefined}
         company={pageData?.company || undefined}
         customMessage={pageData?.custom_message || undefined}
+        badge={template?.hero_badge || undefined}
+        headline={template?.hero_headline || undefined}
+        subheadline={template?.hero_subheadline || undefined}
+        ctaPrimaryText={template?.hero_cta_primary_text || undefined}
+        ctaSecondaryText={template?.hero_cta_secondary_text || undefined}
+        videoId={template?.hero_video_id || undefined}
       />
       <LogoCarousel />
       <AboutSection />

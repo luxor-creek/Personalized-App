@@ -29,8 +29,11 @@ import {
   Calendar
 } from "lucide-react";
 import { useState } from "react";
+import { useTemplateContent } from "@/hooks/useTemplateContent";
 
 const B2BDemo = () => {
+  const { template, loading } = useTemplateContent("b2b-demo");
+  
   const [formData, setFormData] = useState({
     fullName: "",
     workEmail: "",
@@ -54,9 +57,28 @@ const B2BDemo = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
     console.log("Form submitted:", formData);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  // Use template values with fallbacks
+  const badge = template?.hero_badge || "Kicker Video — B2B Video Production";
+  const headline = template?.hero_headline || "Your Product Demo, Sharpened for Decision‑Makers";
+  const subheadline = template?.hero_subheadline || "Built for marketing and product leaders who need a clear, on‑brand story.";
+  const ctaPrimary = template?.hero_cta_primary_text || "Book a 15‑min strategy call";
+  const ctaSecondary = template?.hero_cta_secondary_text || "Get pricing";
+  const videoId = template?.hero_video_id || "76979871";
+  const featuresTitle = template?.features_title || "Clarity, speed, and on‑brand delivery";
+  const featuresSubtitle = template?.features_subtitle || "We blend senior creative teams with AI‑assisted tooling to cut timelines and keep costs predictable.";
+  const contactTitle = template?.contact_title || "Ready to plan your demo?";
+  const contactSubtitle = template?.contact_subtitle || "Tell us about your audience, goals, and deadline. We'll return with a simple plan, scope, and timeline.";
 
   return (
     <div className="min-h-screen bg-white">
@@ -85,17 +107,17 @@ const B2BDemo = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100/80 rounded-full text-amber-800 text-sm font-medium mb-8">
               <Film className="w-4 h-4" />
-              Kicker Video — B2B Video Production
+              {badge}
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Your Product Demo, Sharpened for Decision‑Makers
+              {headline}
             </h1>
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Built for marketing and product leaders who need a clear, on‑brand story. AI video is here — but it's not ready to produce your B2B demos on its own. Wouldn't it be nice to have a senior creative manage the process for you? See how we turn complex ideas into a 90–120s demo that converts.
+              {subheadline}
             </p>
 
             {/* CTA Buttons */}
@@ -106,7 +128,7 @@ const B2BDemo = () => {
                 className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-semibold px-6"
               >
                 <Play className="w-4 h-4 mr-2" />
-                Book a 15‑min strategy call
+                {ctaPrimary}
               </Button>
               <Button 
                 variant="outline" 
@@ -115,13 +137,13 @@ const B2BDemo = () => {
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 <DollarSign className="w-4 h-4 mr-2" />
-                Get pricing
+                {ctaSecondary}
               </Button>
             </div>
 
             {/* Video Player */}
             <div className="max-w-3xl mx-auto rounded-xl overflow-hidden shadow-2xl">
-              <VideoPlayer videoId="76979871" />
+              <VideoPlayer videoId={videoId} />
             </div>
           </div>
         </div>
@@ -146,10 +168,10 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              Clarity, speed, and on‑brand delivery
+              {featuresTitle}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-              We blend senior creative teams with AI‑assisted tooling to cut timelines and keep costs predictable. From kickoff to final cut, our process is built for busy B2B teams.
+              {featuresSubtitle}
             </p>
 
             {/* Check List */}
@@ -445,10 +467,10 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              Ready to plan your demo?
+              {contactTitle}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-8">
-              Tell us about your audience, goals, and deadline. We'll return with a simple plan, scope, and timeline.
+              {contactSubtitle}
             </p>
 
             {/* Info badges */}

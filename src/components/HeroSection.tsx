@@ -5,11 +5,42 @@ import kickerLogo from "@/assets/kicker-logo.png";
 
 interface HeroSectionProps {
   thumbnailUrl?: string;
+  // Template content props
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+  ctaPrimaryText?: string;
+  ctaSecondaryText?: string;
+  videoId?: string;
 }
 
-const HeroSection = ({ thumbnailUrl }: HeroSectionProps) => {
+const HeroSection = ({ 
+  thumbnailUrl,
+  badge = "Police Recruitment Video Demo",
+  headline = "A recruitment video that actually helps your hiring pipeline.",
+  subheadline = "Watch how we create recruitment videos that help the right people self-select into the job.",
+  ctaPrimaryText = "Get in Touch",
+  ctaSecondaryText = "Learn More",
+  videoId = "1153753885"
+}: HeroSectionProps) => {
   const scrollToContact = () => {
     document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Split headline for gradient effect on second part
+  const renderHeadline = () => {
+    // Check if headline contains "hiring pipeline" or similar to apply gradient
+    if (headline.includes("hiring pipeline")) {
+      const parts = headline.split("hiring pipeline");
+      return (
+        <>
+          {parts[0]}
+          <span className="text-gradient">hiring pipeline.</span>
+          {parts[1]?.replace(".", "")}
+        </>
+      );
+    }
+    return headline;
   };
 
   return (
@@ -30,28 +61,26 @@ const HeroSection = ({ thumbnailUrl }: HeroSectionProps) => {
         <header className="flex items-center justify-between mb-12 lg:mb-16 animate-fade-up">
           <img src={kickerLogo} alt="Kicker Video" className="h-8 md:h-10" />
           <Button variant="heroOutline" size="lg" onClick={scrollToContact}>
-            Get in Touch
+            {ctaPrimaryText}
           </Button>
         </header>
 
         {/* Main Content */}
         <div className="max-w-5xl mx-auto text-center mb-12 lg:mb-16">
           <p className="text-primary font-medium tracking-wider uppercase mb-4 animate-fade-up">
-            Police Recruitment Video Demo
+            {badge}
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 animate-fade-up-delay leading-tight">
-            A recruitment video that actually helps your
-            <span className="text-gradient block mt-2">hiring pipeline.</span>
+            {renderHeadline()}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up-delay-2">
-            Watch how we create recruitment videos that help the right people 
-            self-select into the job.
+            {subheadline}
           </p>
         </div>
 
         {/* Video Player */}
         <div className="max-w-4xl mx-auto animate-fade-up-delay-2">
-          <VideoPlayer thumbnailUrl={thumbnailUrl} />
+          <VideoPlayer videoId={videoId} thumbnailUrl={thumbnailUrl} />
         </div>
 
         {/* Scroll indicator */}
@@ -60,7 +89,7 @@ const HeroSection = ({ thumbnailUrl }: HeroSectionProps) => {
             onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
             className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
           >
-            <span className="text-sm uppercase tracking-wider">Learn More</span>
+            <span className="text-sm uppercase tracking-wider">{ctaSecondaryText}</span>
             <ArrowDown className="w-5 h-5 animate-bounce" />
           </button>
         </div>
