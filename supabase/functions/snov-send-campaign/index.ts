@@ -79,26 +79,24 @@ async function getProspectsFromList(
   console.log(`Fetching prospects from list ${listId}...`);
 
   const allProspects: SnovProspect[] = [];
-  let lastId = 0;
+  let page = 1;
   let hasMore = true;
 
   while (hasMore) {
-    const response = await fetch(
-      "https://api.snov.io/v1/prospect-list-prospects",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          listId,
-          page: 1,
-          perPage: 100,
-          lastId,
-        }),
-      }
-    );
+    // Snov.io expects form-encoded POST with access_token in body
+    const formData = new URLSearchParams();
+    formData.append("access_token", accessToken);
+    formData.append("listId", listId.toString());
+    formData.append("page", page.toString());
+    formData.append("perPage", "100");
+
+    const response = await fetch("https://api.snov.io/v1/prospect-list", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -106,12 +104,14 @@ async function getProspectsFromList(
       throw new Error(`Failed to fetch prospects: ${error}`);
     }
 
-    const data: SnovListResponse = await response.json();
+    const data = await response.json();
+    console.log(`Page ${page} response:`, JSON.stringify(data).slice(0, 500));
 
-    if (data.data && data.data.length > 0) {
-      allProspects.push(...data.data);
-      lastId = data.lastId || 0;
-      console.log(`Fetched ${data.data.length} prospects, total: ${allProspects.length}`);
+    // Response format: { success: true, list: {...}, prospects: [...] }
+    if (data.prospects && data.prospects.length > 0) {
+      allProspects.push(...data.prospects);
+      console.log(`Fetched ${data.prospects.length} prospects, total: ${allProspects.length}`);
+      page++;
     } else {
       hasMore = false;
     }
