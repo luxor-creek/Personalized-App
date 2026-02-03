@@ -2,3 +2,9 @@ project_id = "lzxbhriamrnbfsymouyg"
 
 [functions.send-sample-request]
 verify_jwt = false
+
+[functions.snov-get-lists]
+verify_jwt = true
+
+[functions.snov-send-campaign]
+verify_jwt = true

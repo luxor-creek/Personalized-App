@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import kickerLogo from "@/assets/kicker-logo.png";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
@@ -86,6 +86,19 @@ const Admin = () => {
     custom_message: "",
   });
   const [addingPerson, setAddingPerson] = useState(false);
+
+  // Snov.io integration state
+  const [snovDialogOpen, setSnovDialogOpen] = useState(false);
+  const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
+  const [loadingSnovLists, setLoadingSnovLists] = useState(false);
+  const [selectedSnovList, setSelectedSnovList] = useState<number | null>(null);
+  const [snovEmailConfig, setSnovEmailConfig] = useState({
+    subject: "{{first_name}}, check out your personalized video",
+    body: "Hi {{first_name}},\n\nI created a personalized video just for you. Check it out here:\n\n{{page_url}}\n\nLet me know what you think!\n\nBest regards",
+    fromEmail: "",
+    fromName: "",
+  });
+  const [sendingSnov, setSendingSnov] = useState(false);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -443,6 +456,86 @@ const Admin = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copied to clipboard!" });
+  };
+
+  // Snov.io functions
+  const fetchSnovLists = async () => {
+    setLoadingSnovLists(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("snov-get-lists");
+      
+      if (error) throw error;
+      
+      if (data.success && data.lists) {
+        setSnovLists(data.lists);
+      } else {
+        throw new Error(data.error || "Failed to fetch Snov.io lists");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error fetching Snov.io lists",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSnovLists(false);
+    }
+  };
+
+  const sendSnovCampaign = async () => {
+    if (!selectedSnovList || !selectedCampaign) return;
+    
+    if (!snovEmailConfig.fromEmail || !snovEmailConfig.fromName) {
+      toast({
+        title: "Missing sender info",
+        description: "Please enter your sender email and name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingSnov(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("snov-send-campaign", {
+        body: {
+          listId: selectedSnovList,
+          campaignId: selectedCampaign.id,
+          emailSubject: snovEmailConfig.subject,
+          emailBody: snovEmailConfig.body,
+          fromEmail: snovEmailConfig.fromEmail,
+          fromName: snovEmailConfig.fromName,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Campaign sent!",
+          description: `Sent ${data.sent} emails. ${data.errors > 0 ? `${data.errors} errors.` : ""}`,
+        });
+        setSnovDialogOpen(false);
+        fetchCampaigns();
+        if (selectedCampaign) {
+          fetchPages(selectedCampaign.id);
+        }
+      } else {
+        throw new Error(data.error || "Failed to send campaign");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error sending campaign",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSendingSnov(false);
+    }
+  };
+
+  const openSnovDialog = () => {
+    setSnovDialogOpen(true);
+    fetchSnovLists();
   };
 
   // Loading state
@@ -848,6 +941,125 @@ const Admin = () => {
                                   className="w-full"
                                 >
                                   {uploading ? "Uploading..." : "Upload & Create Pages"}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
+                          {/* Snov.io Send Campaign Dialog */}
+                          <Dialog open={snovDialogOpen} onOpenChange={setSnovDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="default" onClick={openSnovDialog}>
+                                <Mail className="w-4 h-4 mr-2" />
+                                Send via Snov.io
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-lg">
+                              <DialogHeader>
+                                <DialogTitle>Send Campaign via Snov.io</DialogTitle>
+                                <DialogDescription>
+                                  Import contacts from a Snov.io list and send personalized landing pages.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 pt-4">
+                                {/* Snov.io List Selection */}
+                                <div className="space-y-2">
+                                  <Label>Select Snov.io List</Label>
+                                  {loadingSnovLists ? (
+                                    <div className="flex items-center justify-center py-4">
+                                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                    </div>
+                                  ) : snovLists.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No lists found. Create a list in Snov.io first.</p>
+                                  ) : (
+                                    <div className="grid gap-2 max-h-40 overflow-y-auto">
+                                      {snovLists.map((list) => (
+                                        <div
+                                          key={list.id}
+                                          onClick={() => setSelectedSnovList(list.id)}
+                                          className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                            selectedSnovList === list.id
+                                              ? "border-primary bg-primary/10"
+                                              : "border-border hover:border-primary/50"
+                                          }`}
+                                        >
+                                          <div className="flex justify-between items-center">
+                                            <span className="font-medium">{list.name}</span>
+                                            <span className="text-sm text-muted-foreground">{list.contacts} contacts</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Sender Info */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="from-name">From Name</Label>
+                                    <Input
+                                      id="from-name"
+                                      value={snovEmailConfig.fromName}
+                                      onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, fromName: e.target.value })}
+                                      placeholder="John Smith"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="from-email">From Email</Label>
+                                    <Input
+                                      id="from-email"
+                                      type="email"
+                                      value={snovEmailConfig.fromEmail}
+                                      onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, fromEmail: e.target.value })}
+                                      placeholder="john@company.com"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Email Subject */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="email-subject">Subject Line</Label>
+                                  <Input
+                                    id="email-subject"
+                                    value={snovEmailConfig.subject}
+                                    onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, subject: e.target.value })}
+                                    placeholder="{{first_name}}, check out your personalized video"
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    Use {"{{first_name}}"}, {"{{last_name}}"}, {"{{company}}"} for personalization
+                                  </p>
+                                </div>
+
+                                {/* Email Body */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="email-body">Email Body</Label>
+                                  <Textarea
+                                    id="email-body"
+                                    value={snovEmailConfig.body}
+                                    onChange={(e) => setSnovEmailConfig({ ...snovEmailConfig, body: e.target.value })}
+                                    rows={5}
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    {"{{page_url}}"} will be replaced with each contact's unique landing page URL
+                                  </p>
+                                </div>
+
+                                <Button 
+                                  onClick={sendSnovCampaign} 
+                                  className="w-full" 
+                                  disabled={!selectedSnovList || sendingSnov}
+                                >
+                                  {sendingSnov ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                      Sending...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Send className="w-4 h-4 mr-2" />
+                                      Send to Selected List
+                                    </>
+                                  )}
                                 </Button>
                               </div>
                             </DialogContent>
