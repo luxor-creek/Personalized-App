@@ -418,8 +418,8 @@ const RichTextEditor = ({
       )}
       onClick={() => setIsEditing(true)}
     >
-      {/* Edit indicator */}
-      <div className="absolute -inset-2 bg-primary/0 group-hover:bg-primary/5 rounded-lg border border-transparent group-hover:border-primary/30 group-hover:border-dashed transition-all" />
+      {/* Edit indicator - force visible colors for contrast on dark backgrounds */}
+      <div className="absolute -inset-2 bg-white/0 group-hover:bg-white/10 rounded-lg border border-transparent group-hover:border-white/50 group-hover:border-dashed transition-all" />
       
       {/* Edit button */}
       <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -428,7 +428,7 @@ const RichTextEditor = ({
         </div>
       </div>
       
-      {/* Content */}
+      {/* Content - inherit color from parent */}
       <div className="relative">
         {renderFormattedContent()}
       </div>
