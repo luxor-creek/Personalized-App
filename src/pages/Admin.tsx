@@ -589,10 +589,10 @@ const Admin = () => {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {/* Add Person Dialog */}
+                        {/* Add Single Person Dialog */}
                         <Dialog open={addPersonDialogOpen} onOpenChange={setAddPersonDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline">
+                            <Button variant="outline" size="default">
                               <UserPlus className="w-4 h-4 mr-2" />
                               Add Person
                             </Button>
