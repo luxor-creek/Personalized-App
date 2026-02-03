@@ -129,16 +129,18 @@ async function addProspectToSnovList(
     company?: string;
     landingPageUrl: string;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; snov?: unknown }> {
   console.log(`Adding prospect ${prospect.email} to Snov.io list ${listId}...`);
 
   const formData = new URLSearchParams();
   formData.append("access_token", accessToken);
   formData.append("email", prospect.email);
+  formData.append("fullName", `${prospect.firstName} ${prospect.lastName}`.trim());
   formData.append("firstName", prospect.firstName);
   formData.append("lastName", prospect.lastName);
   formData.append("listId", listId.toString());
-  formData.append("updateContact", "true");
+  // Per Snov docs, updateContact can be 1/0 (or true/false). Use 1 to avoid ambiguity.
+  formData.append("updateContact", "1");
   
   // Add company if available
   if (prospect.company) {
@@ -170,9 +172,9 @@ async function addProspectToSnovList(
     const data = JSON.parse(responseText);
     if (data.success) {
       console.log(`Prospect ${prospect.email} added successfully`);
-      return { success: true };
+      return { success: true, snov: data };
     } else {
-      return { success: false, error: data.message || "Unknown error" };
+      return { success: false, error: data.message || "Unknown error", snov: data };
     }
   } catch {
     // If response is not JSON but status was OK
@@ -278,6 +280,11 @@ const handler = async (req: Request): Promise<Response> => {
         } else {
           errorCount++;
           results.push({ email: primaryEmail, success: false, pageUrl, error: addResult.error });
+        }
+
+        // Helpful for debugging Snov-side missing custom field warnings
+        if (addResult.snov) {
+          (results[results.length - 1] as any).snov = addResult.snov;
         }
 
         // Rate limiting - wait 300ms between API calls
