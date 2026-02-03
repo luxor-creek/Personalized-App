@@ -59,6 +59,27 @@ async function getSnovAccessToken(): Promise<string> {
   return data.access_token;
 }
 
+async function getSnovBalance(accessToken: string): Promise<unknown> {
+  try {
+    const params = new URLSearchParams();
+    params.append("access_token", accessToken);
+
+    const res = await fetch(`https://api.snov.io/v1/get-balance?${params.toString()}`, {
+      method: "GET",
+    });
+
+    // If this fails, just return the raw body so we can debug permissions.
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { status: res.status, body: text };
+    }
+  } catch (e: any) {
+    return { error: e?.message ?? String(e) };
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -66,14 +87,16 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Verify user is authenticated
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    // Verify user is authenticated (signing keys compatible)
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const jwt = authHeader.replace("Bearer ", "").trim();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -81,15 +104,15 @@ const handler = async (req: Request): Promise<Response> => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(jwt);
+    if (claimsError || !claimsData?.claims?.sub) {
       return new Response(
         JSON.stringify({ success: false, error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Fetching Snov.io lists for user ${user.id}...`);
+    console.log(`Fetching Snov.io lists for user ${claimsData.claims.sub}...`);
 
     // Get Snov.io access token
     const accessToken = await getSnovAccessToken();
@@ -107,9 +130,25 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("Failed to fetch lists:", error);
-      throw new Error(`Failed to fetch Snov.io lists: ${error}`);
+      const errorText = await response.text();
+      console.error("Failed to fetch lists:", errorText);
+
+      // Helpful diagnostics: check whether token is valid at all.
+      const balance = await getSnovBalance(accessToken);
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Failed to fetch Snov.io lists: ${errorText}`,
+          snov_balance_debug: balance,
+          hint:
+            "Snov.io returned a permissions error for this endpoint. This usually means the account/plan doesn't have API access to lists, even if authentication succeeds.",
+        }),
+        {
+          status: response.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const data: SnovListsResponse = await response.json();
