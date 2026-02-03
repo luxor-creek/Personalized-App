@@ -22,8 +22,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<WineVideoTemplate />} />
+          <Route path="/" element={<Admin />} />
           <Route path="/police-recruitment" element={<Index />} />
+          <Route path="/wine-video-landing" element={<WineVideoTemplate />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin/edit/:slug" element={<TemplateEditor />} />
