@@ -621,12 +621,6 @@ const Admin = () => {
             <span className="text-sm text-muted-foreground hidden sm:block">
               {user?.email}
             </span>
-            <a href="/" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm">
-                <Eye className="w-4 h-4 mr-2" />
-                View Landing Page
-              </Button>
-            </a>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -648,9 +642,9 @@ const Admin = () => {
           {/* Landing Pages Tab */}
           <TabsContent value="landing-pages" className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Landing Page Templates</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">My Templates</h2>
               <p className="text-muted-foreground">
-                Choose a landing page template to preview or use for your campaigns.
+                Templates you have customized for your campaigns.
               </p>
             </div>
 
@@ -766,22 +760,33 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Add New Template Card */}
-              <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden hover:border-primary/50 transition-all">
-                <div className="aspect-video bg-muted/30 flex items-center justify-center">
-                  <div className="text-center p-4">
-                    <Plus className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">More templates coming soon</p>
+            </div>
+
+            {/* Landing Page Templates Section */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Landing Page Templates</h2>
+              <p className="text-muted-foreground mb-6">
+                Browse and select from our library of pre-built landing page templates.
+              </p>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Placeholder for future generic templates */}
+                <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden">
+                  <div className="aspect-video bg-muted/30 flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <Plus className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">Templates coming soon</p>
+                    </div>
                   </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-muted-foreground mb-1">Create Custom Template</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Design your own landing page template from scratch.
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full" disabled>
-                    Coming Soon
-                  </Button>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-muted-foreground mb-1">More Templates</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      New pre-built templates will be available here.
+                    </p>
+                    <Button variant="outline" size="sm" className="w-full" disabled>
+                      Coming Soon
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
