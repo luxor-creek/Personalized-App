@@ -16,7 +16,7 @@ const LogoCarousel = () => {
     <section className="py-12 bg-secondary/30 border-y border-border/50">
       <div className="container mx-auto px-4">
         <p className="text-center text-sm text-muted-foreground uppercase tracking-wider mb-8">
-          Trusted by departments across the nation
+          Trusted by public organizations nationwide
         </p>
         
         <div className="relative overflow-hidden">

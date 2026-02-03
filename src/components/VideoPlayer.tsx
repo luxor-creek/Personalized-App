@@ -2,15 +2,12 @@ import { Play } from "lucide-react";
 import { useState } from "react";
 
 interface VideoPlayerProps {
-  videoUrl?: string;
+  videoId?: string;
   thumbnailUrl?: string;
 }
 
-const VideoPlayer = ({ videoUrl, thumbnailUrl }: VideoPlayerProps) => {
+const VideoPlayer = ({ videoId = "1153753885", thumbnailUrl }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-
-  // Placeholder video - replace with actual demo video URL
-  const demoVideoUrl = videoUrl || "https://player.vimeo.com/video/placeholder";
 
   return (
     <div className="relative w-full aspect-video rounded-xl overflow-hidden card-elevated border border-border/50 bg-card">
@@ -32,17 +29,13 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }: VideoPlayerProps) => {
           </div>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-secondary">
-          <div className="text-center p-8">
-            <Play className="w-16 h-16 text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              Video embed will appear here
-            </p>
-            <p className="text-sm text-muted-foreground/60 mt-2">
-              Replace with your Vimeo or YouTube embed
-            </p>
-          </div>
-        </div>
+        <iframe
+          src={`https://player.vimeo.com/video/${videoId}?autoplay=${isPlaying ? 1 : 0}&title=0&byline=0&portrait=0`}
+          className="w-full h-full"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          title="Police Recruitment Video Demo"
+        />
       )}
     </div>
   );
