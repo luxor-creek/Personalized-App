@@ -704,7 +704,7 @@ const Admin = () => {
                     Elegant wine-themed landing page with video content and contact form.
                   </p>
                   <div className="flex gap-2">
-                    <Link to="/" target="_blank" className="flex-1">
+                    <Link to="/wine-video" target="_blank" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Eye className="w-4 h-4 mr-2" />
                         Preview
