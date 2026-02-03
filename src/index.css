@@ -115,6 +115,23 @@
     }
   }
 
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll {
+    animation: scroll 20s linear infinite;
+  }
+
+  .animate-scroll:hover {
+    animation-play-state: paused;
+  }
+
   @keyframes pulse-glow {
     0%, 100% {
       box-shadow: 0 0 20px hsl(43 74% 49% / 0.4);
