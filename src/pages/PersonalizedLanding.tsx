@@ -37,24 +37,29 @@ const PersonalizedLanding = () => {
       }
 
       try {
-        // Fetch the personalized page data
+        // Fetch the personalized page data using security definer function
         const { data, error: fetchError } = await supabase
-          .from("personalized_pages")
-          .select("id, first_name, last_name, company, custom_message, template_id")
-          .eq("token", token)
-          .single();
+          .rpc("get_personalized_page_by_token", { lookup_token: token });
 
-        if (fetchError || !data) {
+        if (fetchError || !data || data.length === 0) {
           setError("Page not found");
           setLoading(false);
           return;
         }
 
-        setPageData(data);
+        const pageRecord = data[0];
+        setPageData({
+          id: pageRecord.id,
+          first_name: pageRecord.first_name,
+          last_name: pageRecord.last_name,
+          company: pageRecord.company,
+          custom_message: pageRecord.custom_message,
+          template_id: pageRecord.template_id,
+        });
 
         // Record the page view
         await supabase.from("page_views").insert({
-          personalized_page_id: data.id,
+          personalized_page_id: pageRecord.id,
           user_agent: navigator.userAgent,
         });
       } catch (err) {

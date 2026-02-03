@@ -249,6 +249,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_personalized_page_by_token: {
+        Args: { lookup_token: string }
+        Returns: {
+          campaign_id: string
+          company: string
+          created_at: string
+          custom_message: string
+          first_name: string
+          id: string
+          last_name: string
+          template_id: string
+          token: string
+        }[]
+      }
       user_owns_campaign: { Args: { _campaign_id: string }; Returns: boolean }
       user_owns_personalized_page: {
         Args: { _page_id: string }
