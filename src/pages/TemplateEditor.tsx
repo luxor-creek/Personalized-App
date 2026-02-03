@@ -323,26 +323,50 @@ const TemplateEditor = () => {
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">
-                {[
-                  { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
-                  { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
-                  { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
-                ].map((item, index) => (
-                  <div key={index} className="overflow-hidden rounded-lg group cursor-pointer">
+                {(template.portfolio_videos?.length > 0 
+                  ? template.portfolio_videos 
+                  : [
+                      { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
+                      { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
+                      { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
+                    ]
+                ).map((item: any, index: number) => (
+                  <div key={index} className="overflow-hidden rounded-lg group">
                     <div className="relative aspect-video">
-                      <img 
+                      <EditableImage
                         src={item.image}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onImageChange={(url) => {
+                          const newVideos = [...(template.portfolio_videos?.length > 0 
+                            ? template.portfolio_videos 
+                            : [
+                                { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
+                                { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
+                                { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
+                              ])];
+                          newVideos[index] = { ...newVideos[index], image: url };
+                          updateField("portfolio_videos", newVideos);
+                        }}
+                        className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                          <Play className="w-6 h-6 text-white ml-1" />
-                        </div>
-                      </div>
                     </div>
                     <div className="p-4 bg-white">
-                      <p className="font-medium text-foreground">{item.title}</p>
+                      <EditableText
+                        value={item.title}
+                        onChange={(value) => {
+                          const newVideos = [...(template.portfolio_videos?.length > 0 
+                            ? template.portfolio_videos 
+                            : [
+                                { title: "Product overview", image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=250&fit=crop" },
+                                { title: "Brand story", image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=250&fit=crop" },
+                                { title: "Event/trade show", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop" },
+                              ])];
+                          newVideos[index] = { ...newVideos[index], title: value };
+                          updateField("portfolio_videos", newVideos);
+                        }}
+                        fieldName={`Portfolio Video ${index + 1} Title`}
+                        className="font-medium text-foreground"
+                      />
                     </div>
                   </div>
                 ))}
@@ -441,7 +465,7 @@ const TemplateEditor = () => {
 
                 {/* Solution Side */}
                 <div className="p-8 bg-white rounded-lg border border-gray-200">
-                  <p className="text-xs font-medium uppercase tracking-wider text-cyan-500 mb-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-emerald-600 mb-4">
                     THE SOLUTION
                   </p>
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
@@ -465,7 +489,7 @@ const TemplateEditor = () => {
                       : ["Automated generation from existing content", "Template-driven consistency", "Bulk processing capability", "White-label delivery"]
                     ).map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <Check className="w-5 h-5 text-cyan-500 flex-shrink-0" />
+                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                         <EditableText
                           value={item}
                           onChange={(value) => {
@@ -529,9 +553,10 @@ const TemplateEditor = () => {
                 </div>
 
                 <div className="rounded-2xl overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&h=400&fit=crop"
-                    alt="Industrial production"
+                  <EditableImage
+                    src={template.custom_section_image_url || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&h=400&fit=crop"}
+                    alt="Custom section"
+                    onImageChange={(url) => updateField("custom_section_image_url", url)}
                     className="w-full h-full object-cover"
                   />
                 </div>

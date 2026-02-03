@@ -52,6 +52,7 @@ export type Database = {
           contact_subtitle: string | null
           contact_title: string | null
           created_at: string
+          custom_section_image_url: string | null
           feature_cards: Json | null
           features_list: Json | null
           features_subtitle: string | null
@@ -67,6 +68,7 @@ export type Database = {
           name: string
           personalization_config: Json | null
           portfolio_strip_url: string | null
+          portfolio_videos: Json | null
           pricing_subtitle: string | null
           pricing_tiers: Json | null
           pricing_title: string | null
@@ -90,6 +92,7 @@ export type Database = {
           contact_subtitle?: string | null
           contact_title?: string | null
           created_at?: string
+          custom_section_image_url?: string | null
           feature_cards?: Json | null
           features_list?: Json | null
           features_subtitle?: string | null
@@ -105,6 +108,7 @@ export type Database = {
           name: string
           personalization_config?: Json | null
           portfolio_strip_url?: string | null
+          portfolio_videos?: Json | null
           pricing_subtitle?: string | null
           pricing_tiers?: Json | null
           pricing_title?: string | null
@@ -128,6 +132,7 @@ export type Database = {
           contact_subtitle?: string | null
           contact_title?: string | null
           created_at?: string
+          custom_section_image_url?: string | null
           feature_cards?: Json | null
           features_list?: Json | null
           features_subtitle?: string | null
@@ -143,6 +148,7 @@ export type Database = {
           name?: string
           personalization_config?: Json | null
           portfolio_strip_url?: string | null
+          portfolio_videos?: Json | null
           pricing_subtitle?: string | null
           pricing_tiers?: Json | null
           pricing_title?: string | null

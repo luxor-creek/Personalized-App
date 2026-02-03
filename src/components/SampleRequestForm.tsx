@@ -210,7 +210,7 @@ const SampleRequestForm = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="productUrl" className="text-foreground">URL or CSV Upload</Label>
+                <Label htmlFor="productUrl" className="text-foreground">Paste your product URL here</Label>
                 <Input
                   id="productUrl"
                   placeholder="https://yoursite.com/product"
@@ -219,16 +219,6 @@ const SampleRequestForm = () => {
                   className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                   maxLength={500}
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2 gap-2"
-                  disabled
-                >
-                  <Upload className="w-4 h-4" />
-                  Or upload CSV
-                </Button>
               </div>
 
               <Button 

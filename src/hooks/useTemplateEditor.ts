@@ -38,6 +38,9 @@ export interface TemplateData {
   comparison_solution_title: string | null;
   comparison_solution_description: string | null;
   comparison_solution_items: string[];
+  // Portfolio videos and custom section
+  portfolio_videos: { title: string; image: string }[];
+  custom_section_image_url: string | null;
 }
 
 export function useTemplateEditor(slug: string | undefined) {
@@ -105,6 +108,9 @@ export function useTemplateEditor(slug: string | undefined) {
           comparison_solution_title: (data as any).comparison_solution_title ?? null,
           comparison_solution_description: (data as any).comparison_solution_description ?? null,
           comparison_solution_items: Array.isArray((data as any).comparison_solution_items) ? (data as any).comparison_solution_items : [],
+          // Portfolio videos and custom section
+          portfolio_videos: Array.isArray((data as any).portfolio_videos) ? (data as any).portfolio_videos : [],
+          custom_section_image_url: (data as any).custom_section_image_url ?? null,
         };
 
         setTemplate(templateData);
@@ -178,6 +184,8 @@ export function useTemplateEditor(slug: string | undefined) {
           comparison_solution_title: template.comparison_solution_title,
           comparison_solution_description: template.comparison_solution_description,
           comparison_solution_items: template.comparison_solution_items,
+          portfolio_videos: template.portfolio_videos,
+          custom_section_image_url: template.custom_section_image_url,
         } as any)
         .eq("id", template.id);
 
