@@ -1,4 +1,4 @@
-import { Save, X, Eye, Tag, Type, Image, Video, Info } from "lucide-react";
+import { Save, X, Eye, Tag, Type, Image, Video, Info, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -117,25 +117,15 @@ const EditorSidebar = ({
 
       {/* Action buttons */}
       <div className="p-4 border-t border-gray-700 space-y-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onPreview}
-          className="w-full justify-center text-white border-gray-600 hover:bg-gray-800"
-        >
-          <Eye className="w-4 h-4 mr-2" />
-          Preview
-        </Button>
-        
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={onCancel}
-            className="flex-1 text-white border-gray-600 hover:bg-gray-800"
+            onClick={onPreview}
+            className="flex-1 justify-center text-white border-gray-600 hover:bg-gray-800"
           >
-            <X className="w-4 h-4 mr-2" />
-            Cancel
+            <Eye className="w-4 h-4 mr-2" />
+            Preview
           </Button>
           
           <Button
@@ -151,6 +141,16 @@ const EditorSidebar = ({
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          className="w-full justify-center text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Admin
+        </Button>
       </div>
     </div>
   );
