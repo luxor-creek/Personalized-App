@@ -24,6 +24,9 @@ const formatPrimaryGoal = (goal: string): string => {
     "executive-message": "Executive Message",
     "social-media-video": "Social Media Video",
     "quick-location-shoot": "Quick Location Shoot",
+    "brand-video": "Brand Video",
+    "explainer-video": "Explainer Video",
+    "animated-video": "Animated Video",
   };
   return goals[goal] || goal;
 };
