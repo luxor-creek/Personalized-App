@@ -56,12 +56,15 @@ const RichTextEditor = ({
   isHeadline = false,
 }: RichTextEditorProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
+  const [editValue, setEditValue] = useState(value || "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Sync editValue when value prop changes (from database load or external update)
   useEffect(() => {
-    setEditValue(value);
-  }, [value]);
+    if (!isEditing) {
+      setEditValue(value || "");
+    }
+  }, [value, isEditing]);
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
