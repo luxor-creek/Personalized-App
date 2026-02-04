@@ -342,8 +342,48 @@ const Admin = () => {
     }
   };
 
+  // Sanitize CSV values to prevent formula injection (CSV injection attack)
+  const sanitizeCsvValue = (value: string | undefined | null): string | null => {
+    if (!value) return null;
+    const trimmed = value.trim().replace(/^"|"$/g, "");
+    if (!trimmed) return null;
+    
+    // Prefix formula characters with single quote to prevent execution in spreadsheets
+    const formulaChars = ["=", "+", "-", "@", "\t", "\r"];
+    if (formulaChars.some(char => trimmed.startsWith(char))) {
+      return "'" + trimmed;
+    }
+    return trimmed;
+  };
+
+  // Enforce field length limits for CSV uploads
+  const MAX_CSV_LENGTHS = {
+    first_name: 100,
+    last_name: 100,
+    company: 100,
+    custom_message: 500,
+  };
+
+  const truncateField = (value: string | null, maxLength: number): string | null => {
+    if (!value) return null;
+    return value.slice(0, maxLength);
+  };
+
+  // Maximum CSV file size (5MB)
+  const MAX_CSV_SIZE = 5 * 1024 * 1024;
+
   const handleCsvUpload = async () => {
     if (!csvFile || !selectedCampaign) return;
+
+    // Validate file size
+    if (csvFile.size > MAX_CSV_SIZE) {
+      toast({
+        title: "File too large",
+        description: "CSV file must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setUploading(true);
     try {
@@ -378,17 +418,18 @@ const Admin = () => {
       const pagesToCreate = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+        const values = lines[i].split(",").map((v) => sanitizeCsvValue(v));
         
-        if (!values[firstNameIndex]) continue;
+        const firstName = truncateField(values[firstNameIndex], MAX_CSV_LENGTHS.first_name);
+        if (!firstName) continue;
 
         pagesToCreate.push({
           campaign_id: selectedCampaign.id,
           template_id: selectedCampaign.template_id,
-          first_name: values[firstNameIndex],
-          last_name: lastNameIndex >= 0 ? values[lastNameIndex] || null : null,
-          company: companyIndex >= 0 ? values[companyIndex] || null : null,
-          custom_message: messageIndex >= 0 ? values[messageIndex] || null : null,
+          first_name: firstName,
+          last_name: truncateField(lastNameIndex >= 0 ? values[lastNameIndex] : null, MAX_CSV_LENGTHS.last_name),
+          company: truncateField(companyIndex >= 0 ? values[companyIndex] : null, MAX_CSV_LENGTHS.company),
+          custom_message: truncateField(messageIndex >= 0 ? values[messageIndex] : null, MAX_CSV_LENGTHS.custom_message),
         });
       }
 
