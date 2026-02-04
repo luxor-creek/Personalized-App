@@ -47,6 +47,70 @@ const B2BDemo = () => {
     );
   }
 
+  // Defaults (match what the editor edits)
+  const defaultFeatureList = [
+    { title: "Script to screen in weeks, not months.", description: "Detailed pre‑pro and rapid iteration." },
+    { title: "On‑brand, on‑budget.", description: "Clear scopes; no surprises." },
+    { title: "Local crews in 21 cities.", description: "Lower travel costs across US & Canada." },
+  ];
+
+  const defaultFeatureCards = [
+    {
+      title: "A guided process",
+      description: "Kickoff, creative brief, pre‑pro, production, post. Aligned and transparent at every step.",
+    },
+    { title: "AI‑assisted efficiency", description: "Faster scripting, storyboards, and revisions without sacrificing quality." },
+    { title: "Outcomes that convert", description: "Sales‑ready demos, explainer videos, and launch assets your team can deploy fast." },
+    { title: "Seamless collaboration", description: "We plug into your workflow with timely check‑ins and clear revision windows." },
+  ];
+
+  const defaultTestimonials = [
+    {
+      quote: "They distilled our complex platform into a crisp, 2‑minute demo that our sales team uses daily.",
+      author: "VP Marketing, SaaS",
+    },
+    {
+      quote: "Fast, organized, and on brand. The process was seamless even across two locations.",
+      author: "Director of Product Marketing, Healthcare",
+    },
+    {
+      quote: "Great value for the quality. Clear scope and quick iterations saved us weeks.",
+      author: "Head of Comms, Manufacturing",
+    },
+  ];
+
+  const defaultPricingTiers = [
+    {
+      name: "Social & cut‑downs",
+      description: "Short‑form assets, repurposed edits",
+      price: "From <$1k",
+      features: [":15–:45 edits • captions • thumbnails", "Fast turnaround"],
+      cta: "Request scope",
+      featured: false,
+    },
+    {
+      name: "Product demo / explainer",
+      description: "90–120s primary asset + cut‑downs",
+      price: "$3k–$8k",
+      features: ["Script, storyboard, VO/music", "Animation or live‑action"],
+      cta: "Start your demo",
+      featured: true,
+    },
+    {
+      name: "Multi‑location shoot",
+      description: "Crews in 21 cities to reduce travel",
+      price: "$8k–$25k",
+      features: ["Producer + crew + gear", "Full post‑production", "Price depends on # of locations"],
+      cta: "Get a quote",
+      featured: false,
+    },
+  ];
+
+  const featureList = template?.features_list?.length ? template.features_list : defaultFeatureList;
+  const featureCards = template?.feature_cards?.length ? template.feature_cards : defaultFeatureCards;
+  const testimonials = template?.testimonials?.length ? template.testimonials : defaultTestimonials;
+  const pricingTiers = template?.pricing_tiers?.length ? template.pricing_tiers : defaultPricingTiers;
+
   // Use template values with fallbacks
   const badge = template?.hero_badge || "Kicker Video — B2B Video Production";
   const headline = template?.hero_headline || "Your Product Demo, Sharpened for Decision‑Makers";
@@ -58,6 +122,11 @@ const B2BDemo = () => {
   const featuresSubtitle = template?.features_subtitle || "We blend senior creative teams with AI‑assisted tooling to cut timelines and keep costs predictable.";
   const contactTitle = template?.contact_title || "Ready to plan your demo?";
   const contactSubtitle = template?.contact_subtitle || "Tell us about your audience, goals, and deadline. We'll return with a simple plan, scope, and timeline.";
+  const trustText = template?.about_content || "Trusted by B2B teams across the US & Canada";
+  const testimonialsTitle = template?.testimonials_title || "What B2B teams say";
+  const testimonialsSubtitle = template?.testimonials_subtitle || "Marketing, product, and comms leaders across tech, healthcare, energy, and manufacturing.";
+  const pricingTitle = template?.pricing_title || "Project‑based pricing";
+  const pricingSubtitle = template?.pricing_subtitle || "Every project is scoped to your needs. Typical ranges shown below.";
 
   return (
     <div className="min-h-screen bg-white">
@@ -132,10 +201,10 @@ const B2BDemo = () => {
       <section className="py-12 bg-white border-y border-gray-100">
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-500 text-sm font-medium mb-6">
-            Trusted by B2B teams across the US & Canada
+            {trustText}
           </p>
           <img 
-            src={clientLogos} 
+            src={template?.client_logos_url || clientLogos}
             alt="Client logos" 
             className="max-w-2xl mx-auto opacity-60 grayscale hover:grayscale-0 transition-all"
           />
@@ -155,24 +224,14 @@ const B2BDemo = () => {
 
             {/* Check List */}
             <div className="space-y-4 mb-12">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700">
-                  <span className="font-semibold">Script to screen in weeks, not months.</span> Detailed pre‑pro and rapid iteration.
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700">
-                  <span className="font-semibold">On‑brand, on‑budget.</span> Clear scopes; no surprises.
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700">
-                  <span className="font-semibold">Local crews in 21 cities.</span> Lower travel costs across US & Canada.
-                </p>
-              </div>
+              {featureList.map((item, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-gray-700">
+                    <span className="font-semibold">{item.title}</span> {item.description ? ` ${item.description}` : ""}
+                  </p>
+                </div>
+              ))}
             </div>
 
             {/* Secondary CTAs */}
@@ -198,53 +257,21 @@ const B2BDemo = () => {
 
             {/* Feature Cards */}
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="border-gray-200 bg-gray-50/50">
-                <CardHeader>
-                  <Route className="w-8 h-8 text-amber-500 mb-2" />
-                  <CardTitle className="text-xl">A guided process</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Kickoff, creative brief, pre‑pro, production, post. Aligned and transparent at every step.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-gray-200 bg-gray-50/50">
-                <CardHeader>
-                  <Sparkles className="w-8 h-8 text-amber-500 mb-2" />
-                  <CardTitle className="text-xl">AI‑assisted efficiency</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Faster scripting, storyboards, and revisions without sacrificing quality.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-gray-200 bg-gray-50/50">
-                <CardHeader>
-                  <Target className="w-8 h-8 text-amber-500 mb-2" />
-                  <CardTitle className="text-xl">Outcomes that convert</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Sales‑ready demos, explainer videos, and launch assets your team can deploy fast.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-gray-200 bg-gray-50/50">
-                <CardHeader>
-                  <Handshake className="w-8 h-8 text-amber-500 mb-2" />
-                  <CardTitle className="text-xl">Seamless collaboration</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    We plug into your workflow with timely check‑ins and clear revision windows.
-                  </p>
-                </CardContent>
-              </Card>
+              {[Route, Sparkles, Target, Handshake].map((Icon, idx) => {
+                const card = featureCards[idx];
+                if (!card) return null;
+                return (
+                  <Card key={idx} className="border-gray-200 bg-gray-50/50">
+                    <CardHeader>
+                      <Icon className="w-8 h-8 text-amber-500 mb-2" />
+                      <CardTitle className="text-xl">{card.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600">{card.description || ("subtitle" in card ? (card.subtitle as string | undefined) : undefined) || ""}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -255,48 +282,24 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              What B2B teams say
+              {testimonialsTitle}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12">
-              Marketing, product, and comms leaders across tech, healthcare, energy, and manufacturing.
+              {testimonialsSubtitle}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="bg-white border-gray-200">
-                <CardContent className="pt-6">
-                  <Quote className="w-8 h-8 text-gray-300 mb-4" />
-                  <blockquote className="text-gray-700 mb-4">
-                    "They distilled our complex platform into a crisp, 2‑minute demo that our sales team uses daily."
-                  </blockquote>
-                  <p className="text-sm text-gray-500 font-medium">
-                    VP Marketing, SaaS
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-gray-200">
-                <CardContent className="pt-6">
-                  <Quote className="w-8 h-8 text-gray-300 mb-4" />
-                  <blockquote className="text-gray-700 mb-4">
-                    "Fast, organized, and on brand. The process was seamless even across two locations."
-                  </blockquote>
-                  <p className="text-sm text-gray-500 font-medium">
-                    Director of Product Marketing, Healthcare
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-gray-200">
-                <CardContent className="pt-6">
-                  <Quote className="w-8 h-8 text-gray-300 mb-4" />
-                  <blockquote className="text-gray-700 mb-4">
-                    "Great value for the quality. Clear scope and quick iterations saved us weeks."
-                  </blockquote>
-                  <p className="text-sm text-gray-500 font-medium">
-                    Head of Comms, Manufacturing
-                  </p>
-                </CardContent>
-              </Card>
+              {testimonials.slice(0, 3).map((t, idx) => (
+                <Card key={idx} className="bg-white border-gray-200">
+                  <CardContent className="pt-6">
+                    <Quote className="w-8 h-8 text-gray-300 mb-4" />
+                    <blockquote className="text-gray-700 mb-4">"{t.quote}"</blockquote>
+                    {t.author ? (
+                      <p className="text-sm text-gray-500 font-medium">{t.author}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
@@ -307,102 +310,54 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              Project‑based pricing
+              {pricingTitle}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12">
-              Every project is scoped to your needs. Typical ranges shown below.
+              {pricingSubtitle}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Tier 1 */}
-              <Card className="border-gray-200 bg-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Social & cut‑downs</CardTitle>
-                  <p className="text-sm text-gray-500">Short‑form assets, repurposed edits</p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-gray-900 mb-4">From &lt;$1k</p>
-                  <ul className="space-y-2 mb-6">
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      :15–:45 edits • captions • thumbnails
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      Fast turnaround
-                    </li>
-                  </ul>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-gray-300"
-                    onClick={scrollToContact}
+              {pricingTiers.slice(0, 3).map((tier, idx) => {
+                const isFeatured = !!tier.featured;
+                return (
+                  <Card
+                    key={idx}
+                    className={
+                      isFeatured
+                        ? "border-amber-300 bg-amber-50/50 ring-2 ring-amber-200"
+                        : "border-gray-200 bg-white"
+                    }
                   >
-                    Request scope
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Tier 2 - Featured */}
-              <Card className="border-amber-300 bg-amber-50/50 ring-2 ring-amber-200">
-                <CardHeader>
-                  <CardTitle className="text-lg">Product demo / explainer</CardTitle>
-                  <p className="text-sm text-gray-500">90–120s primary asset + cut‑downs</p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-gray-900 mb-4">$3k–$8k</p>
-                  <ul className="space-y-2 mb-6">
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      Script, storyboard, VO/music
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      Animation or live‑action
-                    </li>
-                  </ul>
-                  <Button 
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-gray-900"
-                    onClick={scrollToContact}
-                  >
-                    Start your demo
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Tier 3 */}
-              <Card className="border-gray-200 bg-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Multi‑location shoot</CardTitle>
-                  <p className="text-sm text-gray-500">Crews in 21 cities to reduce travel</p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-gray-900 mb-4">$8k–$25k</p>
-                  <ul className="space-y-2 mb-6">
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      Producer + crew + gear
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      Full post‑production
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Check className="w-4 h-4 text-green-600" />
-                      Price depends on # of locations
-                    </li>
-                  </ul>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-gray-300"
-                    onClick={scrollToContact}
-                  >
-                    Get a quote
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{tier.name}</CardTitle>
+                      <p className="text-sm text-gray-500">{tier.description || ""}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold text-gray-900 mb-4">{tier.price || ""}</p>
+                      <ul className="space-y-2 mb-6">
+                        {(tier.features || []).map((f, fIdx) => (
+                          <li key={fIdx} className="flex items-center gap-2 text-gray-600 text-sm">
+                            <Check className="w-4 h-4 text-green-600" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      <Button
+                        variant={isFeatured ? "default" : "outline"}
+                        className={
+                          isFeatured
+                            ? "w-full bg-amber-500 hover:bg-amber-600 text-gray-900"
+                            : "w-full border-gray-300"
+                        }
+                        onClick={scrollToContact}
+                      >
+                        {tier.cta || "Request scope"}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </div>

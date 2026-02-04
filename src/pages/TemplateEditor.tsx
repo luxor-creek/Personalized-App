@@ -123,7 +123,7 @@ const TemplateEditor = () => {
           isSaving={saving}
           onSave={handleSave}
           onCancel={handleCancel}
-          onPreview={() => window.open("/wine-video", "_blank")}
+          onPreview={handlePreview}
           onInsertToken={handleInsertToken}
         />
 

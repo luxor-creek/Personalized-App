@@ -12,7 +12,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const SampleRequestForm = () => {
+type SampleRequestFormProps = {
+  title?: string;
+  subtitle?: string;
+};
+
+const SampleRequestForm = ({ title, subtitle }: SampleRequestFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -93,10 +98,11 @@ const SampleRequestForm = () => {
               GET STARTED
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Request a Sample Video
+              {title || "Request a Sample Video"}
             </h2>
             <p className="text-muted-foreground text-lg mb-10">
-              See what Viaxo can do with your content. We'll generate a sample video from your existing page—no creative brief required.
+              {subtitle ||
+                "See what Viaxo can do with your content. We'll generate a sample video from your existing page—no creative brief required."}
             </p>
 
             <div className="space-y-8">
