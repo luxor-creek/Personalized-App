@@ -5,6 +5,7 @@ export interface TemplateContent {
   id: string;
   slug: string;
   name: string;
+  thumbnail_url?: string | null;
   hero_badge: string | null;
   hero_headline: string;
   hero_subheadline: string | null;
@@ -14,11 +15,22 @@ export interface TemplateContent {
   hero_video_thumbnail_url: string | null;
   features_title: string | null;
   features_subtitle: string | null;
+  features_list?: { title: string; description?: string }[] | null;
+  feature_cards?: { title: string; subtitle?: string; description?: string }[] | null;
   about_content: string | null;
   testimonials_title: string | null;
   testimonials_subtitle: string | null;
+  testimonials?: { quote: string; author?: string }[] | null;
   pricing_title: string | null;
   pricing_subtitle: string | null;
+  pricing_tiers?: {
+    name: string;
+    description?: string;
+    price?: string;
+    features?: string[];
+    cta?: string;
+    featured?: boolean;
+  }[] | null;
   contact_title: string | null;
   contact_subtitle: string | null;
   contact_email: string | null;
@@ -26,6 +38,17 @@ export interface TemplateContent {
   portfolio_strip_url: string | null;
   portfolio_videos: { title: string; videoId?: string; image?: string }[] | null;
   client_logos_url: string | null;
+
+  comparison_problem_title?: string | null;
+  comparison_problem_items?: string[] | null;
+  comparison_solution_title?: string | null;
+  comparison_solution_description?: string | null;
+  comparison_solution_items?: string[] | null;
+  custom_section_image_url?: string | null;
+  cta_banner_title?: string | null;
+  cta_banner_subtitle?: string | null;
+  form_section_title?: string | null;
+  form_section_subtitle?: string | null;
 }
 
 interface PersonalizationData {
@@ -74,6 +97,7 @@ export function useTemplateContent(slug: string) {
             id,
             slug,
             name,
+            thumbnail_url,
             hero_badge,
             hero_headline,
             hero_subheadline,
@@ -83,18 +107,32 @@ export function useTemplateContent(slug: string) {
             hero_video_thumbnail_url,
             features_title,
             features_subtitle,
+            features_list,
+            feature_cards,
             about_content,
             testimonials_title,
             testimonials_subtitle,
+            testimonials,
             pricing_title,
             pricing_subtitle,
+            pricing_tiers,
             contact_title,
             contact_subtitle,
             contact_email,
             contact_phone,
             portfolio_strip_url,
             portfolio_videos,
-            client_logos_url
+            client_logos_url,
+            comparison_problem_title,
+            comparison_problem_items,
+            comparison_solution_title,
+            comparison_solution_description,
+            comparison_solution_items,
+            custom_section_image_url,
+            cta_banner_title,
+            cta_banner_subtitle,
+            form_section_title,
+            form_section_subtitle
           `)
           .eq("slug", slug)
           .single();
@@ -108,6 +146,24 @@ export function useTemplateContent(slug: string) {
             ...data,
             portfolio_videos: Array.isArray(data.portfolio_videos) 
               ? data.portfolio_videos as { title: string; videoId?: string; image?: string }[]
+              : null,
+            features_list: Array.isArray((data as any).features_list)
+              ? ((data as any).features_list as { title: string; description?: string }[])
+              : null,
+            feature_cards: Array.isArray((data as any).feature_cards)
+              ? ((data as any).feature_cards as { title: string; subtitle?: string; description?: string }[])
+              : null,
+            testimonials: Array.isArray((data as any).testimonials)
+              ? ((data as any).testimonials as { quote: string; author?: string }[])
+              : null,
+            pricing_tiers: Array.isArray((data as any).pricing_tiers)
+              ? ((data as any).pricing_tiers as TemplateContent["pricing_tiers"])
+              : null,
+            comparison_problem_items: Array.isArray((data as any).comparison_problem_items)
+              ? ((data as any).comparison_problem_items as string[])
+              : null,
+            comparison_solution_items: Array.isArray((data as any).comparison_solution_items)
+              ? ((data as any).comparison_solution_items as string[])
               : null,
           };
           setTemplate(templateData);
@@ -145,6 +201,7 @@ export function useTemplateContentById(templateId: string | null) {
             id,
             slug,
             name,
+            thumbnail_url,
             hero_badge,
             hero_headline,
             hero_subheadline,
@@ -154,18 +211,32 @@ export function useTemplateContentById(templateId: string | null) {
             hero_video_thumbnail_url,
             features_title,
             features_subtitle,
+            features_list,
+            feature_cards,
             about_content,
             testimonials_title,
             testimonials_subtitle,
+            testimonials,
             pricing_title,
             pricing_subtitle,
+            pricing_tiers,
             contact_title,
             contact_subtitle,
             contact_email,
             contact_phone,
             portfolio_strip_url,
             portfolio_videos,
-            client_logos_url
+            client_logos_url,
+            comparison_problem_title,
+            comparison_problem_items,
+            comparison_solution_title,
+            comparison_solution_description,
+            comparison_solution_items,
+            custom_section_image_url,
+            cta_banner_title,
+            cta_banner_subtitle,
+            form_section_title,
+            form_section_subtitle
           `)
           .eq("id", templateId)
           .single();
@@ -178,6 +249,24 @@ export function useTemplateContentById(templateId: string | null) {
             ...data,
             portfolio_videos: Array.isArray(data.portfolio_videos) 
               ? data.portfolio_videos as { title: string; videoId?: string; image?: string }[]
+              : null,
+            features_list: Array.isArray((data as any).features_list)
+              ? ((data as any).features_list as { title: string; description?: string }[])
+              : null,
+            feature_cards: Array.isArray((data as any).feature_cards)
+              ? ((data as any).feature_cards as { title: string; subtitle?: string; description?: string }[])
+              : null,
+            testimonials: Array.isArray((data as any).testimonials)
+              ? ((data as any).testimonials as { quote: string; author?: string }[])
+              : null,
+            pricing_tiers: Array.isArray((data as any).pricing_tiers)
+              ? ((data as any).pricing_tiers as TemplateContent["pricing_tiers"])
+              : null,
+            comparison_problem_items: Array.isArray((data as any).comparison_problem_items)
+              ? ((data as any).comparison_problem_items as string[])
+              : null,
+            comparison_solution_items: Array.isArray((data as any).comparison_solution_items)
+              ? ((data as any).comparison_solution_items as string[])
               : null,
           };
           setTemplate(templateData);
