@@ -65,11 +65,14 @@ const TemplateEditor = () => {
   };
 
   const handlePreview = () => {
-    // Open preview in new tab
+    // Open preview in new tab with cache-busting timestamp
+    const cacheBuster = `?t=${Date.now()}`;
     if (template?.slug === "police-recruitment") {
-      window.open("/", "_blank");
+      window.open(`/police-recruitment${cacheBuster}`, "_blank");
     } else if (template?.slug === "b2b-demo") {
-      window.open("/b2b-demo", "_blank");
+      window.open(`/b2b-demo${cacheBuster}`, "_blank");
+    } else if (template?.slug === "wine-video") {
+      window.open(`/wine-video${cacheBuster}`, "_blank");
     }
   };
 
