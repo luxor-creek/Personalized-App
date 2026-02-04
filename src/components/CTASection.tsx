@@ -1,7 +1,33 @@
 import { Button } from "./ui/button";
-import { Mail, Phone, ExternalLink } from "lucide-react";
+import { Mail, ExternalLink } from "lucide-react";
 
-const CTASection = () => {
+interface CTASectionProps {
+  title?: string;
+  subtitle?: string;
+  contactEmail?: string;
+}
+
+const CTASection = ({ 
+  title = "Ready to Transform Your Recruitment Strategy?",
+  subtitle = "Let's discuss how Kicker Video can help your department attract the next generation of law enforcement professionals.",
+  contactEmail = "hello@kickervideo.com"
+}: CTASectionProps) => {
+  // Parse title for gradient effect
+  const renderTitle = () => {
+    // Check if title contains "Recruitment Strategy" to apply gradient
+    if (title.includes("Recruitment Strategy")) {
+      const parts = title.split("Recruitment Strategy");
+      return (
+        <>
+          {parts[0]}
+          <span className="text-gradient block mt-2">Recruitment Strategy?</span>
+          {parts[1]?.replace("?", "")}
+        </>
+      );
+    }
+    return title;
+  };
+
   return (
     <section id="contact" className="py-20 lg:py-32 hero-gradient relative overflow-hidden">
       {/* Background accent */}
@@ -10,17 +36,15 @@ const CTASection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Ready to Transform Your
-            <span className="text-gradient block mt-2">Recruitment Strategy?</span>
+            {renderTitle()}
           </h2>
           <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Let's discuss how Kicker Video can help your department attract the next 
-            generation of law enforcement professionals.
+            {subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button variant="hero" size="xl" asChild>
-              <a href="mailto:hello@kickervideo.com">
+              <a href={`mailto:${contactEmail}`}>
                 <Mail className="w-5 h-5" />
                 Contact Us
               </a>
@@ -35,11 +59,11 @@ const CTASection = () => {
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-muted-foreground">
             <a 
-              href="mailto:hello@kickervideo.com" 
+              href={`mailto:${contactEmail}`}
               className="flex items-center gap-2 hover:text-primary transition-colors"
             >
               <Mail className="w-4 h-4" />
-              hello@kickervideo.com
+              {contactEmail}
             </a>
             <span className="hidden sm:block text-border">|</span>
             <a 

@@ -1,6 +1,10 @@
-import clientLogos from "@/assets/client-logos.png";
+import clientLogosDefault from "@/assets/client-logos.png";
 
-const LogoCarousel = () => {
+interface LogoCarouselProps {
+  imageUrl?: string;
+}
+
+const LogoCarousel = ({ imageUrl }: LogoCarouselProps) => {
   return (
     <section className="py-12 bg-secondary/30 border-y border-border/50">
       <div className="container mx-auto px-4">
@@ -10,7 +14,7 @@ const LogoCarousel = () => {
         
         <div className="flex justify-center">
           <img 
-            src={clientLogos} 
+            src={imageUrl || clientLogosDefault} 
             alt="Trusted by HP, ExxonMobil, Pittsburgh Police, Cenovus, North Central Texas Council of Governments, Ntrepid Intelligence, Novartis, Alameda County, Optum, Pulse Electronics, Harris Utilities, L3 Wescam" 
             className="max-w-full h-auto"
           />

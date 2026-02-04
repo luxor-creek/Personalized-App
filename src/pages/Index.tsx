@@ -30,10 +30,21 @@ const Index = () => {
         ctaSecondaryText={template?.hero_cta_secondary_text || undefined}
         videoId={template?.hero_video_id || undefined}
       />
-      <LogoCarousel />
-      <AboutSection />
-      <PortfolioStrip />
-      <CTASection />
+      <LogoCarousel 
+        imageUrl={template?.client_logos_url || undefined}
+      />
+      <AboutSection 
+        title={template?.features_title || undefined}
+        content={template?.about_content || undefined}
+      />
+      <PortfolioStrip 
+        imageUrl={template?.portfolio_strip_url || undefined}
+      />
+      <CTASection 
+        title={template?.contact_title || undefined}
+        subtitle={template?.contact_subtitle || undefined}
+        contactEmail={template?.contact_email || undefined}
+      />
       <Footer />
     </div>
   );
