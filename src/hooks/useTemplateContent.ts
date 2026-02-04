@@ -63,6 +63,10 @@ export function useTemplateContent(slug: string) {
 
   useEffect(() => {
     const fetchTemplate = async () => {
+      // Reset state for fresh fetch
+      setLoading(true);
+      setError(null);
+      
       try {
         const { data, error: fetchError } = await supabase
           .from("landing_page_templates")
