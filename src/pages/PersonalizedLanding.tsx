@@ -343,14 +343,14 @@ const PersonalizedLanding = () => {
                   THE PROBLEM
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
-                  Why Viaxo Exists
+                  {template?.comparison_problem_title || "Why this works:"}
                 </h2>
                 <div className="space-y-4">
-                  {[
+                  {(template?.comparison_problem_items || [
                     "Traditional video production doesn't scale",
                     "Static pages underperform in engagement",
                     "Search and AI discovery prioritize video",
-                  ].map((item, index) => (
+                  ]).map((item, index) => (
                     <div key={index} className="flex items-center gap-4 bg-white rounded-lg p-4 shadow-sm">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0" />
                       <span className="text-foreground">{item}</span>
@@ -364,18 +364,18 @@ const PersonalizedLanding = () => {
                   THE SOLUTION
                 </p>
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                  Infrastructure for Practical Video at Scale
+                  {template?.comparison_solution_title || "Infrastructure for Practical Video at Scale"}
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  Viaxo provides infrastructure that makes video practical across entire catalogs and campaigns.
+                  {template?.comparison_solution_description || "Kicker provides infrastructure that makes video practical across entire catalogs and campaigns."}
                 </p>
                 <div className="space-y-3">
-                  {[
+                  {(template?.comparison_solution_items || [
                     "Automated generation from existing content",
                     "Template-driven consistency",
                     "Bulk processing capability",
                     "White-label delivery",
-                  ].map((item, index) => (
+                  ]).map((item, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                       <span className="text-foreground">{item}</span>
