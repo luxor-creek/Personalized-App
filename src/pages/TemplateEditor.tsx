@@ -1081,61 +1081,13 @@ const TemplateEditor = () => {
             </div>
           </section>
 
-          {/* Contact Section */}
-          <section className="py-20 bg-white">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-                  <RichTextEditor
-                    value={template.contact_title || "Ready to plan your demo?"}
-                    onChange={(value) => updateField("contact_title", value)}
-                    fieldName="Contact Title"
-                    supportsPersonalization
-                    isHeadline
-                  />
-                </h2>
-                <div className="text-lg text-gray-600 text-center mb-8">
-                  <RichTextEditor
-                    value={template.contact_subtitle || "Tell us about your audience, goals, and deadline. We'll return with a simple plan, scope, and timeline."}
-                    onChange={(value) => updateField("contact_subtitle", value)}
-                    fieldName="Contact Subtitle"
-                    supportsPersonalization
-                  />
-                </div>
-
-                {/* Info badges */}
-                <div className="flex flex-wrap justify-center gap-4 mb-12">
-                  <div className="flex items-center gap-2 text-gray-600 text-sm">
-                    <RichTextEditor
-                      value={template.form_section_title || "Typical timeline: 2–3 weeks (demo), 3–6 weeks (live action)"}
-                      onChange={(value) => updateField("form_section_title", value)}
-                      fieldName="Timeline Info"
-                      supportsPersonalization
-                    />
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="flex flex-wrap justify-center gap-6 mb-12">
-                  <a href="mailto:hello@kickervideo.com" className="flex items-center gap-2 text-gray-900 hover:text-amber-600 font-medium">
-                    <Mail className="w-5 h-5" />
-                    <EditableText
-                      value={template.contact_email || "hello@kickervideo.com"}
-                      onChange={(value) => updateField("contact_email", value)}
-                      fieldName="Contact Email"
-                    />
-                  </a>
-                  <a href="tel:+18005551234" className="flex items-center gap-2 text-gray-600 hover:text-amber-600">
-                    <EditableText
-                      value={template.contact_phone || "(800) 555‑1234"}
-                      onChange={(value) => updateField("contact_phone", value)}
-                      fieldName="Contact Phone"
-                    />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </section>
+          {/* Contact Section with Sample Request Form */}
+          <EditableSampleRequestForm
+            formTitle={template.form_section_title || "Request a Sample Video"}
+            formSubtitle={template.form_section_subtitle || "See what Viaxo can do with your content. We'll generate a sample video from your existing page—no creative brief required."}
+            onTitleChange={(value) => updateField("form_section_title", value)}
+            onSubtitleChange={(value) => updateField("form_section_subtitle", value)}
+          />
 
           {/* Footer */}
           <footer className="py-6 bg-gray-100 border-t border-gray-200">
