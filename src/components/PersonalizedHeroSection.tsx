@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { ArrowDown } from "lucide-react";
 import kickerLogo from "@/assets/kicker-logo.png";
 import { applyPersonalization } from "@/hooks/useTemplateContent";
+import { renderFormattedText } from "@/lib/formatText";
 
 interface PersonalizedHeroSectionProps {
   thumbnailUrl?: string;
@@ -101,13 +102,13 @@ const PersonalizedHeroSection = ({
         {/* Main Content */}
         <div className="max-w-5xl mx-auto text-center mb-12 lg:mb-16">
           <p className="text-primary font-medium tracking-wider uppercase mb-4 animate-fade-up">
-            {getBadge()}
+            {renderFormattedText(getBadge())}
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 animate-fade-up-delay leading-tight">
-            {getHeadline()}
+            {renderFormattedText(getHeadline())}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up-delay-2">
-            {getSubheadline()}
+            {renderFormattedText(getSubheadline())}
           </p>
         </div>
 

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { renderFormattedText } from "@/lib/formatText";
 
 interface AboutSectionProps {
   title?: string;
@@ -28,65 +29,6 @@ const AboutSection = ({
   title = DEFAULT_TITLE,
   content = DEFAULT_CONTENT 
 }: AboutSectionProps) => {
-  // Render text with formatting (bold, italic, personalization tokens)
-  const renderFormattedText = (text: string): React.ReactNode => {
-    const elements: React.ReactNode[] = [];
-    let key = 0;
-
-    // Regex to match bold, italic, and personalization tokens
-    const formatRegex = /(\*\*(.+?)\*\*|\*(.+?)\*|{{[^}]+}})/g;
-    
-    let lastIndex = 0;
-    let match;
-    
-    while ((match = formatRegex.exec(text)) !== null) {
-      // Add text before match
-      if (match.index > lastIndex) {
-        elements.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>);
-      }
-      
-      const fullMatch = match[0];
-      
-      // Bold
-      if (fullMatch.startsWith('**') && fullMatch.endsWith('**')) {
-        const innerText = fullMatch.slice(2, -2);
-        elements.push(
-          <strong key={key++} className="font-semibold text-foreground">
-            {innerText}
-          </strong>
-        );
-      }
-      // Italic
-      else if (fullMatch.startsWith('*') && fullMatch.endsWith('*') && !fullMatch.startsWith('**')) {
-        const innerText = fullMatch.slice(1, -1);
-        elements.push(
-          <em key={key++} className="italic text-primary">
-            {innerText}
-          </em>
-        );
-      }
-      // Personalization tokens - show highlighted on the landing page
-      else if (fullMatch.match(/{{[^}]+}}/)) {
-        elements.push(
-          <span 
-            key={key++} 
-            className="text-primary font-medium"
-          >
-            {fullMatch}
-          </span>
-        );
-      }
-      
-      lastIndex = match.index + fullMatch.length;
-    }
-    
-    // Add remaining text
-    if (lastIndex < text.length) {
-      elements.push(<span key={key++}>{text.substring(lastIndex)}</span>);
-    }
-    
-    return elements.length > 0 ? elements : text;
-  };
 
   // Parse content into paragraphs
   const parsedContent = useMemo(() => {

@@ -1,5 +1,6 @@
 import { Button } from "./ui/button";
 import { Mail, ExternalLink } from "lucide-react";
+import { renderFormattedText } from "@/lib/formatText";
 
 interface CTASectionProps {
   title?: string;
@@ -12,45 +13,6 @@ const CTASection = ({
   subtitle = "Let's discuss how Kicker Video can help your department attract the next generation of law enforcement professionals.",
   contactEmail = "hello@kickervideo.com"
 }: CTASectionProps) => {
-  // Render text with personalization tokens highlighted
-  const renderFormattedText = (text: string): React.ReactNode => {
-    const elements: React.ReactNode[] = [];
-    let key = 0;
-
-    // Regex to match personalization tokens
-    const formatRegex = /{{[^}]+}}/g;
-    
-    let lastIndex = 0;
-    let match;
-    
-    while ((match = formatRegex.exec(text)) !== null) {
-      // Add text before match
-      if (match.index > lastIndex) {
-        elements.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>);
-      }
-      
-      const fullMatch = match[0];
-      
-      // Personalization tokens - show highlighted
-      elements.push(
-        <span 
-          key={key++} 
-          className="text-primary font-medium"
-        >
-          {fullMatch}
-        </span>
-      );
-      
-      lastIndex = match.index + fullMatch.length;
-    }
-    
-    // Add remaining text
-    if (lastIndex < text.length) {
-      elements.push(<span key={key++}>{text.substring(lastIndex)}</span>);
-    }
-    
-    return elements.length > 0 ? elements : text;
-  };
 
   // Parse title for gradient effect
   const renderTitle = () => {

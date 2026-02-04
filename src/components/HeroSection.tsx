@@ -2,6 +2,7 @@ import VideoPlayer from "./VideoPlayer";
 import { Button } from "./ui/button";
 import { ArrowDown } from "lucide-react";
 import kickerLogo from "@/assets/kicker-logo.png";
+import { renderFormattedText } from "@/lib/formatText";
 
 interface HeroSectionProps {
   thumbnailUrl?: string;
@@ -13,46 +14,6 @@ interface HeroSectionProps {
   ctaSecondaryText?: string;
   videoId?: string;
 }
-
-// Render text with personalization tokens highlighted
-const renderFormattedText = (text: string): React.ReactNode => {
-  const elements: React.ReactNode[] = [];
-  let key = 0;
-
-  // Regex to match personalization tokens
-  const formatRegex = /{{[^}]+}}/g;
-  
-  let lastIndex = 0;
-  let match;
-  
-  while ((match = formatRegex.exec(text)) !== null) {
-    // Add text before match
-    if (match.index > lastIndex) {
-      elements.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>);
-    }
-    
-    const fullMatch = match[0];
-    
-    // Personalization tokens - show highlighted
-    elements.push(
-      <span 
-        key={key++} 
-        className="text-primary font-medium"
-      >
-        {fullMatch}
-      </span>
-    );
-    
-    lastIndex = match.index + fullMatch.length;
-  }
-  
-  // Add remaining text
-  if (lastIndex < text.length) {
-    elements.push(<span key={key++}>{text.substring(lastIndex)}</span>);
-  }
-  
-  return elements.length > 0 ? elements : text;
-};
 
 const HeroSection = ({ 
   thumbnailUrl,

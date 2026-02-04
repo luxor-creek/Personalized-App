@@ -9,6 +9,7 @@ import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { useTemplateContentById, applyPersonalization } from "@/hooks/useTemplateContent";
+import { renderFormattedText } from "@/lib/formatText";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import kickerLogo from "@/assets/kicker-logo.png";
@@ -171,17 +172,17 @@ const PersonalizedLanding = () => {
               <div className="flex items-center gap-2 text-amber-600 mb-6">
                 <Sparkles className="w-4 h-4" />
                 <span className="text-sm font-medium uppercase tracking-wide">
-                  {applyPersonalization(template?.hero_badge || "Personalized for {{company}}", personalizationData)}
+                  {renderFormattedText(applyPersonalization(template?.hero_badge || "Personalized for {{company}}", personalizationData))}
                 </span>
               </div>
 
               <div className="grid md:grid-cols-2 gap-8 items-start">
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight mb-4">
-                    {applyPersonalization(template?.hero_headline || `Hi {{first_name}}, you're going to love the proposal we have for {{company}}.`, personalizationData)}
+                    {renderFormattedText(applyPersonalization(template?.hero_headline || `Hi {{first_name}}, you're going to love the proposal we have for {{company}}.`, personalizationData))}
                   </h1>
                   <p className="text-lg text-muted-foreground mb-8">
-                    {applyPersonalization(template?.hero_subheadline || "", personalizationData)}
+                    {renderFormattedText(applyPersonalization(template?.hero_subheadline || "", personalizationData))}
                   </p>
 
                   <div className="flex flex-wrap gap-3">
@@ -315,7 +316,7 @@ const PersonalizedLanding = () => {
         <section className="py-16 px-6 bg-white">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-10 text-center">
-              {applyPersonalization(template?.testimonials_title || "What teams like {{company}} say", personalizationData)}
+              {renderFormattedText(applyPersonalization(template?.testimonials_title || "What teams like {{company}} say", personalizationData))}
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -450,10 +451,10 @@ const PersonalizedLanding = () => {
         <section className="py-16 px-6 bg-white">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {applyPersonalization(template?.contact_title || "Let's make {{company}} the obvious choice", personalizationData)}
+              {renderFormattedText(applyPersonalization(template?.contact_title || "Let's make {{company}} the obvious choice", personalizationData))}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              {applyPersonalization(template?.contact_subtitle || "Book a quick brainstorm with a senior producer. We'll scope ideas, timelines, and budget in one call.", personalizationData)}
+              {renderFormattedText(applyPersonalization(template?.contact_subtitle || "Book a quick brainstorm with a senior producer. We'll scope ideas, timelines, and budget in one call.", personalizationData))}
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center">
