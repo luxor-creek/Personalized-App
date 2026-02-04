@@ -66,13 +66,21 @@ const TemplateEditor = () => {
 
   const handlePreview = () => {
     // Open preview in new tab with cache-busting timestamp
+    // Use current origin to ensure we stay on preview domain (not published)
+    const origin = window.location.origin;
     const cacheBuster = `?t=${Date.now()}`;
+    
+    let previewPath = "";
     if (template?.slug === "police-recruitment") {
-      window.open(`/police-recruitment${cacheBuster}`, "_blank");
+      previewPath = "/police-recruitment";
     } else if (template?.slug === "b2b-demo") {
-      window.open(`/b2b-demo${cacheBuster}`, "_blank");
+      previewPath = "/b2b-demo";
     } else if (template?.slug === "wine-video") {
-      window.open(`/wine-video${cacheBuster}`, "_blank");
+      previewPath = "/wine-video";
+    }
+    
+    if (previewPath) {
+      window.open(`${origin}${previewPath}${cacheBuster}`, "_blank");
     }
   };
 
