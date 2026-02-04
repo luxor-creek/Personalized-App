@@ -206,6 +206,9 @@ const SampleRequestForm = () => {
                     <SelectItem value="executive-message">Executive Message</SelectItem>
                     <SelectItem value="social-media-video">Social Media Video</SelectItem>
                     <SelectItem value="quick-location-shoot">Quick Location Shoot</SelectItem>
+                    <SelectItem value="brand-video">Brand Video</SelectItem>
+                    <SelectItem value="explainer-video">Explainer Video</SelectItem>
+                    <SelectItem value="animated-video">Animated Video</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -235,11 +238,11 @@ const SampleRequestForm = () => {
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Submitting..." : "Submit Request"}
+                {isSubmitting ? "Sending..." : "Send"}
               </Button>
 
               <p className="text-center text-muted-foreground text-sm">
-                We'll get back to you within 24 hours.
+                We'll get back to you in 30 mins or less.
               </p>
             </form>
           </div>

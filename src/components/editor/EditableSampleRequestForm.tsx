@@ -52,18 +52,18 @@ const EditableSampleRequestForm = ({
               {[
                 { 
                   number: 1, 
-                  title: "Submit your URL", 
-                  description: "Share a product or service page you'd like converted." 
+                  title: "Submit your request", 
+                  description: "Tell us about your project and timeline." 
                 },
                 { 
                   number: 2, 
-                  title: "We generate a sample", 
-                  description: "Using our standard template, we'll create a sample video." 
+                  title: "We reach out", 
+                  description: "Our team will contact you to discuss details." 
                 },
                 { 
                   number: 3, 
-                  title: "Review and decide", 
-                  description: "No obligation. See if Viaxo fits your needs." 
+                  title: "Get your video", 
+                  description: "Receive a professional video tailored to your needs." 
                 },
               ].map((step) => (
                 <div key={step.number} className="flex items-start gap-4">
@@ -139,6 +139,9 @@ const EditableSampleRequestForm = ({
                     <SelectItem value="executive-message">Executive Message</SelectItem>
                     <SelectItem value="social-media-video">Social Media Video</SelectItem>
                     <SelectItem value="quick-location-shoot">Quick Location Shoot</SelectItem>
+                    <SelectItem value="brand-video">Brand Video</SelectItem>
+                    <SelectItem value="explainer-video">Explainer Video</SelectItem>
+                    <SelectItem value="animated-video">Animated Video</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -165,11 +168,11 @@ const EditableSampleRequestForm = ({
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6"
                 disabled
               >
-                Submit Request
+                Send
               </Button>
 
               <p className="text-center text-muted-foreground text-sm">
-                We'll get back to you within 24 hours.
+                We'll get back to you in 30 mins or less.
               </p>
             </div>
           </div>
