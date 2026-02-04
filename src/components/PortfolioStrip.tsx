@@ -1,11 +1,15 @@
-import portfolioStrip from "@/assets/portfolio-strip.png";
+import portfolioStripDefault from "@/assets/portfolio-strip.png";
 
-const PortfolioStrip = () => {
+interface PortfolioStripProps {
+  imageUrl?: string;
+}
+
+const PortfolioStrip = ({ imageUrl }: PortfolioStripProps) => {
   return (
     <section className="bg-background">
       <div className="w-full">
         <img 
-          src={portfolioStrip} 
+          src={imageUrl || portfolioStripDefault} 
           alt="Portfolio examples: Alameda County Waste Management Authority, Active Shooter Awareness training video, Police community engagement" 
           className="w-full h-auto"
         />

@@ -25,6 +25,7 @@ export interface TemplateContent {
   contact_phone: string | null;
   portfolio_strip_url: string | null;
   portfolio_videos: { title: string; videoId?: string; image?: string }[] | null;
+  client_logos_url: string | null;
 }
 
 interface PersonalizationData {
@@ -88,7 +89,8 @@ export function useTemplateContent(slug: string) {
             contact_email,
             contact_phone,
             portfolio_strip_url,
-            portfolio_videos
+            portfolio_videos,
+            client_logos_url
           `)
           .eq("slug", slug)
           .single();
@@ -158,7 +160,8 @@ export function useTemplateContentById(templateId: string | null) {
             contact_email,
             contact_phone,
             portfolio_strip_url,
-            portfolio_videos
+            portfolio_videos,
+            client_logos_url
           `)
           .eq("id", templateId)
           .single();

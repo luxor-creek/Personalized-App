@@ -1,4 +1,79 @@
-const AboutSection = () => {
+import { useMemo } from "react";
+
+interface AboutSectionProps {
+  title?: string;
+  content?: string;
+}
+
+const DEFAULT_TITLE = "Why Departments Choose Kicker Video";
+const DEFAULT_CONTENT = `Most police recruitment videos aren't broken.
+They're just outdated.
+
+They were made for a time when interest was high and competition was low. Today, recruits are more cautious, more informed, and quicker to walk away if something feels unrealistic or unclear.
+
+We see the same pattern again and again.
+Departments invest in a video that looks professional, but doesn't answer the questions candidates are really asking. The result. Fewer qualified applicants and more drop-off later in the process.
+
+**Kicker builds recruitment videos with one goal.**
+**Help the right people self-select into the job.**
+
+That means showing the work honestly. Letting officers speak in their own words. Being clear about expectations, career paths, and what the job actually demands.
+
+We recently wrapped a recruitment video for the Pittsburgh Police Department using this approach. The department saw stronger engagement and better-fit applicants because the video did its job early in the funnel.
+
+If your current recruitment video is more than a few years old, it's worth asking a simple question.
+*Is it helping your pipeline. Or quietly hurting it.*`;
+
+const AboutSection = ({ 
+  title = DEFAULT_TITLE,
+  content = DEFAULT_CONTENT 
+}: AboutSectionProps) => {
+  // Parse markdown-like content into structured paragraphs
+  const parsedContent = useMemo(() => {
+    const paragraphs = content.split('\n\n').filter(p => p.trim());
+    
+    return paragraphs.map((paragraph, index) => {
+      // Check for bold markers
+      const isBold = paragraph.startsWith('**') && paragraph.includes('**');
+      // Check for italic markers
+      const isItalic = paragraph.startsWith('*') && !paragraph.startsWith('**');
+      
+      // Clean the text
+      let text = paragraph
+        .replace(/\*\*/g, '')
+        .replace(/^\*/, '')
+        .replace(/\*$/, '')
+        .trim();
+      
+      // Handle line breaks within paragraph
+      const lines = text.split('\n');
+      
+      return {
+        key: index,
+        text,
+        lines,
+        isBold,
+        isItalic,
+      };
+    });
+  }, [content]);
+
+  // Parse title for gradient effect
+  const renderTitle = () => {
+    // Check if title contains "Kicker Video" to apply gradient
+    if (title.includes("Kicker Video")) {
+      const parts = title.split("Kicker Video");
+      return (
+        <>
+          {parts[0]}
+          <span className="text-gradient">Kicker Video</span>
+          {parts[1]}
+        </>
+      );
+    }
+    return title;
+  };
+
   return (
     <section id="about" className="py-20 lg:py-32 bg-card relative">
       {/* Accent line */}
@@ -7,48 +82,54 @@ const AboutSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Why Departments Choose
-            <span className="text-gradient"> Kicker Video</span>
+            {renderTitle()}
           </h2>
         </div>
 
         <div className="max-w-3xl mx-auto">
           <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-            <p>
-              Most police recruitment videos aren't broken.
-              <br />
-              They're just outdated.
-            </p>
-            
-            <p>
-              They were made for a time when interest was high and competition was low. Today, recruits are more cautious, more informed, and quicker to walk away if something feels unrealistic or unclear.
-            </p>
-            
-            <p>
-              We see the same pattern again and again.
-              <br />
-              Departments invest in a video that looks professional, but doesn't answer the questions candidates are really asking. The result. Fewer qualified applicants and more drop-off later in the process.
-            </p>
-            
-            <p className="text-foreground font-semibold">
-              Kicker builds recruitment videos with one goal.
-              <br />
-              Help the right people self-select into the job.
-            </p>
-            
-            <p>
-              That means showing the work honestly. Letting officers speak in their own words. Being clear about expectations, career paths, and what the job actually demands.
-            </p>
-            
-            <p>
-              We recently wrapped a recruitment video for the Pittsburgh Police Department using this approach. The department saw stronger engagement and better-fit applicants because the video did its job early in the funnel.
-            </p>
-            
-            <p className="text-foreground font-medium">
-              If your current recruitment video is more than a few years old, it's worth asking a simple question.
-              <br />
-              <span className="text-primary">Is it helping your pipeline. Or quietly hurting it.</span>
-            </p>
+            {parsedContent.map((para) => {
+              if (para.isBold) {
+                return (
+                  <p key={para.key} className="text-foreground font-semibold">
+                    {para.lines.map((line, i) => (
+                      <span key={i}>
+                        {line}
+                        {i < para.lines.length - 1 && <br />}
+                      </span>
+                    ))}
+                  </p>
+                );
+              }
+              
+              if (para.isItalic) {
+                return (
+                  <p key={para.key} className="text-foreground font-medium">
+                    {para.lines.map((line, i) => (
+                      <span key={i}>
+                        {i === para.lines.length - 1 ? (
+                          <span className="text-primary">{line}</span>
+                        ) : (
+                          line
+                        )}
+                        {i < para.lines.length - 1 && <br />}
+                      </span>
+                    ))}
+                  </p>
+                );
+              }
+              
+              return (
+                <p key={para.key}>
+                  {para.lines.map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i < para.lines.length - 1 && <br />}
+                    </span>
+                  ))}
+                </p>
+              );
+            })}
           </div>
         </div>
       </div>
