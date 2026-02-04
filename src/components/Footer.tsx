@@ -7,9 +7,14 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={kickerLogo} alt="Kicker Video" className="h-6" />
 
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Kicker Video. Professional video production.
-          </p>
+          <div className="text-center md:text-left">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Kicker Video. Professional video production.
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              We collect anonymous analytics to improve our service.
+            </p>
+          </div>
 
           <a 
             href="https://kickervideo.com" 

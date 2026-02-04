@@ -473,9 +473,14 @@ const PersonalizedLanding = () => {
         <footer className="py-8 px-6 bg-gray-50 border-t">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <img src={kickerLogo} alt="Kicker Video" className="h-6" />
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Kicker Video. Professional video production.
-            </p>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} Kicker Video. Professional video production.
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                We collect anonymous analytics to improve our service.
+              </p>
+            </div>
           </div>
         </footer>
       </div>
