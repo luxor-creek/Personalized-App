@@ -46,10 +46,10 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.firstName || !formData.email || !formData.company || !formData.primaryGoal) {
+    if (!formData.firstName || !formData.email || !formData.company || !formData.productUrl) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in First Name, Email, Company, and Primary Goal.",
+        description: "Please fill in First Name, Email, Company, and Product URL.",
         variant: "destructive",
       });
       return;
@@ -67,17 +67,15 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
     }
 
     // Validate URL format if provided
-    if (formData.productUrl) {
-      try {
-        new URL(formData.productUrl);
-      } catch {
-        toast({
-          title: "Invalid URL",
-          description: "Please enter a valid URL (e.g., https://example.com).",
-          variant: "destructive",
-        });
-        return;
-      }
+    try {
+      new URL(formData.productUrl);
+    } catch {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid URL (e.g., https://example.com).",
+        variant: "destructive",
+      });
+      return;
     }
 
     setIsSubmitting(true);
@@ -209,7 +207,7 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
 
               <div className="space-y-2">
                 <Label htmlFor="primaryGoal" className="text-foreground">
-                  Primary Goal <span className="text-destructive">*</span>
+                  Primary Goal
                 </Label>
                 <Select 
                   value={formData.primaryGoal} 
@@ -233,7 +231,7 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
 
               <div className="space-y-2">
                 <Label htmlFor="productUrl" className="text-foreground">
-                  URL of product for the demo
+                  URL of product for the demo <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="productUrl"

@@ -24,8 +24,8 @@ interface SampleRequest {
   lastName?: string;
   email: string;
   company: string;
-  primaryGoal: string;
-  productUrl?: string;
+  primaryGoal?: string;
+  productUrl: string;
 }
 
 // HTML escape function to prevent XSS in email templates
@@ -77,9 +77,9 @@ const handler = async (req: Request): Promise<Response> => {
     const productUrl = truncate(body.productUrl, MAX_LENGTHS.productUrl);
 
     // Validate required fields
-    if (!firstName || !email || !company || !primaryGoal) {
+    if (!firstName || !email || !company || !productUrl) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: firstName, email, company, and primaryGoal are required" }),
+        JSON.stringify({ error: "Missing required fields: firstName, email, company, and productUrl are required" }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -100,18 +100,16 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Validate URL format if provided
-    if (productUrl) {
-      try {
-        new URL(productUrl);
-      } catch {
-        return new Response(
-          JSON.stringify({ error: "Invalid URL format" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          }
-        );
-      }
+    try {
+      new URL(productUrl);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid URL format" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     // HTML escape all user input for the email template
@@ -143,8 +141,8 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h2 style="color: #374151; margin-top: 0;">Project Details</h2>
-            <p style="margin: 8px 0;"><strong>Primary Goal:</strong> ${formatPrimaryGoal(primaryGoal)}</p>
-            ${safeProductUrl ? `<p style="margin: 8px 0;"><strong>Product URL:</strong> <a href="${safeProductUrl}" style="color: #2563eb;">${safeProductUrl}</a></p>` : ''}
+            ${primaryGoal ? `<p style="margin: 8px 0;"><strong>Primary Goal:</strong> ${formatPrimaryGoal(primaryGoal)}</p>` : ''}
+            <p style="margin: 8px 0;"><strong>Product URL:</strong> <a href="${safeProductUrl}" style="color: #2563eb;">${safeProductUrl}</a></p>
           </div>
           
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
