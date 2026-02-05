@@ -38,18 +38,18 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
     lastName: "",
     email: "",
     company: "",
-    primaryGoal: "",
-    timeline: "",
+    primaryGoal: "free-demo",
+    productUrl: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.firstName || !formData.email || !formData.company || !formData.primaryGoal || !formData.timeline) {
+    if (!formData.firstName || !formData.email || !formData.company || !formData.primaryGoal) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in First Name, Email, Company, Primary Goal, and Timeline.",
+        description: "Please fill in First Name, Email, Company, and Primary Goal.",
         variant: "destructive",
       });
       return;
@@ -64,6 +64,20 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate URL format if provided
+    if (formData.productUrl) {
+      try {
+        new URL(formData.productUrl);
+      } catch {
+        toast({
+          title: "Invalid URL",
+          description: "Please enter a valid URL (e.g., https://example.com).",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -86,8 +100,8 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
         lastName: "",
         email: "",
         company: "",
-        primaryGoal: "",
-        timeline: "",
+        primaryGoal: "free-demo",
+        productUrl: "",
       });
     } catch (error: any) {
       console.error("Error submitting form:", error);
@@ -218,23 +232,18 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="timeline" className="text-foreground">
-                  Timeline <span className="text-destructive">*</span>
+                <Label htmlFor="productUrl" className="text-foreground">
+                  URL of product for the demo
                 </Label>
-                <Select 
-                  value={formData.timeline} 
-                  onValueChange={(value) => setFormData({ ...formData, timeline: value })}
-                >
-                  <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select your timeline" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="this-week">This Week</SelectItem>
-                    <SelectItem value="next-week">Next Week</SelectItem>
-                    <SelectItem value="next-month">Next Month</SelectItem>
-                    <SelectItem value="no-rush">No Rush</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="productUrl"
+                  type="url"
+                  placeholder="https://example.com/product"
+                  value={formData.productUrl}
+                  onChange={(e) => setFormData({ ...formData, productUrl: e.target.value })}
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  maxLength={500}
+                />
               </div>
 
               <Button 
