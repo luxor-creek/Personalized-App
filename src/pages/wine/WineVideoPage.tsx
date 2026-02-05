@@ -171,10 +171,6 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
                     <Calendar className="w-4 h-4" />
                     {template?.hero_cta_primary_text || "Contact Us"}
                   </Button>
-                  <Button variant="outline" className="gap-2">
-                    <PlayCircle className="w-4 h-4" />
-                    {template?.hero_cta_secondary_text || "See portfolio"}
-                  </Button>
                 </div>
               </div>
 
@@ -265,10 +261,6 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               {template?.testimonials_subtitle || "Other Examples"}
             </h2>
-            <Button variant="link" className="gap-2 text-primary p-0">
-              Request a tailored reel
-              <ArrowRight className="w-4 h-4" />
-            </Button>
           </div>
           <p className="text-lg text-muted-foreground mb-10 max-w-3xl">
             {template?.portfolio_strip_url ||
@@ -375,11 +367,8 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
               </ul>
 
               <div className="flex flex-wrap gap-3">
-                <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Get a tailored quote
-                </Button>
-                <Button variant="outline" className="gap-2">
-                  See more work
+                <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={scrollToForm}>
+                  Get a Free Video
                 </Button>
               </div>
             </div>
@@ -434,11 +423,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           <div className="flex flex-wrap gap-4 justify-center">
             <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={scrollToForm}>
               <Phone className="w-4 h-4" />
-              Contact Us
-            </Button>
-            <Button size="lg" variant="outline" className="gap-2">
-              <Film className="w-4 h-4" />
-              Request reel
+              Get a Free Video
             </Button>
           </div>
         </div>
