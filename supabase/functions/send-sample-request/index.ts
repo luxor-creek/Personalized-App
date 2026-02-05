@@ -16,7 +16,7 @@ const MAX_LENGTHS = {
   email: 100,
   company: 100,
   primaryGoal: 50,
-  timeline: 20,
+  productUrl: 500,
 };
 
 interface SampleRequest {
@@ -25,7 +25,7 @@ interface SampleRequest {
   email: string;
   company: string;
   primaryGoal: string;
-  timeline: string;
+  productUrl?: string;
 }
 
 // HTML escape function to prevent XSS in email templates
@@ -47,6 +47,7 @@ const truncate = (str: string | undefined, maxLength: number): string => {
 
 const formatPrimaryGoal = (goal: string): string => {
   const goals: Record<string, string> = {
+    "free-demo": "Free Demo",
     "training-video": "Training Video",
     "executive-message": "Executive Message",
     "social-media-video": "Social Media Video",
@@ -56,16 +57,6 @@ const formatPrimaryGoal = (goal: string): string => {
     "animated-video": "Animated Video",
   };
   return goals[goal] || escapeHtml(goal);
-};
-
-const formatTimeline = (timeline: string): string => {
-  const timelines: Record<string, string> = {
-    "this-week": "This Week",
-    "next-week": "Next Week",
-    "next-month": "Next Month",
-    "no-rush": "No Rush",
-  };
-  return timelines[timeline] || escapeHtml(timeline);
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -83,12 +74,12 @@ const handler = async (req: Request): Promise<Response> => {
     const email = truncate(body.email, MAX_LENGTHS.email);
     const company = truncate(body.company, MAX_LENGTHS.company);
     const primaryGoal = truncate(body.primaryGoal, MAX_LENGTHS.primaryGoal);
-    const timeline = truncate(body.timeline, MAX_LENGTHS.timeline);
+    const productUrl = truncate(body.productUrl, MAX_LENGTHS.productUrl);
 
     // Validate required fields
-    if (!firstName || !email || !company || !primaryGoal || !timeline) {
+    if (!firstName || !email || !company || !primaryGoal) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: firstName, email, company, primaryGoal, and timeline are required" }),
+        JSON.stringify({ error: "Missing required fields: firstName, email, company, and primaryGoal are required" }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -108,14 +99,30 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Validate URL format if provided
+    if (productUrl) {
+      try {
+        new URL(productUrl);
+      } catch {
+        return new Response(
+          JSON.stringify({ error: "Invalid URL format" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
+
     // HTML escape all user input for the email template
     const safeFirstName = escapeHtml(firstName);
     const safeLastName = escapeHtml(lastName);
     const safeEmail = escapeHtml(email);
     const safeCompany = escapeHtml(company);
     const fullName = safeLastName ? `${safeFirstName} ${safeLastName}` : safeFirstName;
+    const safeProductUrl = escapeHtml(productUrl);
 
-    console.log("Sending sample request email for:", { company: safeCompany, primaryGoal, timeline });
+    console.log("Sending sample request email for:", { company: safeCompany, primaryGoal, productUrl });
 
     const emailResponse = await resend.emails.send({
       from: "Kicker Video <onboarding@resend.dev>",
@@ -137,7 +144,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h2 style="color: #374151; margin-top: 0;">Project Details</h2>
             <p style="margin: 8px 0;"><strong>Primary Goal:</strong> ${formatPrimaryGoal(primaryGoal)}</p>
-            <p style="margin: 8px 0;"><strong>Timeline:</strong> ${formatTimeline(timeline)}</p>
+            ${safeProductUrl ? `<p style="margin: 8px 0;"><strong>Product URL:</strong> <a href="${safeProductUrl}" style="color: #2563eb;">${safeProductUrl}</a></p>` : ''}
           </div>
           
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">

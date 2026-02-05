@@ -1,13 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import RichTextEditor from "./RichTextEditor";
 
 interface EditableSampleRequestFormProps {
@@ -130,37 +123,22 @@ const EditableSampleRequestForm = ({
                 <Label className="text-foreground">
                   Primary Goal <span className="text-destructive">*</span>
                 </Label>
-                <Select disabled>
-                  <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select your primary goal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="training-video">Training Video</SelectItem>
-                    <SelectItem value="executive-message">Executive Message</SelectItem>
-                    <SelectItem value="social-media-video">Social Media Video</SelectItem>
-                    <SelectItem value="quick-location-shoot">Quick Location Shoot</SelectItem>
-                    <SelectItem value="brand-video">Brand Video</SelectItem>
-                    <SelectItem value="explainer-video">Explainer Video</SelectItem>
-                    <SelectItem value="animated-video">Animated Video</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  value="Free Demo"
+                  className="bg-background border-border text-foreground"
+                  disabled
+                />
               </div>
 
               <div className="space-y-2">
                 <Label className="text-foreground">
-                  Timeline <span className="text-destructive">*</span>
+                  URL of product for the demo
                 </Label>
-                <Select disabled>
-                  <SelectTrigger className="bg-background border-border text-foreground">
-                    <SelectValue placeholder="Select your timeline" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="this-week">This Week</SelectItem>
-                    <SelectItem value="next-week">Next Week</SelectItem>
-                    <SelectItem value="next-month">Next Month</SelectItem>
-                    <SelectItem value="no-rush">No Rush</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  placeholder="https://example.com/product"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  disabled
+                />
               </div>
 
               <Button 
