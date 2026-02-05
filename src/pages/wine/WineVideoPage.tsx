@@ -57,6 +57,11 @@ const DEFAULT_TESTIMONIALS = [
   { quote: "The videos moved the needle on demos and deal velocity. Highly recommend." },
 ];
 
+const getTestimonialQuote = (testimonial: any): string => {
+  if (typeof testimonial === 'string') return testimonial;
+  return testimonial?.quote || "";
+};
+
 const DEFAULT_COMPARISON_PROBLEM_ITEMS = [
   "Traditional video production doesn't scale",
   "Static pages underperform in engagement",
@@ -93,7 +98,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
     : DEFAULT_PORTFOLIO_VIDEOS;
 
   const featureCards = template?.feature_cards?.length ? template.feature_cards : DEFAULT_FEATURE_CARDS;
-  const testimonials = template?.testimonials?.length ? template.testimonials : DEFAULT_TESTIMONIALS;
+  const testimonials = (template?.testimonials?.length ? template.testimonials : DEFAULT_TESTIMONIALS) as Array<{ quote: string } | string>;
 
   const comparisonProblemTitle = template?.comparison_problem_title || "Why this works:";
   const comparisonProblemItems = template?.comparison_problem_items?.length
@@ -291,7 +296,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
             {testimonials.slice(0, 3).map((t, index) => (
               <Card key={index} className="p-6 bg-gray-50 border-0">
                 <Quote className="w-6 h-6 text-amber-500 mb-4" />
-                <p className="text-foreground leading-relaxed">"{t.quote}"</p>
+                <p className="text-foreground leading-relaxed">"{getTestimonialQuote(t)}"</p>
               </Card>
             ))}
           </div>
