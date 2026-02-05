@@ -121,7 +121,7 @@ const EditableSampleRequestForm = ({
 
               <div className="space-y-2">
                 <Label className="text-foreground">
-                  Primary Goal <span className="text-destructive">*</span>
+                  Primary Goal
                 </Label>
                 <Input
                   value="Free Demo"
@@ -132,7 +132,7 @@ const EditableSampleRequestForm = ({
 
               <div className="space-y-2">
                 <Label className="text-foreground">
-                  URL of product for the demo
+                  URL of product for the demo <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   placeholder="https://example.com/product"
