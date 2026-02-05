@@ -180,13 +180,19 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
 
               <div className="relative">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-black">
-                  <iframe
-                    src={`https://player.vimeo.com/video/${template?.hero_video_id || "76979871"}?badge=0&autopause=0&player_id=0&app_id=58479`}
-                    frameBorder="0"
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-                    className="absolute inset-0 w-full h-full"
-                    title="Hero Video"
-                  />
+                    {template?.hero_video_id ? (
+                      <iframe
+                        src={`https://player.vimeo.com/video/${template.hero_video_id}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                        frameBorder="0"
+                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                        className="absolute inset-0 w-full h-full"
+                        title="Hero Video"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                        <p className="text-muted-foreground">No video configured</p>
+                      </div>
+                    )}
                 </div>
                 <p className="mt-3 text-muted-foreground">
                   <span className="text-amber-500 font-medium">{firstName}</span>, take a look at this video demo.
