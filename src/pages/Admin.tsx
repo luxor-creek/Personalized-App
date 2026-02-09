@@ -1042,54 +1042,50 @@ const Admin = () => {
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
                           <div className="w-full h-full relative overflow-hidden">
-                            {/* Dark hero-style background */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]" />
-                            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-                            
-                            <div className="relative z-10 p-3 flex flex-col h-full">
-                              {/* Top bar with logo + button */}
-                              <div className="flex items-center justify-between mb-3">
-                                {t.logo_url ? (
-                                  <img src={t.logo_url} alt="" className="h-3 object-contain opacity-80" />
-                                ) : (
-                                  <div className="h-3 w-12 rounded bg-white/10" />
-                                )}
-                                <div className="h-3 w-14 rounded-full bg-primary/60 flex items-center justify-center">
-                                  <span className="text-[5px] text-white font-medium">Get in Touch</span>
+                            {/* Scaled-down full-page preview */}
+                            <div className="absolute inset-0 origin-top-left" style={{ transform: 'scale(0.35)', width: '286%', height: '286%' }}>
+                              {/* Hero */}
+                              <div className="relative h-[45%] bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-6 flex flex-col">
+                                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+                                <div className="relative z-10 flex items-center justify-between mb-4">
+                                  {t.logo_url ? <img src={t.logo_url} alt="" className="h-6 object-contain opacity-80" /> : <div className="h-5 w-20 rounded bg-white/10" />}
+                                  <div className="h-7 px-4 rounded-full bg-primary flex items-center"><span className="text-[10px] text-white font-semibold">Get in Touch</span></div>
+                                </div>
+                                <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center gap-2">
+                                  {t.hero_badge && <span className="text-[9px] text-primary font-semibold uppercase tracking-widest">{t.hero_badge.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</span>}
+                                  <h4 className="text-[16px] font-bold text-white leading-snug max-w-[90%] line-clamp-2">{(t.hero_headline || t.name).replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</h4>
+                                  {t.hero_subheadline && <p className="text-[10px] text-white/50 max-w-[80%] line-clamp-2">{t.hero_subheadline.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</p>}
+                                </div>
+                                <div className="relative z-10 mx-auto w-[70%] h-[80px] rounded-lg bg-black/40 border border-white/10 flex items-center justify-center mt-2 overflow-hidden">
+                                  {t.hero_video_thumbnail_url ? <img src={t.hero_video_thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center"><div className="w-0 h-0 border-l-[8px] border-l-white/40 border-y-[5px] border-y-transparent ml-1" /></div>}
                                 </div>
                               </div>
-                              
-                              {/* Hero content centered */}
-                              <div className="flex-1 flex flex-col items-center justify-center text-center gap-1">
-                                {t.hero_badge && (
-                                  <div className="h-2 px-2 rounded bg-primary/20 flex items-center">
-                                    <span className="text-[5px] text-primary font-medium uppercase tracking-wider truncate max-w-[120px]">
-                                      {t.hero_badge.replace(/\{\{[^}]+\}\}/g, '•••')}
-                                    </span>
-                                  </div>
-                                )}
-                                <h4 className="text-[9px] font-bold text-white leading-tight line-clamp-2 max-w-[85%]">
-                                  {(t.hero_headline || t.name).replace(/\{\{[^}]+\}\}/g, '•••')}
-                                </h4>
-                                {t.hero_subheadline && (
-                                  <p className="text-[6px] text-white/50 leading-tight line-clamp-2 max-w-[80%]">
-                                    {t.hero_subheadline.replace(/\{\{[^}]+\}\}/g, '•••')}
-                                  </p>
-                                )}
+                              {/* Logo strip */}
+                              <div className="h-[10%] bg-[#f8f8fa] flex items-center justify-center gap-6 px-6">
+                                {[...Array(5)].map((_, i) => <div key={i} className="h-4 rounded bg-gray-300/50" style={{ width: `${40 + (i % 3) * 12}px` }} />)}
                               </div>
-                              
-                              {/* Video thumbnail placeholder */}
-                              {t.hero_video_thumbnail_url ? (
-                                <div className="mt-auto mx-auto w-[80%] rounded overflow-hidden shadow-lg">
-                                  <img src={t.hero_video_thumbnail_url} alt="" className="w-full h-[45px] object-cover" />
+                              {/* Feature cards */}
+                              <div className="h-[28%] bg-white p-6">
+                                <div className="h-3 w-24 bg-primary/20 rounded mx-auto mb-1" />
+                                <div className="h-4 w-40 bg-gray-200 rounded mx-auto mb-4" />
+                                <div className="grid grid-cols-3 gap-3">
+                                  {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-3 flex flex-col gap-2">
+                                      <div className="w-6 h-6 rounded-full bg-primary/15" />
+                                      <div className="h-3 w-full bg-gray-200 rounded" />
+                                      <div className="h-2 w-[80%] bg-gray-100 rounded" />
+                                      <div className="h-2 w-[60%] bg-gray-100 rounded" />
+                                    </div>
+                                  ))}
                                 </div>
-                              ) : (
-                                <div className="mt-auto mx-auto w-[80%] h-[40px] rounded bg-white/5 border border-white/10 flex items-center justify-center">
-                                  <div className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center">
-                                    <div className="w-0 h-0 border-l-[4px] border-l-white/30 border-y-[3px] border-y-transparent ml-0.5" />
-                                  </div>
+                              </div>
+                              {/* CTA banner */}
+                              <div className="h-[17%] bg-gradient-to-r from-primary/90 to-primary flex items-center justify-center">
+                                <div className="text-center">
+                                  <div className="h-4 w-36 bg-white/20 rounded mx-auto mb-2" />
+                                  <div className="h-6 w-20 bg-white rounded-full mx-auto" />
                                 </div>
-                              )}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -1168,50 +1164,45 @@ const Admin = () => {
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
                           <div className="w-full h-full relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]" />
-                            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-                            
-                            <div className="relative z-10 p-3 flex flex-col h-full">
-                              <div className="flex items-center justify-between mb-3">
-                                {t.logo_url ? (
-                                  <img src={t.logo_url} alt="" className="h-3 object-contain opacity-80" />
-                                ) : (
-                                  <div className="h-3 w-12 rounded bg-white/10" />
-                                )}
-                                <div className="h-3 w-14 rounded-full bg-primary/60 flex items-center justify-center">
-                                  <span className="text-[5px] text-white font-medium">Get in Touch</span>
+                            <div className="absolute inset-0 origin-top-left" style={{ transform: 'scale(0.35)', width: '286%', height: '286%' }}>
+                              <div className="relative h-[45%] bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-6 flex flex-col">
+                                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+                                <div className="relative z-10 flex items-center justify-between mb-4">
+                                  {t.logo_url ? <img src={t.logo_url} alt="" className="h-6 object-contain opacity-80" /> : <div className="h-5 w-20 rounded bg-white/10" />}
+                                  <div className="h-7 px-4 rounded-full bg-primary flex items-center"><span className="text-[10px] text-white font-semibold">Get in Touch</span></div>
+                                </div>
+                                <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center gap-2">
+                                  {t.hero_badge && <span className="text-[9px] text-primary font-semibold uppercase tracking-widest">{t.hero_badge.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</span>}
+                                  <h4 className="text-[16px] font-bold text-white leading-snug max-w-[90%] line-clamp-2">{(t.hero_headline || t.name).replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</h4>
+                                  {t.hero_subheadline && <p className="text-[10px] text-white/50 max-w-[80%] line-clamp-2">{t.hero_subheadline.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</p>}
+                                </div>
+                                <div className="relative z-10 mx-auto w-[70%] h-[80px] rounded-lg bg-black/40 border border-white/10 flex items-center justify-center mt-2 overflow-hidden">
+                                  {t.hero_video_thumbnail_url ? <img src={t.hero_video_thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center"><div className="w-0 h-0 border-l-[8px] border-l-white/40 border-y-[5px] border-y-transparent ml-1" /></div>}
                                 </div>
                               </div>
-                              
-                              <div className="flex-1 flex flex-col items-center justify-center text-center gap-1">
-                                {t.hero_badge && (
-                                  <div className="h-2 px-2 rounded bg-primary/20 flex items-center">
-                                    <span className="text-[5px] text-primary font-medium uppercase tracking-wider truncate max-w-[120px]">
-                                      {t.hero_badge.replace(/\{\{[^}]+\}\}/g, '•••')}
-                                    </span>
-                                  </div>
-                                )}
-                                <h4 className="text-[9px] font-bold text-white leading-tight line-clamp-2 max-w-[85%]">
-                                  {(t.hero_headline || t.name).replace(/\{\{[^}]+\}\}/g, '•••')}
-                                </h4>
-                                {t.hero_subheadline && (
-                                  <p className="text-[6px] text-white/50 leading-tight line-clamp-2 max-w-[80%]">
-                                    {t.hero_subheadline.replace(/\{\{[^}]+\}\}/g, '•••')}
-                                  </p>
-                                )}
+                              <div className="h-[10%] bg-[#f8f8fa] flex items-center justify-center gap-6 px-6">
+                                {[...Array(5)].map((_, i) => <div key={i} className="h-4 rounded bg-gray-300/50" style={{ width: `${40 + (i % 3) * 12}px` }} />)}
                               </div>
-                              
-                              {t.hero_video_thumbnail_url ? (
-                                <div className="mt-auto mx-auto w-[80%] rounded overflow-hidden shadow-lg">
-                                  <img src={t.hero_video_thumbnail_url} alt="" className="w-full h-[45px] object-cover" />
+                              <div className="h-[28%] bg-white p-6">
+                                <div className="h-3 w-24 bg-primary/20 rounded mx-auto mb-1" />
+                                <div className="h-4 w-40 bg-gray-200 rounded mx-auto mb-4" />
+                                <div className="grid grid-cols-3 gap-3">
+                                  {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-3 flex flex-col gap-2">
+                                      <div className="w-6 h-6 rounded-full bg-primary/15" />
+                                      <div className="h-3 w-full bg-gray-200 rounded" />
+                                      <div className="h-2 w-[80%] bg-gray-100 rounded" />
+                                      <div className="h-2 w-[60%] bg-gray-100 rounded" />
+                                    </div>
+                                  ))}
                                 </div>
-                              ) : (
-                                <div className="mt-auto mx-auto w-[80%] h-[40px] rounded bg-white/5 border border-white/10 flex items-center justify-center">
-                                  <div className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center">
-                                    <div className="w-0 h-0 border-l-[4px] border-l-white/30 border-y-[3px] border-y-transparent ml-0.5" />
-                                  </div>
+                              </div>
+                              <div className="h-[17%] bg-gradient-to-r from-primary/90 to-primary flex items-center justify-center">
+                                <div className="text-center">
+                                  <div className="h-4 w-36 bg-white/20 rounded mx-auto mb-2" />
+                                  <div className="h-6 w-20 bg-white rounded-full mx-auto" />
                                 </div>
-                              )}
+                              </div>
                             </div>
                           </div>
                         )}
