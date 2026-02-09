@@ -799,6 +799,7 @@ const Admin = () => {
   const openSnovDialog = () => {
     setSnovDialogOpen(true);
     fetchSnovLists();
+    setWorkflowCardsExpanded(false);
   };
 
   const fetchSnovCampaigns = async () => {
@@ -1575,7 +1576,7 @@ const Admin = () => {
                               Upload a CSV or add contacts one-by-one. We'll generate personalized landing pages you can download and use with any email tool.
                             </p>
                             <div className="flex gap-2">
-                              <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+                              <Dialog open={uploadDialogOpen} onOpenChange={(open) => { setUploadDialogOpen(open); if (open) setWorkflowCardsExpanded(false); }}>
                                 <DialogTrigger asChild>
                                   <Button variant="outline" className="flex-1">
                                     <Upload className="w-4 h-4 mr-2" />
@@ -1606,7 +1607,7 @@ const Admin = () => {
                                 </DialogContent>
                               </Dialog>
 
-                              <Dialog open={addPersonDialogOpen} onOpenChange={setAddPersonDialogOpen}>
+                              <Dialog open={addPersonDialogOpen} onOpenChange={(open) => { setAddPersonDialogOpen(open); if (open) setWorkflowCardsExpanded(false); }}>
                                 <DialogTrigger asChild>
                                   <Button variant="outline" className="flex-1">
                                     <Plus className="w-4 h-4 mr-2" />
