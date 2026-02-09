@@ -274,6 +274,35 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
           </div>
         );
 
+      case 'document':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: style.maxWidth || '700px', textAlign: 'center' }}>
+              {content.documentTitle && (
+                <h3 style={{ ...textStyle, fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+                  {applyPersonalization(content.documentTitle, personalization)}
+                </h3>
+              )}
+              {content.documentDescription && (
+                <p style={{ color: style.textColor, opacity: 0.7, marginBottom: '24px', fontSize: '16px' }}>
+                  {applyPersonalization(content.documentDescription, personalization)}
+                </p>
+              )}
+              <a
+                href={content.documentUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90"
+                style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}
+                onClick={(e) => !content.documentUrl && e.preventDefault()}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                {content.documentButtonText || 'Download PDF'}
+              </a>
+            </div>
+          </div>
+        );
+
       case 'spacer':
         return (
           <div style={{ backgroundColor: style.backgroundColor, height: style.height || '48px' }} />

@@ -386,6 +386,86 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
             </div>
           )}
 
+          {section.type === 'document' && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Document Title</Label>
+                <Input
+                  value={section.content.documentTitle || ''}
+                  onChange={(e) => updateContent({ documentTitle: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  value={section.content.documentDescription || ''}
+                  onChange={(e) => updateContent({ documentDescription: e.target.value })}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Document URL</Label>
+                <Input
+                  value={section.content.documentUrl || ''}
+                  onChange={(e) => updateContent({ documentUrl: e.target.value })}
+                  placeholder="Paste document URL"
+                />
+              </div>
+              <div className="relative">
+                <Button variant="outline" size="sm" className="w-full" disabled={uploading}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploading ? "Uploading..." : "Upload Document"}
+                </Button>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploading(true);
+                    try {
+                      const ext = file.name.split('.').pop();
+                      const path = `builder/docs/${Date.now()}.${ext}`;
+                      const { error } = await supabase.storage.from('template-logos').upload(path, file);
+                      if (error) throw error;
+                      const { data: { publicUrl } } = supabase.storage.from('template-logos').getPublicUrl(path);
+                      updateContent({ documentUrl: publicUrl });
+                      toast({ title: "Document uploaded!" });
+                    } catch (err: any) {
+                      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Button Text</Label>
+                <Input
+                  value={section.content.documentButtonText || ''}
+                  onChange={(e) => updateContent({ documentButtonText: e.target.value })}
+                />
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Button Color</Label>
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Button Text</Label>
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {section.type === 'spacer' && (
             <div className="space-y-2">
               <Label>Height</Label>

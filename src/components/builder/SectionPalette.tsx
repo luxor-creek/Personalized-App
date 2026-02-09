@@ -1,5 +1,5 @@
 import { SECTION_DEFAULTS, SectionType } from "@/types/builder";
-import { Type, AlignLeft, Play, Image, RectangleHorizontal, MousePointerClick, FileText, Sparkles, Minus } from "lucide-react";
+import { Type, AlignLeft, Play, Image, RectangleHorizontal, MousePointerClick, FileText, Sparkles, Minus, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -12,6 +12,7 @@ const ICONS: Record<string, React.ReactNode> = {
   MousePointerClick: <MousePointerClick className="w-4 h-4" />,
   FileText: <FileText className="w-4 h-4" />,
   Sparkles: <Sparkles className="w-4 h-4" />,
+  FileDown: <FileDown className="w-4 h-4" />,
   Minus: <Minus className="w-4 h-4" />,
 };
 

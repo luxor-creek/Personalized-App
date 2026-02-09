@@ -7,6 +7,7 @@ export type SectionType =
   | 'cta'
   | 'form'
   | 'logo'
+  | 'document'
   | 'spacer';
 
 export interface SectionStyle {
@@ -48,6 +49,10 @@ export interface SectionContent {
   formButtonText?: string;
   bannerText?: string;
   bannerSubtext?: string;
+  documentUrl?: string;
+  documentTitle?: string;
+  documentDescription?: string;
+  documentButtonText?: string;
 }
 
 export interface BuilderSection {
@@ -105,6 +110,12 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     icon: 'Sparkles',
     content: { logoUrl: '' },
     style: { backgroundColor: '#ffffff', paddingY: '24px', height: '60px' },
+  },
+  document: {
+    label: 'Document Download',
+    icon: 'FileDown',
+    content: { documentUrl: '', documentTitle: 'Download Our Guide', documentDescription: 'Get the full PDF with all the details.', documentButtonText: 'Download PDF' },
+    style: { backgroundColor: '#f8f8f8', textColor: '#1a1a1a', paddingY: '48px', maxWidth: '700px', buttonColor: '#6d54df', buttonTextColor: '#ffffff' },
   },
   spacer: {
     label: 'Spacer',
