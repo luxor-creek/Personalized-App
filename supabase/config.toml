@@ -15,5 +15,8 @@ verify_jwt = false
 [functions.send-beta-notification]
 verify_jwt = false
 
+[functions.snov-get-campaign-stats]
+verify_jwt = false
+
 [functions.send-beta-info-email]
 verify_jwt = false

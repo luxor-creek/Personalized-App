@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
@@ -145,6 +145,14 @@ const Admin = () => {
     fromName: "",
   });
   const [sendingSnov, setSendingSnov] = useState(false);
+
+  // Snov.io stats state
+  const [snovStatsDialogOpen, setSnovStatsDialogOpen] = useState(false);
+  const [snovCampaigns, setSnovCampaigns] = useState<Array<{ id: number; name: string; listId: number; status: string; createdAt: string | null; startedAt: string | null }>>([]);
+  const [loadingSnovCampaigns, setLoadingSnovCampaigns] = useState(false);
+  const [selectedSnovCampaignForStats, setSelectedSnovCampaignForStats] = useState<number | null>(null);
+  const [snovStats, setSnovStats] = useState<{ analytics: any; replies: any; opens: any; clicks: any } | null>(null);
+  const [loadingSnovStats, setLoadingSnovStats] = useState(false);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -779,6 +787,63 @@ const Admin = () => {
     fetchSnovLists();
   };
 
+  const fetchSnovCampaigns = async () => {
+    setLoadingSnovCampaigns(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("snov-get-campaigns");
+      if (error) throw error;
+      if (data.success && data.campaigns) {
+        setSnovCampaigns(data.campaigns);
+      } else {
+        throw new Error(data.error || "Failed to fetch campaigns");
+      }
+    } catch (error: any) {
+      toast({ title: "Error fetching Snov.io campaigns", description: error.message, variant: "destructive" });
+    } finally {
+      setLoadingSnovCampaigns(false);
+    }
+  };
+
+  const fetchSnovCampaignStats = async (snovCampaignId: number) => {
+    setLoadingSnovStats(true);
+    setSnovStats(null);
+    setSelectedSnovCampaignForStats(snovCampaignId);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/snov-get-campaign-stats?snovCampaignId=${snovCampaignId}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${session?.access_token}`,
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to fetch stats");
+      }
+      setSnovStats({
+        analytics: result.analytics,
+        replies: result.replies,
+        opens: result.opens,
+        clicks: result.clicks,
+      });
+    } catch (error: any) {
+      toast({ title: "Error fetching stats", description: error.message, variant: "destructive" });
+    } finally {
+      setLoadingSnovStats(false);
+    }
+  };
+
+  const openSnovStatsDialog = () => {
+    setSnovStatsDialogOpen(true);
+    setSnovStats(null);
+    setSelectedSnovCampaignForStats(null);
+    fetchSnovCampaigns();
+  };
+
   const duplicateTemplate = async (templateSlug: string) => {
     if (!user) return;
     setDuplicating(templateSlug);
@@ -1384,6 +1449,136 @@ const Admin = () => {
                                   </>
                                 )}
                               </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        {/* Snov.io Campaign Stats Dialog */}
+                        <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Snov.io Stats
+                        </Button>
+                        <Dialog open={snovStatsDialogOpen} onOpenChange={setSnovStatsDialogOpen}>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Snov.io Campaign Stats</DialogTitle>
+                              <DialogDescription>
+                                View email engagement analytics from your Snov.io campaigns.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 pt-4">
+                              {loadingSnovCampaigns ? (
+                                <div className="flex items-center justify-center py-4">
+                                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                </div>
+                              ) : snovCampaigns.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No Snov.io campaigns found.</p>
+                              ) : (
+                                <>
+                                  <div className="space-y-2">
+                                    <Label>Select a Snov.io Campaign</Label>
+                                    <Select
+                                      value={selectedSnovCampaignForStats?.toString() || ""}
+                                      onValueChange={(val) => fetchSnovCampaignStats(parseInt(val, 10))}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Choose a campaign..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {snovCampaigns.map((c) => (
+                                          <SelectItem key={c.id} value={c.id.toString()}>
+                                            {c.name} ({c.status})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  {loadingSnovStats && (
+                                    <div className="flex items-center justify-center py-8">
+                                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                    </div>
+                                  )}
+
+                                  {snovStats && !loadingSnovStats && (
+                                    <div className="space-y-4">
+                                      {/* Analytics Overview */}
+                                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        {(() => {
+                                          const a = snovStats.analytics;
+                                          const stats = Array.isArray(a) ? a[0] : a;
+                                          return (
+                                            <>
+                                              <div className="bg-muted rounded-lg p-3 text-center">
+                                                <p className="text-2xl font-bold text-foreground">{stats?.sent || stats?.emails_sent || 0}</p>
+                                                <p className="text-xs text-muted-foreground">Sent</p>
+                                              </div>
+                                              <div className="bg-muted rounded-lg p-3 text-center">
+                                                <p className="text-2xl font-bold text-foreground">{stats?.opened || stats?.opens || 0}</p>
+                                                <p className="text-xs text-muted-foreground">Opens</p>
+                                              </div>
+                                              <div className="bg-muted rounded-lg p-3 text-center">
+                                                <p className="text-2xl font-bold text-foreground">{stats?.replied || stats?.replies || 0}</p>
+                                                <p className="text-xs text-muted-foreground">Replies</p>
+                                              </div>
+                                              <div className="bg-muted rounded-lg p-3 text-center">
+                                                <p className="text-2xl font-bold text-foreground">{stats?.clicked || stats?.clicks || 0}</p>
+                                                <p className="text-xs text-muted-foreground">Clicks</p>
+                                              </div>
+                                            </>
+                                          );
+                                        })()}
+                                      </div>
+
+                                      {/* Replies List */}
+                                      {snovStats.replies && (
+                                        <div>
+                                          <h4 className="text-sm font-semibold text-foreground mb-2">Recent Replies</h4>
+                                          {(() => {
+                                            const replyList = snovStats.replies?.replies || snovStats.replies?.data || [];
+                                            if (!Array.isArray(replyList) || replyList.length === 0) {
+                                              return <p className="text-sm text-muted-foreground">No replies yet.</p>;
+                                            }
+                                            return (
+                                              <div className="max-h-40 overflow-y-auto space-y-2">
+                                                {replyList.slice(0, 10).map((r: any, i: number) => (
+                                                  <div key={i} className="bg-muted rounded-lg p-3 text-sm">
+                                                    <p className="font-medium text-foreground">{r.email || r.prospect_email || "Unknown"}</p>
+                                                    {r.replied_at && <p className="text-xs text-muted-foreground">{new Date(r.replied_at).toLocaleString()}</p>}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            );
+                                          })()}
+                                        </div>
+                                      )}
+
+                                      {/* Opens List */}
+                                      {snovStats.opens && (
+                                        <div>
+                                          <h4 className="text-sm font-semibold text-foreground mb-2">Recent Opens</h4>
+                                          {(() => {
+                                            const openList = snovStats.opens?.recipients || snovStats.opens?.data || [];
+                                            if (!Array.isArray(openList) || openList.length === 0) {
+                                              return <p className="text-sm text-muted-foreground">No opens tracked.</p>;
+                                            }
+                                            return (
+                                              <div className="max-h-40 overflow-y-auto space-y-1">
+                                                {openList.slice(0, 10).map((o: any, i: number) => (
+                                                  <div key={i} className="flex justify-between items-center bg-muted rounded px-3 py-2 text-sm">
+                                                    <span className="text-foreground">{o.email || o.prospect_email || "Unknown"}</span>
+                                                    <span className="text-muted-foreground text-xs">{o.opens_count || o.count || 1}x</span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            );
+                                          })()}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </DialogContent>
                         </Dialog>
