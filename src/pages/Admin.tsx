@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import kickerLogo from "@/assets/kicker-logo.png";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,6 +112,10 @@ const Admin = () => {
   // Test email dialog
   const [testEmailDialogOpen, setTestEmailDialogOpen] = useState(false);
 
+  // Beta Questions state
+  const [infoRequests, setInfoRequests] = useState<Array<{ id: string; first_name: string; email: string; created_at: string }>>([]);
+  const [infoRequestCount, setInfoRequestCount] = useState(0);
+
   // Snov.io integration state
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
   const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
@@ -187,8 +191,23 @@ const Admin = () => {
     if (user && isAdmin) {
       fetchCampaigns();
       fetchTemplates();
+      fetchInfoRequests();
     }
   }, [user, isAdmin]);
+
+  const fetchInfoRequests = async () => {
+    try {
+      const { data, error, count } = await supabase
+        .from("info_requests")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setInfoRequests(data || []);
+      setInfoRequestCount(count || 0);
+    } catch (error: any) {
+      console.error("Error fetching info requests:", error.message);
+    }
+  };
 
   const fetchTemplates = async () => {
     try {
@@ -784,6 +803,10 @@ const Admin = () => {
               Landing Pages
             </TabsTrigger>
             <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Campaigns</TabsTrigger>
+            <TabsTrigger value="beta-questions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Beta Questions {infoRequestCount > 0 && <span className="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">{infoRequestCount}</span>}
+            </TabsTrigger>
           </TabsList>
 
           {/* Landing Pages Tab */}
@@ -1359,6 +1382,46 @@ const Admin = () => {
                     <p>Select a campaign to view details</p>
                   </div>
                 )}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Beta Questions Tab */}
+          <TabsContent value="beta-questions" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Beta Questions</h2>
+              <p className="text-muted-foreground">
+                People who expressed interest via the beta signup form.
+              </p>
+            </div>
+
+            {infoRequests.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <HelpCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No signups yet.</p>
+              </div>
+            ) : (
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>First Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {infoRequests.map((req) => (
+                      <TableRow key={req.id}>
+                        <TableCell className="font-medium">{req.first_name}</TableCell>
+                        <TableCell>{req.email}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {new Date(req.created_at).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </TabsContent>

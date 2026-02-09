@@ -39,6 +39,10 @@ const InfoRequestForm = () => {
         email: result.data.email,
       });
       if (error) throw error;
+      // Send email notification (fire-and-forget)
+      supabase.functions.invoke("send-beta-notification", {
+        body: { firstName: result.data.firstName, email: result.data.email },
+      }).catch(console.error);
       setSubmitted(true);
     } catch {
       setFormError("Something went wrong. Please try again.");
