@@ -53,8 +53,8 @@ const SectionPalette = ({ onAddSection }: SectionPaletteProps) => {
   })).filter((g) => g.items.length > 0);
 
   return (
-    <div className="w-64 bg-card border-r border-border flex flex-col h-full">
-      <div className="p-4 border-b border-border">
+    <div className="w-64 max-md:w-full bg-card border-r border-border max-md:border-r-0 flex flex-col h-full">
+      <div className="p-4 border-b border-border max-md:hidden">
         <h3 className="font-semibold text-foreground text-sm">Add Sections</h3>
         <p className="text-xs text-muted-foreground mt-1">29 sections available</p>
       </div>

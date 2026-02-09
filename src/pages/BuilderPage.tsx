@@ -8,7 +8,9 @@ import SectionProperties from "@/components/builder/SectionProperties";
 import BuilderCanvas from "@/components/builder/BuilderCanvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Save, Eye, Pencil } from "lucide-react";
+import { ArrowLeft, Save, Pencil, Plus, Settings2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const BuilderPage = () => {
   const navigate = useNavigate();
@@ -156,6 +158,18 @@ const BuilderPage = () => {
   };
 
   const selectedSection = sections.find((s) => s.id === selectedSectionId) || null;
+  const isMobile = useIsMobile();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // On mobile, auto-open properties sheet when a section is selected
+  const handleSelectSection = useCallback((id: string) => {
+    setSelectedSectionId(id);
+  }, []);
+
+  const handleAddSectionMobile = useCallback((type: SectionType) => {
+    addSection(type);
+    setPaletteOpen(false);
+  }, [addSection]);
 
   if (loading) {
     return (
@@ -168,58 +182,63 @@ const BuilderPage = () => {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Top toolbar */}
-      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
+      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 sm:px-4 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="shrink-0">
+            <ArrowLeft className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Back</span>
           </Button>
-          <div className="h-6 w-px bg-border" />
+          <div className="h-6 w-px bg-border hidden sm:block" />
           {editingName ? (
             <Input
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               onBlur={() => setEditingName(false)}
               onKeyDown={(e) => e.key === 'Enter' && setEditingName(false)}
-              className="h-8 w-64 text-sm"
+              className="h-8 w-40 sm:w-64 text-sm"
               autoFocus
             />
           ) : (
             <button
-              className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1 sm:gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors truncate"
               onClick={() => setEditingName(true)}
             >
-              {templateName}
-              <Pencil className="w-3 h-3 text-muted-foreground" />
+              <span className="truncate max-w-[120px] sm:max-w-none">{templateName}</span>
+              <Pencil className="w-3 h-3 text-muted-foreground shrink-0" />
             </button>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground mr-2">{sections.length} sections</span>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">{sections.length} sections</span>
+          {isMobile && (
+            <Button variant="outline" size="sm" onClick={() => setPaletteOpen(true)}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={saveTemplate} disabled={saving}>
-            <Save className="w-4 h-4 mr-1" />
-            {saving ? "Saving..." : "Save"}
+            <Save className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">{saving ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </header>
 
       {/* Main area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Section Palette */}
-        <SectionPalette onAddSection={addSection} />
+        {/* Left: Section Palette - hidden on mobile, shown via sheet */}
+        {!isMobile && <SectionPalette onAddSection={addSection} />}
 
         {/* Center: Canvas */}
         <BuilderCanvas
           sections={sections}
           selectedSectionId={selectedSectionId}
-          onSelectSection={setSelectedSectionId}
+          onSelectSection={handleSelectSection}
           onMoveSection={moveSection}
           onDeleteSection={deleteSection}
           onDuplicateSection={duplicateSection}
         />
 
-        {/* Right: Properties Panel */}
-        {selectedSection && (
+        {/* Right: Properties Panel - inline on desktop, sheet on mobile */}
+        {!isMobile && selectedSection && (
           <SectionProperties
             section={selectedSection}
             onUpdate={updateSection}
@@ -227,6 +246,34 @@ const BuilderPage = () => {
           />
         )}
       </div>
+
+      {/* Mobile: Palette Sheet */}
+      {isMobile && (
+        <Sheet open={paletteOpen} onOpenChange={setPaletteOpen}>
+          <SheetContent side="left" className="w-[280px] p-0">
+            <SheetHeader className="p-4 border-b border-border">
+              <SheetTitle>Add Sections</SheetTitle>
+            </SheetHeader>
+            <SectionPalette onAddSection={handleAddSectionMobile} />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Mobile: Properties Sheet */}
+      {isMobile && selectedSection && (
+        <Sheet open={!!selectedSectionId} onOpenChange={(open) => { if (!open) setSelectedSectionId(null); }}>
+          <SheetContent side="right" className="w-[320px] p-0">
+            <SheetHeader className="p-4 border-b border-border">
+              <SheetTitle>Section Properties</SheetTitle>
+            </SheetHeader>
+            <SectionProperties
+              section={selectedSection}
+              onUpdate={updateSection}
+              onClose={() => setSelectedSectionId(null)}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 };

@@ -44,12 +44,12 @@ const BuilderCanvas = ({
                     isSelected={selectedSectionId === section.id}
                     onClick={() => onSelectSection(section.id)}
                   />
-                  {/* Section controls - visible on hover */}
-                  <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-20">
+                  {/* Section controls - visible on hover (desktop) or always (mobile) */}
+                  <div className="absolute top-2 left-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex gap-1 z-20">
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="h-7 w-7 p-0 shadow-md"
+                      className="h-8 w-8 md:h-7 md:w-7 p-0 shadow-md"
                       onClick={(e) => { e.stopPropagation(); onMoveSection(section.id, 'up'); }}
                       disabled={index === 0}
                     >
@@ -58,7 +58,7 @@ const BuilderCanvas = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="h-7 w-7 p-0 shadow-md"
+                      className="h-8 w-8 md:h-7 md:w-7 p-0 shadow-md"
                       onClick={(e) => { e.stopPropagation(); onMoveSection(section.id, 'down'); }}
                       disabled={index === sections.length - 1}
                     >
@@ -67,7 +67,7 @@ const BuilderCanvas = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="h-7 w-7 p-0 shadow-md"
+                      className="h-8 w-8 md:h-7 md:w-7 p-0 shadow-md"
                       onClick={(e) => { e.stopPropagation(); onDuplicateSection(section.id); }}
                     >
                       <Copy className="w-3 h-3" />
@@ -75,7 +75,7 @@ const BuilderCanvas = ({
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="h-7 w-7 p-0 shadow-md"
+                      className="h-8 w-8 md:h-7 md:w-7 p-0 shadow-md"
                       onClick={(e) => { e.stopPropagation(); onDeleteSection(section.id); }}
                     >
                       <Trash2 className="w-3 h-3" />
