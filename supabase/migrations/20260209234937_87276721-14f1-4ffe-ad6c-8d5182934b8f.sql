@@ -1,0 +1,1 @@
+ALTER TABLE public.landing_page_templates ADD COLUMN accent_color text DEFAULT NULL;

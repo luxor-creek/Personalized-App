@@ -4,13 +4,13 @@ import AboutSection from "@/components/AboutSection";
 import PortfolioStrip from "@/components/PortfolioStrip";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
+import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { useTemplateContent } from "@/hooks/useTemplateContent";
 
 const Index = () => {
   const { template, loading } = useTemplateContent("police-recruitment");
 
-  // Show a minimal loading state or just render with defaults
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -20,7 +20,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-background">
       <HeroSection 
         thumbnailUrl={template?.hero_video_thumbnail_url || heroThumbnail}
         badge={template?.hero_badge || undefined}
@@ -46,7 +46,7 @@ const Index = () => {
         contactEmail={template?.contact_email || undefined}
       />
       <Footer />
-    </div>
+    </TemplateAccentProvider>
   );
 };
 

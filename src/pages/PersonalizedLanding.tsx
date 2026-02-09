@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import { supabase } from "@/integrations/supabase/client";
 import PersonalizedHeroSection from "@/components/PersonalizedHeroSection";
 import SectionRenderer from "@/components/builder/SectionRenderer";
@@ -128,7 +129,7 @@ const PersonalizedLanding = () => {
   // Render builder template if applicable
   if (template?.is_builder_template && Array.isArray(template.sections) && template.sections.length > 0) {
     return (
-      <div className="min-h-screen bg-white">
+      <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-white">
         {template.sections.map((section: any) => (
           <SectionRenderer
             key={section.id}
@@ -137,7 +138,7 @@ const PersonalizedLanding = () => {
             personalization={personalizationData}
           />
         ))}
-      </div>
+      </TemplateAccentProvider>
     );
   }
 
@@ -164,7 +165,7 @@ const PersonalizedLanding = () => {
     const companyName = pageData?.company || "your company";
 
     return (
-      <div className="min-h-screen bg-[#f0f4f8]">
+      <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-[#f0f4f8]">
         {/* Header */}
         <header className="py-4 px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -502,13 +503,13 @@ const PersonalizedLanding = () => {
             </div>
           </footer>
         )}
-      </div>
+      </TemplateAccentProvider>
     );
   }
 
   // Default: Police Recruitment Template (or B2B Demo - they use similar components)
   return (
-    <div className="min-h-screen bg-background">
+    <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-background">
       <PersonalizedHeroSection 
         thumbnailUrl={template?.hero_video_thumbnail_url || heroThumbnail}
         firstName={pageData?.first_name}
@@ -539,7 +540,7 @@ const PersonalizedLanding = () => {
         contactEmail={template?.contact_email || undefined}
       />
       <Footer logoUrl={template?.logo_url} />
-    </div>
+    </TemplateAccentProvider>
   );
 };
 

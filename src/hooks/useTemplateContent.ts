@@ -52,6 +52,7 @@ export interface TemplateContent {
   logo_url?: string | null;
   is_builder_template?: boolean;
   sections?: any[] | null;
+  accent_color?: string | null;
 }
 
 interface PersonalizationData {
@@ -138,7 +139,8 @@ export function useTemplateContent(slug: string) {
             form_section_subtitle,
             logo_url,
             is_builder_template,
-            sections
+            sections,
+            accent_color
           `)
           .eq("slug", slug)
           .single();
@@ -246,7 +248,8 @@ export function useTemplateContentById(templateId: string | null) {
             form_section_subtitle,
             logo_url,
             is_builder_template,
-            sections
+            sections,
+            accent_color
           `)
           .eq("id", templateId)
           .single();

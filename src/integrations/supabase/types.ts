@@ -73,6 +73,7 @@ export type Database = {
       landing_page_templates: {
         Row: {
           about_content: string | null
+          accent_color: string | null
           client_logos_url: string | null
           comparison_problem_items: Json | null
           comparison_problem_title: string | null
@@ -121,6 +122,7 @@ export type Database = {
         }
         Insert: {
           about_content?: string | null
+          accent_color?: string | null
           client_logos_url?: string | null
           comparison_problem_items?: Json | null
           comparison_problem_title?: string | null
@@ -169,6 +171,7 @@ export type Database = {
         }
         Update: {
           about_content?: string | null
+          accent_color?: string | null
           client_logos_url?: string | null
           comparison_problem_items?: Json | null
           comparison_problem_title?: string | null
