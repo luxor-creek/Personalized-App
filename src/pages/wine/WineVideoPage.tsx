@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import kickerLogo from "@/assets/kicker-logo.png";
+import BrandLogo from "@/components/BrandLogo";
 import SampleRequestForm from "@/components/SampleRequestForm";
 import { applyPersonalization, type TemplateContent } from "@/hooks/useTemplateContent";
 import {
@@ -126,7 +126,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
       {/* Header */}
       <header className="py-4 px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src={kickerLogo} alt="Kicker Video" className="h-8" />
+          <BrandLogo className="h-8" />
           <span className="text-muted-foreground">×</span>
           <div className="flex items-center gap-1">
             <Sparkles className="w-5 h-5 text-amber-500" />
@@ -432,7 +432,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
       {/* Footer */}
       <footer className="py-8 px-6 bg-gray-50 border-t">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <img src={kickerLogo} alt="Kicker Video" className="h-6" />
+          <BrandLogo className="h-6" />
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Kicker Video. Professional video production.</p>
         </div>
       </footer>
