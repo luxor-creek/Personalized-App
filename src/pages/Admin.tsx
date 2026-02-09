@@ -1990,16 +1990,39 @@ const Admin = () => {
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">1</div>
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">Create a new campaign in Snov.io</h4>
+                <h4 className="font-semibold text-foreground">Create the "landing_page" custom field in Snov.io</h4>
                 <p className="text-sm text-muted-foreground">
-                  In Snov.io, go to <strong>Campaigns</strong> in the left sidebar and click <strong>"New Campaign"</strong>. Give it a name that matches your campaign here.
+                  Before anything else, you need to create a custom field so Snov.io knows where to store each contact's personalized URL.
                 </p>
+                <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1.5 ml-1">
+                  <li>In Snov.io, click on any <strong>prospect list</strong> to open it</li>
+                  <li>Click the <strong>"+"</strong> column header (or <strong>"Manage columns"</strong>) on the right side of the table</li>
+                  <li>Click <strong>"Add custom field"</strong></li>
+                  <li>Set the field name to exactly: <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">landing_page</code></li>
+                  <li>Choose <strong>Text</strong> as the data type, then save</li>
+                </ol>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 mt-2">
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    <strong>Important:</strong> The field name must be exactly <code className="bg-muted px-1 py-0.5 rounded font-mono">landing_page</code> (lowercase, with underscore). This creates the <code className="bg-muted px-1 py-0.5 rounded font-mono">{"{{landing_page}}"}</code> variable you'll use in your emails. You only need to do this once — it applies to all future campaigns.
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Step 2 */}
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">2</div>
+              <div className="space-y-2">
+                <h4 className="font-semibold text-foreground">Create a new campaign in Snov.io</h4>
+                <p className="text-sm text-muted-foreground">
+                  Go to <strong>Campaigns</strong> in the left sidebar and click <strong>"New Campaign"</strong>. Give it a name that matches your campaign here.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">3</div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Select the synced list as your recipient source</h4>
                 <p className="text-sm text-muted-foreground">
@@ -2008,9 +2031,9 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* Step 3 */}
+            {/* Step 4 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">3</div>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">4</div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Write your email and insert the personalized link</h4>
                 <p className="text-sm text-muted-foreground">
@@ -2045,9 +2068,9 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* Step 4 */}
+            {/* Step 5 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">4</div>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">5</div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Configure settings & launch</h4>
                 <p className="text-sm text-muted-foreground">
@@ -2056,9 +2079,9 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* Step 5 */}
+            {/* Step 6 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-bold">5</div>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-bold">6</div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Track results here</h4>
                 <p className="text-sm text-muted-foreground">
