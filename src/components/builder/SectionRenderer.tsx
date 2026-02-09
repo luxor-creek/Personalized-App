@@ -13,6 +13,21 @@ const applyPersonalization = (text: string | undefined, personalization?: Record
   return text.replace(/\{\{(\w+)\}\}/g, (_, key) => personalization[key] || `{{${key}}}`);
 };
 
+const parseVideoUrl = (url: string): string | null => {
+  if (!url) return null;
+  // YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  // Vimeo
+  const vimeoMatch = url.match(/(?:vimeo\.com\/)(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?badge=0&autopause=0`;
+  // Pure numeric (legacy Vimeo ID)
+  if (/^\d+$/.test(url)) return `https://player.vimeo.com/video/${url}?badge=0&autopause=0`;
+  // Direct URL (assume embeddable)
+  if (url.startsWith('http')) return url;
+  return null;
+};
+
 const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalization }: SectionRendererProps) => {
   const { type, content, style } = section;
 
@@ -61,14 +76,15 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
           </div>
         );
 
-      case 'video':
+      case 'video': {
+        const embedUrl = parseVideoUrl(content.videoUrl || content.videoId || '');
         return (
           <div style={containerStyle}>
             <div style={innerStyle}>
-              {content.videoId ? (
+              {embedUrl ? (
                 <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                   <iframe
-                    src={`https://player.vimeo.com/video/${content.videoId}?badge=0&autopause=0&player_id=0`}
+                    src={embedUrl}
                     className="absolute inset-0 w-full h-full rounded-lg"
                     allow="autoplay; fullscreen; picture-in-picture"
                     allowFullScreen
@@ -78,26 +94,44 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
               ) : (
                 <div className="w-full bg-muted rounded-lg flex items-center justify-center" style={{ paddingBottom: '56.25%', position: 'relative' }}>
                   <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                    Enter a Vimeo ID in the properties panel
+                    Paste a YouTube, Vimeo, or video URL in properties
                   </span>
                 </div>
               )}
             </div>
           </div>
         );
+      }
 
-      case 'image':
+      case 'image': {
+        const layout = content.imageLayout || 'single';
+        const hasRow = layout === 'row' && (content.imageUrls || []).length > 0;
+        const hasSingle = layout === 'single' && content.imageUrl;
         return (
           <div style={containerStyle}>
             <div style={innerStyle}>
-              {content.imageUrl ? (
+              {hasSingle && (
                 <img
                   src={content.imageUrl}
                   alt=""
                   className="w-full rounded-lg object-cover"
                   style={{ borderRadius: style.borderRadius }}
                 />
-              ) : (
+              )}
+              {hasRow && (
+                <div className="flex gap-4 overflow-x-auto">
+                  {(content.imageUrls || []).filter(Boolean).map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt=""
+                      className="rounded-lg object-cover flex-shrink-0"
+                      style={{ borderRadius: style.borderRadius, height: '240px' }}
+                    />
+                  ))}
+                </div>
+              )}
+              {!hasSingle && !hasRow && (
                 <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
                   Upload or paste an image URL
                 </div>
@@ -105,6 +139,7 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
             </div>
           </div>
         );
+      }
 
       case 'banner':
         return (
@@ -221,19 +256,21 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
 
       case 'logo':
         return (
-          <div style={containerStyle} className="flex justify-center">
-            {content.logoUrl ? (
-              <img
-                src={content.logoUrl}
-                alt="Logo"
-                style={{ height: style.height || '60px' }}
-                className="object-contain"
-              />
-            ) : (
-              <div className="h-16 w-48 bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
-                Upload a logo
-              </div>
-            )}
+          <div style={{ ...containerStyle, paddingTop: '16px', paddingBottom: '16px' }}>
+            <div style={{ maxWidth: style.maxWidth || '1200px', margin: '0 auto', display: 'flex', alignItems: 'center' }}>
+              {content.logoUrl ? (
+                <img
+                  src={content.logoUrl}
+                  alt="Logo"
+                  style={{ height: style.height || '40px' }}
+                  className="object-contain"
+                />
+              ) : (
+                <div className="h-10 w-36 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">
+                  Upload a logo
+                </div>
+              )}
+            </div>
           </div>
         );
 

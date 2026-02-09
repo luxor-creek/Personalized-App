@@ -89,35 +89,111 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
 
           {section.type === 'video' && (
             <div className="space-y-2">
-              <Label>Vimeo Video ID</Label>
+              <Label>Video URL</Label>
               <Input
-                value={section.content.videoId || ''}
-                onChange={(e) => updateContent({ videoId: e.target.value })}
-                placeholder="e.g., 123456789"
+                value={section.content.videoUrl || ''}
+                onChange={(e) => updateContent({ videoUrl: e.target.value })}
+                placeholder="YouTube, Vimeo, or direct video URL"
               />
+              <p className="text-xs text-muted-foreground">
+                Supports YouTube, Vimeo, or any direct video link
+              </p>
             </div>
           )}
 
           {section.type === 'image' && (
             <div className="space-y-3">
-              <Label>Image</Label>
-              <Input
-                value={section.content.imageUrl || ''}
-                onChange={(e) => updateContent({ imageUrl: e.target.value })}
-                placeholder="Paste image URL"
-              />
-              <div className="relative">
-                <Button variant="outline" size="sm" className="w-full" disabled={uploading}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  {uploading ? "Uploading..." : "Upload Image"}
-                </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={(e) => handleImageUpload(e, 'imageUrl')}
-                />
+              <div className="space-y-1">
+                <Label className="text-xs">Layout</Label>
+                <Select value={section.content.imageLayout || 'single'} onValueChange={(v) => updateContent({ imageLayout: v as 'single' | 'row' })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Single Image</SelectItem>
+                    <SelectItem value="row">Row of Images</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
+              {(section.content.imageLayout || 'single') === 'single' ? (
+                <>
+                  <Label>Image</Label>
+                  <Input
+                    value={section.content.imageUrl || ''}
+                    onChange={(e) => updateContent({ imageUrl: e.target.value })}
+                    placeholder="Paste image URL"
+                  />
+                  <div className="relative">
+                    <Button variant="outline" size="sm" className="w-full" disabled={uploading}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? "Uploading..." : "Upload Image"}
+                    </Button>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={(e) => handleImageUpload(e, 'imageUrl')}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Label>Images ({(section.content.imageUrls || []).length})</Label>
+                  {(section.content.imageUrls || []).map((url, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Input
+                        value={url}
+                        onChange={(e) => {
+                          const urls = [...(section.content.imageUrls || [])];
+                          urls[i] = e.target.value;
+                          updateContent({ imageUrls: urls });
+                        }}
+                        placeholder="Image URL"
+                        className="flex-1"
+                      />
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const urls = (section.content.imageUrls || []).filter((_, idx) => idx !== i);
+                        updateContent({ imageUrls: urls });
+                      }}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => {
+                    updateContent({ imageUrls: [...(section.content.imageUrls || []), ''] });
+                  }}>
+                    <Plus className="w-3 h-3 mr-2" /> Add Image
+                  </Button>
+                  <div className="relative">
+                    <Button variant="outline" size="sm" className="w-full" disabled={uploading}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? "Uploading..." : "Upload & Add Image"}
+                    </Button>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploading(true);
+                        try {
+                          const ext = file.name.split('.').pop();
+                          const path = `builder/${Date.now()}.${ext}`;
+                          const { error } = await supabase.storage.from('template-logos').upload(path, file);
+                          if (error) throw error;
+                          const { data: { publicUrl } } = supabase.storage.from('template-logos').getPublicUrl(path);
+                          updateContent({ imageUrls: [...(section.content.imageUrls || []), publicUrl] });
+                          toast({ title: "Image uploaded!" });
+                        } catch (err: any) {
+                          toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 
