@@ -134,6 +134,7 @@ const Admin = () => {
   const [duplicating, setDuplicating] = useState<string | null>(null);
   const [workflowCardsExpanded, setWorkflowCardsExpanded] = useState(true);
   const [snovGuideOpen, setSnovGuideOpen] = useState(false);
+  const [usedSnovWorkflow, setUsedSnovWorkflow] = useState(false);
 
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
   const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
@@ -774,6 +775,7 @@ const Admin = () => {
           description: `Added ${data.added} prospects to Snov.io drip campaign. ${data.errors > 0 ? `${data.errors} errors.` : ""}`,
         });
         setSnovDialogOpen(false);
+        setUsedSnovWorkflow(true);
         fetchCampaigns();
         if (selectedCampaign) {
           fetchPages(selectedCampaign.id);
@@ -1410,19 +1412,26 @@ const Admin = () => {
                               {pages.length} personalized page{pages.length !== 1 ? "s" : ""} ready
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Your contacts have personalized landing pages. Go to Snov.io to start or monitor your drip campaign — the <code className="text-xs bg-muted px-1 py-0.5 rounded">{"{{landing_page}}"}</code> links are already synced.
+                              {usedSnovWorkflow
+                                ? <>Your contacts have personalized landing pages. Go to Snov.io to start or monitor your drip campaign — the <code className="text-xs bg-muted px-1 py-0.5 rounded">{"{{landing_page}}"}</code> links are already synced.</>
+                                : <>Your contacts have personalized landing pages ready. Download the CSV to use with your preferred email platform.</>
+                              }
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
-                            <TrendingUp className="w-4 h-4 mr-2" />
-                            View Stats
-                          </Button>
-                          <Button size="sm" onClick={() => setSnovGuideOpen(true)}>
-                            Open Snov.io
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
+                          {usedSnovWorkflow && (
+                            <>
+                              <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                View Stats
+                              </Button>
+                              <Button size="sm" onClick={() => setSnovGuideOpen(true)}>
+                                Open Snov.io
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
