@@ -1990,22 +1990,10 @@ const Admin = () => {
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">1</div>
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">Create the "landing_page" custom field in Snov.io</h4>
+                <h4 className="font-semibold text-foreground">Go to Leads/Prospects and select your list</h4>
                 <p className="text-sm text-muted-foreground">
-                  Before anything else, you need to create a custom field so Snov.io knows where to store each contact's personalized URL.
+                  In Snov.io, go to <strong>Leads → Prospects</strong>. Select the list of leads you already imported (the same contacts you added to Personalized Pages), or create a new list here.
                 </p>
-                <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1.5 ml-1">
-                  <li>In Snov.io, click on any <strong>prospect list</strong> to open it</li>
-                  <li>Click the <strong>"+"</strong> column header (or <strong>"Manage columns"</strong>) on the right side of the table</li>
-                  <li>Click <strong>"Add custom field"</strong></li>
-                  <li>Set the field name to exactly: <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">landing_page</code></li>
-                  <li>Choose <strong>Text</strong> as the data type, then save</li>
-                </ol>
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 mt-2">
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
-                    <strong>Important:</strong> The field name must be exactly <code className="bg-muted px-1 py-0.5 rounded font-mono">landing_page</code> (lowercase, with underscore). This creates the <code className="bg-muted px-1 py-0.5 rounded font-mono">{"{{landing_page}}"}</code> variable you'll use in your emails. You only need to do this once — it applies to all future campaigns.
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -2013,10 +2001,22 @@ const Admin = () => {
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">2</div>
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">Create a new campaign in Snov.io</h4>
+                <h4 className="font-semibold text-foreground">Create the "landing_page" custom variable</h4>
                 <p className="text-sm text-muted-foreground">
-                  Go to <strong>Campaigns</strong> in the left sidebar and click <strong>"New Campaign"</strong>. Give it a name that matches your campaign here.
+                  This is the critical step — you need to add a custom field so each contact can have their unique landing page URL.
                 </p>
+                <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1.5 ml-1">
+                  <li>With your list open, find the <strong>three-dot menu (⋯)</strong> next to the "Send Campaign" button</li>
+                  <li>Select <strong>"Manage Custom Fields"</strong></li>
+                  <li>Click the <strong>"Add Field"</strong> button</li>
+                  <li>Set the field name to exactly: <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">landing_page</code></li>
+                  <li>Choose <strong>Text</strong> as the type, then click <strong>Save</strong></li>
+                </ol>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 mt-2">
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    <strong>Important:</strong> The field name must be exactly <code className="bg-muted px-1 py-0.5 rounded font-mono">landing_page</code> (lowercase, with underscore). This creates the <code className="bg-muted px-1 py-0.5 rounded font-mono">{"{{landing_page}}"}</code> variable you can use in your email templates. You only need to do this once — it applies to all future campaigns.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -2024,9 +2024,9 @@ const Admin = () => {
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">3</div>
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">Select the synced list as your recipient source</h4>
+                <h4 className="font-semibold text-foreground">Create a new campaign in Snov.io</h4>
                 <p className="text-sm text-muted-foreground">
-                  When prompted to choose recipients, select the <strong>target list</strong> you chose in the previous step — this is the list we synced your contacts to. It should already contain all your contacts with their personalized URLs.
+                  Go to <strong>Campaigns</strong> in the left sidebar and click <strong>"New Campaign"</strong>. Give it a name that matches your campaign here. Select this list as your recipient source.
                 </p>
               </div>
             </div>
@@ -2037,7 +2037,7 @@ const Admin = () => {
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Write your email and insert the personalized link</h4>
                 <p className="text-sm text-muted-foreground">
-                  In the email editor, write your message. When you want to include the personalized landing page link, use the variable:
+                  In the email editor, write your message. Use the <code className="bg-muted px-1 py-0.5 rounded font-mono">{"{{landing_page}}"}</code> variable wherever you want the personalized link to appear:
                 </p>
                 <div className="bg-muted rounded-lg p-3 font-mono text-sm text-foreground flex items-center justify-between">
                   <span>{"{{landing_page}}"}</span>
@@ -2096,7 +2096,7 @@ const Admin = () => {
                 <strong>Tip:</strong> Snov.io will open in a new tab so you can follow these steps side-by-side.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <a href="https://app.snov.io/campaigns" target="_blank" rel="noopener noreferrer" className="flex-1">
+                <a href="https://app.snov.io/prospects" target="_blank" rel="noopener noreferrer" className="flex-1">
                   <Button className="w-full">
                     Open Snov.io in New Tab
                     <ExternalLink className="w-4 h-4 ml-2" />
