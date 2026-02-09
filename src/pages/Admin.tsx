@@ -115,6 +115,7 @@ const Admin = () => {
   // Beta Questions state
   const [infoRequests, setInfoRequests] = useState<Array<{ id: string; first_name: string; email: string; created_at: string }>>([]);
   const [infoRequestCount, setInfoRequestCount] = useState(0);
+  const [sendingBetaEmail, setSendingBetaEmail] = useState<Record<string, boolean>>({});
 
   // Snov.io integration state
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
@@ -1408,6 +1409,7 @@ const Admin = () => {
                       <TableHead>First Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1417,6 +1419,30 @@ const Admin = () => {
                         <TableCell>{req.email}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {new Date(req.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={sendingBetaEmail[req.id]}
+                            onClick={async () => {
+                              setSendingBetaEmail((prev) => ({ ...prev, [req.id]: true }));
+                              try {
+                                const { data, error } = await supabase.functions.invoke("send-beta-info-email", {
+                                  body: { firstName: req.first_name, email: req.email },
+                                });
+                                if (error) throw error;
+                                toast({ title: "Email sent!", description: `Sent to ${req.email}` });
+                              } catch (err: any) {
+                                toast({ title: "Failed to send", description: err.message, variant: "destructive" });
+                              } finally {
+                                setSendingBetaEmail((prev) => ({ ...prev, [req.id]: false }));
+                              }
+                            }}
+                          >
+                            <Mail className="w-3.5 h-3.5 mr-1.5" />
+                            {sendingBetaEmail[req.id] ? "Sending..." : "Send Email"}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
