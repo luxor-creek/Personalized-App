@@ -188,7 +188,7 @@ const Auth = () => {
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Login</h1>
+            
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
