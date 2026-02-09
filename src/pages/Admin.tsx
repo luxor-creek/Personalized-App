@@ -783,7 +783,7 @@ const Admin = () => {
               <Layout className="w-4 h-4 mr-2" />
               Landing Pages
             </TabsTrigger>
-            <TabsTrigger value="campaigns">Campaigns & Pages</TabsTrigger>
+            <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Campaigns</TabsTrigger>
           </TabsList>
 
           {/* Landing Pages Tab */}
