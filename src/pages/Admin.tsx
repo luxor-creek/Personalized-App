@@ -115,7 +115,11 @@ const Admin = () => {
   // Beta Questions state
   const [infoRequests, setInfoRequests] = useState<Array<{ id: string; first_name: string; email: string; created_at: string }>>([]);
   const [infoRequestCount, setInfoRequestCount] = useState(0);
-  const [sendingBetaEmail, setSendingBetaEmail] = useState<Record<string, boolean>>({});
+  const [sendingBetaEmail, setSendingBetaEmail] = useState(false);
+  const [betaEmailDialogOpen, setBetaEmailDialogOpen] = useState(false);
+  const [betaEmailTarget, setBetaEmailTarget] = useState<{ id: string; first_name: string; email: string } | null>(null);
+  const [betaEmailSubject, setBetaEmailSubject] = useState("");
+  const [betaEmailBody, setBetaEmailBody] = useState("");
 
   // Snov.io integration state
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
@@ -1424,24 +1428,15 @@ const Admin = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={sendingBetaEmail[req.id]}
-                            onClick={async () => {
-                              setSendingBetaEmail((prev) => ({ ...prev, [req.id]: true }));
-                              try {
-                                const { data, error } = await supabase.functions.invoke("send-beta-info-email", {
-                                  body: { firstName: req.first_name, email: req.email },
-                                });
-                                if (error) throw error;
-                                toast({ title: "Email sent!", description: `Sent to ${req.email}` });
-                              } catch (err: any) {
-                                toast({ title: "Failed to send", description: err.message, variant: "destructive" });
-                              } finally {
-                                setSendingBetaEmail((prev) => ({ ...prev, [req.id]: false }));
-                              }
+                            onClick={() => {
+                              setBetaEmailTarget({ id: req.id, first_name: req.first_name, email: req.email });
+                              setBetaEmailSubject("Personalized page info");
+                              setBetaEmailBody(`Hi ${req.first_name},\n\nThanks for signing up to learn more about Personalized Pages. The platform is currently in Beta but will be released soon at discounted pricing.\n\nHow it works\n\n1. Log in and select a landing page template\n2. Upload your email list\n3. We generate a personalized landing page for every contact\n4. Send your campaign using your existing sales or automation platform\n\nThat's it. No custom builds. No one-off pages. Just fast, scalable personalization.\n\nI will send you an email once the platform is publicly available soon.\n\nTake care,\nPaul\n\nPersonalized.Pages`);
+                              setBetaEmailDialogOpen(true);
                             }}
                           >
                             <Mail className="w-3.5 h-3.5 mr-1.5" />
-                            {sendingBetaEmail[req.id] ? "Sending..." : "Send Email"}
+                            Send Email
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -1506,6 +1501,61 @@ const Admin = () => {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Beta Email Preview Dialog */}
+      <Dialog open={betaEmailDialogOpen} onOpenChange={setBetaEmailDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Preview & Send Email</DialogTitle>
+            <DialogDescription>
+              {betaEmailTarget ? `Sending to ${betaEmailTarget.email}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input value={betaEmailSubject} onChange={(e) => setBetaEmailSubject(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Body</Label>
+              <Textarea
+                value={betaEmailBody}
+                onChange={(e) => setBetaEmailBody(e.target.value)}
+                rows={14}
+                className="text-sm font-mono"
+              />
+            </div>
+            <Button
+              className="w-full"
+              disabled={sendingBetaEmail || !betaEmailTarget}
+              onClick={async () => {
+                if (!betaEmailTarget) return;
+                setSendingBetaEmail(true);
+                try {
+                  const { error } = await supabase.functions.invoke("send-beta-info-email", {
+                    body: {
+                      firstName: betaEmailTarget.first_name,
+                      email: betaEmailTarget.email,
+                      subject: betaEmailSubject,
+                      bodyText: betaEmailBody,
+                    },
+                  });
+                  if (error) throw error;
+                  toast({ title: "Email sent!", description: `Sent to ${betaEmailTarget.email}` });
+                  setBetaEmailDialogOpen(false);
+                } catch (err: any) {
+                  toast({ title: "Failed to send", description: err.message, variant: "destructive" });
+                } finally {
+                  setSendingBetaEmail(false);
+                }
+              }}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {sendingBetaEmail ? "Sending..." : "Send Email"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

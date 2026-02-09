@@ -20,7 +20,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { firstName, email } = await req.json();
+    const { firstName, email, subject, bodyText } = await req.json();
 
     if (!firstName || !email) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -29,37 +29,22 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const safeName = escapeHtml(firstName.slice(0, 100));
+    const safeSubject = (subject || "Personalized page info").slice(0, 200);
+    
+    // Convert plain text body to HTML paragraphs
+    const rawBody = bodyText || `Hi ${firstName},\n\nThanks for signing up to learn more about Personalized Pages.`;
+    const htmlBody = escapeHtml(rawBody)
+      .split("\n")
+      .map((line: string) => (line.trim() === "" ? "<br/>" : `<p style="margin: 4px 0;">${line}</p>`))
+      .join("\n");
 
     const emailResponse = await resend.emails.send({
       from: "Paul <onboarding@resend.dev>",
       to: [email.slice(0, 255)],
-      subject: "Personalized page info",
+      subject: safeSubject,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.7;">
-          <p>Hi ${safeName},</p>
-
-          <p>Thanks for signing up to learn more about Personalized Pages. The platform is currently in Beta but will be released soon at discounted pricing.</p>
-
-          <h2 style="color: #1f2937; font-size: 18px; margin-top: 28px; margin-bottom: 16px;">How it works</h2>
-
-          <ol style="padding-left: 20px; margin: 0 0 24px 0;">
-            <li style="margin-bottom: 8px;">Log in and select a landing page template</li>
-            <li style="margin-bottom: 8px;">Upload your email list</li>
-            <li style="margin-bottom: 8px;">We generate a personalized landing page for every contact</li>
-            <li style="margin-bottom: 8px;">Send your campaign using your existing sales or automation platform</li>
-          </ol>
-
-          <p>That's it. No custom builds. No one-off pages. Just fast, scalable personalization.</p>
-
-          <p>I will send you an email once the platform is publicly available soon.</p>
-
-          <p style="margin-top: 28px;">
-            Take care,<br/>
-            Paul
-          </p>
-
-          <p style="font-weight: 600; color: #374151;">Personalized.Pages</p>
+          ${htmlBody}
         </div>
       `,
     });
