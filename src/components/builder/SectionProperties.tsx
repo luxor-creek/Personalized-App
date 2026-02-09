@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Plus, Trash2, Upload } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -218,15 +219,25 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           <>
             <div className="space-y-2"><VarLabel label="Heading" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Input value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} /></div>
             <Separator />
-            <div className="space-y-2"><Label>Primary Button Text</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Primary Button Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} placeholder="#section or https://..." /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1"><Label className="text-xs">Button Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
-              <div className="space-y-1"><Label className="text-xs">Button Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
-            </div>
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Primary Button</Label><Switch checked={!section.content.hideButton} onCheckedChange={(v) => updateContent({ hideButton: !v })} /></div>
+            {!section.content.hideButton && (
+              <>
+                <div className="space-y-2"><Label>Primary Button Text</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Primary Button Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} placeholder="#section or https://..." /></div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1"><Label className="text-xs">Button Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+                  <div className="space-y-1"><Label className="text-xs">Button Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+                </div>
+              </>
+            )}
             <Separator />
-            <div className="space-y-2"><Label>Secondary Button</Label><Input value={section.content.secondaryButtonText || ''} onChange={(e) => updateContent({ secondaryButtonText: e.target.value })} placeholder="Leave empty to hide" /></div>
-            {section.content.secondaryButtonText && <div className="space-y-2"><Label>Secondary Link</Label><Input value={section.content.secondaryButtonLink || ''} onChange={(e) => updateContent({ secondaryButtonLink: e.target.value })} /></div>}
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Secondary Button</Label><Switch checked={!section.content.hideSecondaryButton} onCheckedChange={(v) => updateContent({ hideSecondaryButton: !v })} /></div>
+            {!section.content.hideSecondaryButton && (
+              <>
+                <div className="space-y-2"><Label>Secondary Button</Label><Input value={section.content.secondaryButtonText || ''} onChange={(e) => updateContent({ secondaryButtonText: e.target.value })} placeholder="Leave empty to hide" /></div>
+                {section.content.secondaryButtonText && <div className="space-y-2"><Label>Secondary Link</Label><Input value={section.content.secondaryButtonLink || ''} onChange={(e) => updateContent({ secondaryButtonLink: e.target.value })} /></div>}
+              </>
+            )}
           </>
         );
 
@@ -236,6 +247,12 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
             <div className="space-y-2"><VarLabel label="Title" value={section.content.formTitle || ''} onChange={(v) => updateContent({ formTitle: v })} /><Input value={section.content.formTitle || ''} onChange={(e) => updateContent({ formTitle: e.target.value })} /></div>
             <div className="space-y-2"><VarLabel label="Subtitle" value={section.content.formSubtitle || ''} onChange={(v) => updateContent({ formSubtitle: v })} /><Input value={section.content.formSubtitle || ''} onChange={(e) => updateContent({ formSubtitle: e.target.value })} /></div>
             <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.formButtonText || ''} onChange={(e) => updateContent({ formButtonText: e.target.value })} /></div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Recipient Email</Label>
+              <Input type="email" value={section.content.formRecipientEmail || ''} onChange={(e) => updateContent({ formRecipientEmail: e.target.value })} placeholder="your@email.com" />
+              <p className="text-xs text-muted-foreground">Form submissions will be sent to this email</p>
+            </div>
             <Separator />
             <div className="space-y-2">
               <Label>Fields</Label>
@@ -276,11 +293,16 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
               <Input value={section.content.documentUrl || ''} onChange={(e) => updateContent({ documentUrl: e.target.value })} placeholder="Dropbox, Google Drive, Box, or OneDrive link" />
               <p className="text-xs text-muted-foreground">Paste a shared link from Dropbox, Google Drive, Box, or OneDrive</p>
             </div>
-            <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.documentButtonText || ''} onChange={(e) => updateContent({ documentButtonText: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
-              <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
-            </div>
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Button</Label><Switch checked={!section.content.hideButton} onCheckedChange={(v) => updateContent({ hideButton: !v })} /></div>
+            {!section.content.hideButton && (
+              <>
+                <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.documentButtonText || ''} onChange={(e) => updateContent({ documentButtonText: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+                  <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+                </div>
+              </>
+            )}
           </div>
         );
 
@@ -304,9 +326,17 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
             <div className="space-y-2"><VarLabel label="Headline" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={2} className="resize-none" /></div>
             <div className="space-y-2"><VarLabel label="Subheadline" value={section.content.heroSubheadline || ''} onChange={(v) => updateContent({ heroSubheadline: v })} /><Textarea value={section.content.heroSubheadline || ''} onChange={(e) => updateContent({ heroSubheadline: e.target.value })} rows={2} className="resize-none" /></div>
             <Separator />
-            <div className="space-y-2"><Label>Primary Button</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Primary Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Secondary Button</Label><Input value={section.content.secondaryButtonText || ''} onChange={(e) => updateContent({ secondaryButtonText: e.target.value })} /></div>
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Primary Button</Label><Switch checked={!section.content.hideButton} onCheckedChange={(v) => updateContent({ hideButton: !v })} /></div>
+            {!section.content.hideButton && (
+              <>
+                <div className="space-y-2"><Label>Primary Button</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Primary Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} /></div>
+              </>
+            )}
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Secondary Button</Label><Switch checked={!section.content.hideSecondaryButton} onCheckedChange={(v) => updateContent({ hideSecondaryButton: !v })} /></div>
+            {!section.content.hideSecondaryButton && (
+              <div className="space-y-2"><Label>Secondary Button</Label><Input value={section.content.secondaryButtonText || ''} onChange={(e) => updateContent({ secondaryButtonText: e.target.value })} /></div>
+            )}
             <Separator />
             <div className="space-y-2"><Label>Hero Image</Label><Input value={section.content.heroImageUrl || ''} onChange={(e) => updateContent({ heroImageUrl: e.target.value })} placeholder="Paste image URL" /><UploadButton label="Upload Image" field="heroImageUrl" /></div>
             <div className="grid grid-cols-2 gap-2">
@@ -442,11 +472,16 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
             <div className="space-y-2"><VarLabel label="Title" value={section.content.newsletterTitle || ''} onChange={(v) => updateContent({ newsletterTitle: v })} /><Input value={section.content.newsletterTitle || ''} onChange={(e) => updateContent({ newsletterTitle: e.target.value })} /></div>
             <div className="space-y-2"><VarLabel label="Subtitle" value={section.content.newsletterSubtitle || ''} onChange={(v) => updateContent({ newsletterSubtitle: v })} /><Input value={section.content.newsletterSubtitle || ''} onChange={(e) => updateContent({ newsletterSubtitle: e.target.value })} /></div>
             <div className="space-y-2"><Label>Placeholder</Label><Input value={section.content.newsletterPlaceholder || ''} onChange={(e) => updateContent({ newsletterPlaceholder: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.newsletterButtonText || ''} onChange={(e) => updateContent({ newsletterButtonText: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
-              <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
-            </div>
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Button</Label><Switch checked={!section.content.hideButton} onCheckedChange={(v) => updateContent({ hideButton: !v })} /></div>
+            {!section.content.hideButton && (
+              <>
+                <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.newsletterButtonText || ''} onChange={(e) => updateContent({ newsletterButtonText: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+                  <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+                </div>
+              </>
+            )}
           </>
         );
 

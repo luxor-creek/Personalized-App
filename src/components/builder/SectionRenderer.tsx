@@ -154,10 +154,10 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
             <div style={innerStyle} className="text-center">
               <h2 style={{ ...textStyle, lineHeight: 1.2, marginBottom: '32px' }}>{applyPersonalization(content.text, personalization)}</h2>
               <div className="flex gap-4 justify-center flex-wrap">
-                {content.buttonText && (
+                {content.buttonText && !content.hideButton && (
                   <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>
                 )}
-                {content.secondaryButtonText && (
+                {content.secondaryButtonText && !content.hideSecondaryButton && (
                   <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ backgroundColor: style.secondaryButtonColor, color: style.secondaryButtonTextColor, borderColor: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>
                 )}
               </div>
@@ -207,10 +207,12 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
             <div style={{ ...innerStyle, maxWidth: style.maxWidth || '700px', textAlign: 'center' }}>
               {content.documentTitle && <h3 style={{ ...textStyle, fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>{applyPersonalization(content.documentTitle, personalization)}</h3>}
               {content.documentDescription && <p style={{ color: style.textColor, opacity: 0.7, marginBottom: '24px', fontSize: '16px' }}>{applyPersonalization(content.documentDescription, personalization)}</p>}
-              <a href={content.documentUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} onClick={(e) => !content.documentUrl && e.preventDefault()}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                {content.documentButtonText || 'Download PDF'}
-              </a>
+              {!content.hideButton && (
+                <a href={content.documentUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} onClick={(e) => !content.documentUrl && e.preventDefault()}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  {content.documentButtonText || 'Download PDF'}
+                </a>
+              )}
             </div>
           </div>
         );
@@ -228,8 +230,8 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
               <h1 style={{ ...textStyle, lineHeight: 1.1, marginBottom: '24px' }}>{applyPersonalization(content.text, personalization)}</h1>
               {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.75, fontSize: '20px', maxWidth: '700px', margin: '0 auto 40px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
               <div className="flex gap-4 justify-center flex-wrap">
-                {content.buttonText && <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>}
-                {content.secondaryButtonText && <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ borderColor: style.secondaryButtonTextColor, color: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>}
+                {content.buttonText && !content.hideButton && <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>}
+                {content.secondaryButtonText && !content.hideSecondaryButton && <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ borderColor: style.secondaryButtonTextColor, color: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>}
               </div>
               {content.heroImageUrl && <img src={content.heroImageUrl} alt="" className="mt-12 mx-auto rounded-xl shadow-2xl max-w-full" />}
             </div>
@@ -387,7 +389,7 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
               {content.newsletterSubtitle && <p className="text-base mb-6" style={{ color: style.textColor, opacity: 0.7 }}>{applyPersonalization(content.newsletterSubtitle, personalization)}</p>}
               <div className="flex gap-3 max-w-md mx-auto">
                 <input type="email" className="flex-1 border rounded-lg px-4 py-3 bg-transparent" placeholder={content.newsletterPlaceholder || 'Enter your email'} style={{ borderColor: style.textColor + '30', color: style.textColor }} disabled={isPreview} />
-                <button className="rounded-lg px-6 py-3 font-semibold transition-all hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} disabled={isPreview}>{content.newsletterButtonText || 'Subscribe'}</button>
+                {!content.hideButton && <button className="rounded-lg px-6 py-3 font-semibold transition-all hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} disabled={isPreview}>{content.newsletterButtonText || 'Subscribe'}</button>}
               </div>
             </div>
           </div>

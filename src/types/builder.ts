@@ -203,6 +203,11 @@ export interface SectionContent {
   // Cards
   cardItems?: CardItem[];
   cardsTitle?: string;
+  // Button visibility
+  hideButton?: boolean;
+  hideSecondaryButton?: boolean;
+  // Form delivery
+  formRecipientEmail?: string;
 }
 
 export interface BuilderSection {
