@@ -115,6 +115,7 @@ export type Database = {
           testimonials_title: string | null
           thumbnail_url: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           about_content?: string | null
@@ -160,6 +161,7 @@ export type Database = {
           testimonials_title?: string | null
           thumbnail_url?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           about_content?: string | null
@@ -205,6 +207,7 @@ export type Database = {
           testimonials_title?: string | null
           thumbnail_url?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

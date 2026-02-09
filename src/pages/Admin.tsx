@@ -54,6 +54,8 @@ interface LandingPageTemplate {
   id: string;
   name: string;
   slug: string;
+  thumbnail_url?: string | null;
+  user_id?: string | null;
 }
 
 interface PersonalizedPage {
@@ -226,11 +228,11 @@ const Admin = () => {
     try {
       const { data, error } = await supabase
         .from("landing_page_templates")
-        .select("id, name, slug")
+        .select("id, name, slug, thumbnail_url, user_id")
         .order("name");
 
       if (error) throw error;
-      setTemplates(data || []);
+      setTemplates((data as LandingPageTemplate[]) || []);
       
       // Set default template if none selected
       if (!selectedTemplateId && data && data.length > 0) {
@@ -777,9 +779,9 @@ const Admin = () => {
   };
 
   const duplicateTemplate = async (templateSlug: string) => {
+    if (!user) return;
     setDuplicating(templateSlug);
     try {
-      // Fetch full template data
       const { data: source, error: fetchErr } = await supabase
         .from("landing_page_templates")
         .select("*")
@@ -787,19 +789,17 @@ const Admin = () => {
         .single();
       if (fetchErr || !source) throw fetchErr || new Error("Template not found");
 
-      // Generate unique slug and name
       const timestamp = Date.now().toString(36);
       const newSlug = `${source.slug}-copy-${timestamp}`;
       const newName = `${source.name} (Copy)`;
 
-      // Clone — omit id, slug, name, timestamps
-      const { id, slug, name, created_at, updated_at, ...rest } = source;
+      const { id, slug, name, created_at, updated_at, user_id: _uid, ...rest } = source;
       const { error: insertErr } = await supabase
         .from("landing_page_templates")
-        .insert({ ...rest, slug: newSlug, name: newName } as any);
+        .insert({ ...rest, slug: newSlug, name: newName, user_id: user.id } as any);
       if (insertErr) throw insertErr;
 
-      toast({ title: "Template duplicated!", description: `"${newName}" is ready to edit.` });
+      toast({ title: "Template cloned!", description: `"${newName}" added to My Templates.` });
       fetchTemplates();
     } catch (err: any) {
       toast({ title: "Error duplicating", description: err.message, variant: "destructive" });
@@ -891,167 +891,31 @@ const Admin = () => {
 
           {/* Landing Pages Tab */}
           <TabsContent value="landing-pages" className="space-y-6">
+            {/* My Templates - user-owned clones */}
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-2">My Templates</h2>
-              <p className="text-muted-foreground">
-                Templates you have customized for your campaigns.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Police Recruitment Landing Page */}
-              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                <div className="aspect-video bg-muted relative overflow-hidden">
-                  <img 
-                    src={heroThumbnail} 
-                    alt="Police Recruitment Video Demo" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <span className="inline-block px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-medium rounded">
-                      Template
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1">Police Recruitment</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Professional recruitment video landing page with hero section and video player.
-                  </p>
-                  <div className="flex gap-2">
-                    <Link to="/police-recruitment" target="_blank" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
-                    </Link>
-                    <Link to="/template-editor/police-recruitment" className="flex-1">
-                      <Button size="sm" className="w-full">
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => duplicateTemplate("police-recruitment")}
-                      disabled={duplicating === "police-recruitment"}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Wine Video Landing Page */}
-              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                <div className="aspect-video bg-muted relative overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&h=400&fit=crop" 
-                    alt="Wine Video Landing Page" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <span className="inline-block px-2 py-1 bg-emerald-600/90 text-white text-xs font-medium rounded">
-                      Template
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1">Wine Video</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Elegant wine-themed landing page with video content and contact form.
-                  </p>
-                  <div className="flex gap-2">
-                    <Link to="/wine-video" target="_blank" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
-                    </Link>
-                    <Link to="/template-editor/wine-video" className="flex-1">
-                      <Button size="sm" className="w-full">
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => duplicateTemplate("wine-video")}
-                      disabled={duplicating === "wine-video"}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* B2B Demo Landing Page */}
-              <div className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                <div className="aspect-video bg-muted relative overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop" 
-                    alt="B2B Demo Landing Page" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <span className="inline-block px-2 py-1 bg-amber-600/90 text-white text-xs font-medium rounded">
-                      Template
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1">B2B Product Demo</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Professional B2B landing page with pricing tiers and lead generation form.
-                  </p>
-                  <div className="flex gap-2">
-                    <Link to="/b2b-demo" target="_blank" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
-                    </Link>
-                    <Link to="/template-editor/b2b-demo" className="flex-1">
-                      <Button size="sm" className="w-full">
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => duplicateTemplate("b2b-demo")}
-                      disabled={duplicating === "b2b-demo"}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* User-Created Templates Section */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Your Custom Templates</h2>
               <p className="text-muted-foreground mb-6">
-                Templates you've duplicated and customized. Click the <Copy className="w-3.5 h-3.5 inline" /> icon above to clone any base template.
+                Templates you've cloned and customized for your campaigns.
               </p>
-              
+
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {templates
-                  .filter((t) => !["police-recruitment", "wine-video", "b2b-demo"].includes(t.slug))
+                  .filter((t) => t.user_id === user?.id)
                   .map((t) => (
                     <div key={t.id} className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                      <div className="aspect-video bg-muted/30 flex items-center justify-center">
-                        <div className="text-center p-4">
-                          <Layout className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">{t.name}</p>
+                      <div className="aspect-video bg-muted relative overflow-hidden">
+                        {t.thumbnail_url ? (
+                          <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Layout className="w-12 h-12 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-3 left-3">
+                          <span className="inline-block px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-medium rounded">
+                            My Template
+                          </span>
                         </div>
                       </div>
                       <div className="p-4">
@@ -1069,6 +933,7 @@ const Admin = () => {
                             size="sm"
                             onClick={() => duplicateTemplate(t.slug)}
                             disabled={duplicating === t.slug}
+                            title="Duplicate"
                           >
                             <Copy className="w-4 h-4" />
                           </Button>
@@ -1077,6 +942,7 @@ const Admin = () => {
                             size="sm"
                             onClick={() => deleteTemplate(t.slug, t.name)}
                             className="text-destructive hover:text-destructive"
+                            title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -1084,21 +950,80 @@ const Admin = () => {
                       </div>
                     </div>
                   ))}
-                {templates.filter((t) => !["police-recruitment", "wine-video", "b2b-demo"].includes(t.slug)).length === 0 && (
-                  <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden">
+                {templates.filter((t) => t.user_id === user?.id).length === 0 && (
+                  <div className="bg-card rounded-xl border border-dashed border-border overflow-hidden">
                     <div className="aspect-video bg-muted/30 flex items-center justify-center">
                       <div className="text-center p-4">
-                        <Copy className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">No custom templates yet</p>
+                        <Copy className="w-12 h-12 text-muted-foreground/40 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">No templates yet</p>
                       </div>
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-muted-foreground mb-1">Get Started</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Use the <Copy className="w-3.5 h-3.5 inline" /> button on any template above to create your own copy.
+                      <p className="text-sm text-muted-foreground">
+                        Browse the Template Library below and click "Use Template" to clone one.
                       </p>
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* Template Library - shared templates (user_id IS NULL) */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Template Library</h2>
+              <p className="text-muted-foreground mb-6">
+                Browse pre-built templates. Click "Use Template" to clone one into your account and customize it.
+              </p>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {templates
+                  .filter((t) => !t.user_id)
+                  .map((t) => (
+                    <div key={t.id} className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
+                      <div className="aspect-video bg-muted relative overflow-hidden">
+                        {t.thumbnail_url ? (
+                          <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Layout className="w-12 h-12 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-3 left-3">
+                          <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs font-medium rounded">
+                            Library
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-foreground mb-1">{t.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Pre-built template ready to customize.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => duplicateTemplate(t.slug)}
+                            disabled={duplicating === t.slug}
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            {duplicating === t.slug ? "Cloning..." : "Use Template"}
+                          </Button>
+                          {isAdmin && (
+                            <Link to={`/template-editor/${t.slug}`}>
+                              <Button variant="outline" size="sm" title="Admin: Edit library template">
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                {templates.filter((t) => !t.user_id).length === 0 && (
+                  <p className="text-muted-foreground col-span-3">No library templates available.</p>
                 )}
               </div>
             </div>
