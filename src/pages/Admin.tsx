@@ -101,6 +101,7 @@ const Admin = () => {
   const [newPerson, setNewPerson] = useState({
     first_name: "",
     last_name: "",
+    email: "",
     company: "",
     custom_message: "",
   });
@@ -562,6 +563,7 @@ const Admin = () => {
           template_id: selectedCampaign.template_id,
           first_name: newPerson.first_name.trim(),
           last_name: newPerson.last_name.trim() || null,
+          email: newPerson.email.trim() || null,
           company: newPerson.company.trim() || null,
           custom_message: newPerson.custom_message.trim() || null,
         })
@@ -579,7 +581,7 @@ const Admin = () => {
       
       navigator.clipboard.writeText(pageUrl);
       
-      setNewPerson({ first_name: "", last_name: "", company: "", custom_message: "" });
+      setNewPerson({ first_name: "", last_name: "", email: "", company: "", custom_message: "" });
       setAddPersonDialogOpen(false);
       fetchPages(selectedCampaign.id);
       fetchCampaigns();
@@ -1638,6 +1640,16 @@ const Admin = () => {
                                           placeholder="Doe"
                                         />
                                       </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label htmlFor="email">Email</Label>
+                                      <Input
+                                        id="email"
+                                        type="email"
+                                        value={newPerson.email || ''}
+                                        onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                                        placeholder="john@example.com"
+                                      />
                                     </div>
                                     <div className="space-y-2">
                                       <Label htmlFor="company">Company</Label>
