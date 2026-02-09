@@ -245,10 +245,10 @@ const PersonalizedLanding = () => {
         <section className="py-16 px-6">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {template?.features_title || "Simple Video Production"}
+              {renderFormattedText(applyPersonalization(template?.features_title || "Simple Video Production", personalizationData))}
             </h2>
             <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-              {template?.features_subtitle || "We turn your existing wine product pages into short, elegant videos that highlight each bottle, then prepare those videos for modern discovery across search, social, and video platforms."}
+              {renderFormattedText(applyPersonalization(template?.features_subtitle || "We turn your existing wine product pages into short, elegant videos that highlight each bottle, then prepare those videos for modern discovery across search, social, and video platforms.", personalizationData))}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -272,7 +272,7 @@ const PersonalizedLanding = () => {
         <section className="py-16 px-6 bg-white">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
-              {template?.about_content || "A simple process built for busy wine marketers"}
+              {renderFormattedText(applyPersonalization(template?.about_content || "A simple process built for busy wine marketers", personalizationData))}
             </h2>
 
             <div className="grid md:grid-cols-5 gap-6">
@@ -364,7 +364,7 @@ const PersonalizedLanding = () => {
                   THE PROBLEM
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
-                  {template?.comparison_problem_title || "Why this works:"}
+                  {renderFormattedText(applyPersonalization(template?.comparison_problem_title || "Why this works:", personalizationData))}
                 </h2>
                 <div className="space-y-4">
                   {(template?.comparison_problem_items || [
@@ -385,10 +385,10 @@ const PersonalizedLanding = () => {
                   THE SOLUTION
                 </p>
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                  {template?.comparison_solution_title || "Infrastructure for Practical Video at Scale"}
+                  {renderFormattedText(applyPersonalization(template?.comparison_solution_title || "Infrastructure for Practical Video at Scale", personalizationData))}
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  {template?.comparison_solution_description || "Kicker provides infrastructure that makes video practical across entire catalogs and campaigns."}
+                  {renderFormattedText(applyPersonalization(template?.comparison_solution_description || "Kicker provides infrastructure that makes video practical across entire catalogs and campaigns.", personalizationData))}
                 </p>
                 <div className="space-y-3">
                   {(template?.comparison_solution_items || [
@@ -414,10 +414,10 @@ const PersonalizedLanding = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                  {template?.pricing_title || "Want something more custom?"}
+                  {renderFormattedText(applyPersonalization(template?.pricing_title || "Want something more custom?", personalizationData))}
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
-                  {template?.pricing_subtitle || "Project-based pricing with options for scope. Social clips can start under $1k; multi-location shoots may exceed $10k."}
+                  {renderFormattedText(applyPersonalization(template?.pricing_subtitle || "Project-based pricing with options for scope. Social clips can start under $1k; multi-location shoots may exceed $10k.", personalizationData))}
                 </p>
 
                 <ul className="space-y-4 mb-8">

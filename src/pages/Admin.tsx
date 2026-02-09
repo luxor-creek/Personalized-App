@@ -875,9 +875,38 @@ const Admin = () => {
       const newName = `${source.name} (Copy)`;
 
       const { id, slug, name, created_at, updated_at, user_id: _uid, ...rest } = source;
+
+      // Replace company branding in cloned content
+      const replaceKicker = (val: string | null) => val ? val.replace(/Kicker Video/gi, 'My Company').replace(/Kicker/gi, 'My Company') : val;
+      const cloneData = {
+        ...rest,
+        slug: newSlug,
+        name: newName,
+        user_id: user.id,
+        hero_headline: replaceKicker(rest.hero_headline),
+        hero_subheadline: replaceKicker(rest.hero_subheadline),
+        hero_badge: replaceKicker(rest.hero_badge),
+        about_content: replaceKicker(rest.about_content),
+        features_title: replaceKicker(rest.features_title),
+        features_subtitle: replaceKicker(rest.features_subtitle),
+        contact_title: replaceKicker(rest.contact_title),
+        contact_subtitle: replaceKicker(rest.contact_subtitle),
+        comparison_problem_title: replaceKicker(rest.comparison_problem_title),
+        comparison_solution_title: replaceKicker(rest.comparison_solution_title),
+        comparison_solution_description: replaceKicker(rest.comparison_solution_description),
+        cta_banner_title: replaceKicker(rest.cta_banner_title),
+        cta_banner_subtitle: replaceKicker(rest.cta_banner_subtitle),
+        testimonials_title: replaceKicker(rest.testimonials_title),
+        testimonials_subtitle: replaceKicker(rest.testimonials_subtitle),
+        pricing_title: replaceKicker(rest.pricing_title),
+        pricing_subtitle: replaceKicker(rest.pricing_subtitle),
+        form_section_title: replaceKicker(rest.form_section_title),
+        form_section_subtitle: replaceKicker(rest.form_section_subtitle),
+      };
+
       const { error: insertErr } = await supabase
         .from("landing_page_templates")
-        .insert({ ...rest, slug: newSlug, name: newName, user_id: user.id } as any);
+        .insert(cloneData as any);
       if (insertErr) throw insertErr;
 
       toast({ title: "Template cloned!", description: `"${newName}" added to My Templates.` });
@@ -1007,8 +1036,8 @@ const Admin = () => {
                         {t.thumbnail_url ? (
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Layout className="w-12 h-12 text-muted-foreground/40" />
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 p-4">
+                            <h3 className="text-lg font-bold text-foreground/70 text-center line-clamp-3">{t.name}</h3>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -1085,8 +1114,8 @@ const Admin = () => {
                         {t.thumbnail_url ? (
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Layout className="w-12 h-12 text-muted-foreground/40" />
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 p-4">
+                            <h3 className="text-lg font-bold text-foreground/70 text-center line-clamp-3">{t.name}</h3>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
