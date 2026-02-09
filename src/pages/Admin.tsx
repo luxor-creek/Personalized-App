@@ -121,6 +121,12 @@ const Admin = () => {
   const [betaEmailSubject, setBetaEmailSubject] = useState("");
   const [betaEmailBody, setBetaEmailBody] = useState("");
 
+  // View details modal state
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
+  const [viewDetailsLoading, setViewDetailsLoading] = useState(false);
+  const [viewDetailsData, setViewDetailsData] = useState<Array<{ id: string; viewed_at: string; user_agent: string | null }>>([]);
+  const [viewDetailsContact, setViewDetailsContact] = useState<{ name: string; view_count: number } | null>(null);
+
   // Snov.io integration state
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
   const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
@@ -319,6 +325,26 @@ const Admin = () => {
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const fetchViewDetails = async (page: PersonalizedPage) => {
+    setViewDetailsContact({ name: `${page.first_name} ${page.last_name || ""}`.trim(), view_count: page.view_count || 0 });
+    setViewDetailsOpen(true);
+    setViewDetailsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("page_views")
+        .select("id, viewed_at, user_agent")
+        .eq("personalized_page_id", page.id)
+        .order("viewed_at", { ascending: false });
+
+      if (error) throw error;
+      setViewDetailsData(data || []);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setViewDetailsLoading(false);
     }
   };
 
@@ -1352,10 +1378,15 @@ const Admin = () => {
                                   </Button>
                                 </TableCell>
                                 <TableCell>
-                                  <span className="flex items-center gap-1">
-                                    <BarChart3 className="w-3 h-3" />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="p-0 h-auto gap-1 text-foreground hover:text-primary"
+                                    onClick={(e) => { e.stopPropagation(); fetchViewDetails(page); }}
+                                  >
+                                    <Eye className="w-3 h-3" />
                                     {page.view_count}
-                                  </span>
+                                  </Button>
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-1">
@@ -1556,6 +1587,47 @@ const Admin = () => {
               {sendingBetaEmail ? "Sending..." : "Send Email"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Modal */}
+      <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Page Views — {viewDetailsContact?.name}</DialogTitle>
+            <DialogDescription>
+              Total views: {viewDetailsContact?.view_count || 0}
+            </DialogDescription>
+          </DialogHeader>
+          {viewDetailsLoading ? (
+            <div className="py-8 text-center text-muted-foreground animate-pulse">Loading...</div>
+          ) : viewDetailsData.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">No views yet.</div>
+          ) : (
+            <div className="max-h-80 overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>#</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {viewDetailsData.map((view, i) => {
+                    const d = new Date(view.viewed_at);
+                    return (
+                      <TableRow key={view.id}>
+                        <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                        <TableCell>{d.toLocaleDateString()}</TableCell>
+                        <TableCell>{d.toLocaleTimeString()}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
