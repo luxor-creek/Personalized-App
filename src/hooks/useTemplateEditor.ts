@@ -165,7 +165,7 @@ export function useTemplateEditor(slug: string | undefined) {
 
     setSaving(true);
     try {
-      const { error: updateError } = await supabase
+      const { data: updateData, error: updateError } = await supabase
         .from("landing_page_templates")
         .update({
           name: template.name,
@@ -208,9 +208,14 @@ export function useTemplateEditor(slug: string | undefined) {
           form_section_subtitle: template.form_section_subtitle,
           logo_url: template.logo_url,
         } as any)
-        .eq("id", template.id);
+        .eq("id", template.id)
+        .select();
 
       if (updateError) throw updateError;
+      
+      if (!updateData || updateData.length === 0) {
+        throw new Error("Save failed — you may need to log in again. Please sign in and try again.");
+      }
 
       setOriginalTemplate(template);
       toast({ title: "Changes saved successfully!" });
