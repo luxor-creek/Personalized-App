@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
@@ -128,6 +128,8 @@ const Admin = () => {
   const [viewDetailsContact, setViewDetailsContact] = useState<{ name: string; view_count: number } | null>(null);
 
   // Snov.io integration state
+  const [duplicating, setDuplicating] = useState<string | null>(null);
+
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
   const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
   const [loadingSnovLists, setLoadingSnovLists] = useState(false);
@@ -774,6 +776,53 @@ const Admin = () => {
     fetchSnovLists();
   };
 
+  const duplicateTemplate = async (templateSlug: string) => {
+    setDuplicating(templateSlug);
+    try {
+      // Fetch full template data
+      const { data: source, error: fetchErr } = await supabase
+        .from("landing_page_templates")
+        .select("*")
+        .eq("slug", templateSlug)
+        .single();
+      if (fetchErr || !source) throw fetchErr || new Error("Template not found");
+
+      // Generate unique slug and name
+      const timestamp = Date.now().toString(36);
+      const newSlug = `${source.slug}-copy-${timestamp}`;
+      const newName = `${source.name} (Copy)`;
+
+      // Clone — omit id, slug, name, timestamps
+      const { id, slug, name, created_at, updated_at, ...rest } = source;
+      const { error: insertErr } = await supabase
+        .from("landing_page_templates")
+        .insert({ ...rest, slug: newSlug, name: newName } as any);
+      if (insertErr) throw insertErr;
+
+      toast({ title: "Template duplicated!", description: `"${newName}" is ready to edit.` });
+      fetchTemplates();
+    } catch (err: any) {
+      toast({ title: "Error duplicating", description: err.message, variant: "destructive" });
+    } finally {
+      setDuplicating(null);
+    }
+  };
+
+  const deleteTemplate = async (templateSlug: string, templateName: string) => {
+    if (!confirm(`Delete "${templateName}"? This cannot be undone.`)) return;
+    try {
+      const { error } = await supabase
+        .from("landing_page_templates")
+        .delete()
+        .eq("slug", templateSlug);
+      if (error) throw error;
+      toast({ title: "Template deleted" });
+      fetchTemplates();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   // Loading state
   if (checkingAuth) {
     return (
@@ -883,6 +932,14 @@ const Admin = () => {
                         Edit
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => duplicateTemplate("police-recruitment")}
+                      disabled={duplicating === "police-recruitment"}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -920,6 +977,14 @@ const Admin = () => {
                         Edit
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => duplicateTemplate("wine-video")}
+                      disabled={duplicating === "wine-video"}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -957,38 +1022,84 @@ const Admin = () => {
                         Edit
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => duplicateTemplate("b2b-demo")}
+                      disabled={duplicating === "b2b-demo"}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* Landing Page Templates Section */}
+            {/* User-Created Templates Section */}
             <div className="mt-12">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Landing Page Templates</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Your Custom Templates</h2>
               <p className="text-muted-foreground mb-6">
-                Browse and select from our library of pre-built landing page templates.
+                Templates you've duplicated and customized. Click the <Copy className="w-3.5 h-3.5 inline" /> icon above to clone any base template.
               </p>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Placeholder for future generic templates */}
-                <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden">
-                  <div className="aspect-video bg-muted/30 flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <Plus className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">Templates coming soon</p>
+                {templates
+                  .filter((t) => !["police-recruitment", "wine-video", "b2b-demo"].includes(t.slug))
+                  .map((t) => (
+                    <div key={t.id} className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
+                      <div className="aspect-video bg-muted/30 flex items-center justify-center">
+                        <div className="text-center p-4">
+                          <Layout className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">{t.name}</p>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-foreground mb-1">{t.name}</h3>
+                        <p className="text-xs text-muted-foreground mb-4 font-mono">{t.slug}</p>
+                        <div className="flex gap-2">
+                          <Link to={`/template-editor/${t.slug}`} className="flex-1">
+                            <Button size="sm" className="w-full">
+                              <Pencil className="w-4 h-4 mr-2" />
+                              Edit
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => duplicateTemplate(t.slug)}
+                            disabled={duplicating === t.slug}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteTemplate(t.slug, t.name)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                {templates.filter((t) => !["police-recruitment", "wine-video", "b2b-demo"].includes(t.slug)).length === 0 && (
+                  <div className="group bg-card rounded-xl border border-dashed border-border overflow-hidden">
+                    <div className="aspect-video bg-muted/30 flex items-center justify-center">
+                      <div className="text-center p-4">
+                        <Copy className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">No custom templates yet</p>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-muted-foreground mb-1">Get Started</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Use the <Copy className="w-3.5 h-3.5 inline" /> button on any template above to create your own copy.
+                      </p>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-muted-foreground mb-1">More Templates</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      New pre-built templates will be available here.
-                    </p>
-                    <Button variant="outline" size="sm" className="w-full" disabled>
-                      Coming Soon
-                    </Button>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </TabsContent>
