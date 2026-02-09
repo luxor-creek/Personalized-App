@@ -346,6 +346,61 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           </>
         );
 
+      case 'heroVideo':
+        return (
+          <>
+            <div className="space-y-2"><VarLabel label="Headline" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={2} className="resize-none" /></div>
+            <div className="space-y-2"><VarLabel label="Subheadline" value={section.content.heroSubheadline || ''} onChange={(v) => updateContent({ heroSubheadline: v })} /><Textarea value={section.content.heroSubheadline || ''} onChange={(e) => updateContent({ heroSubheadline: e.target.value })} rows={2} className="resize-none" /></div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Video URL</Label>
+              <Input value={section.content.videoUrl || ''} onChange={(e) => updateContent({ videoUrl: e.target.value })} placeholder="YouTube, Vimeo, or direct video URL" />
+              <p className="text-xs text-muted-foreground">Supports YouTube, Vimeo, or any direct video link</p>
+            </div>
+          </>
+        );
+
+      case 'heroImage':
+        return (
+          <>
+            <div className="space-y-2"><VarLabel label="Headline" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={2} className="resize-none" /></div>
+            <div className="space-y-2"><VarLabel label="Subheadline" value={section.content.heroSubheadline || ''} onChange={(v) => updateContent({ heroSubheadline: v })} /><Textarea value={section.content.heroSubheadline || ''} onChange={(e) => updateContent({ heroSubheadline: e.target.value })} rows={2} className="resize-none" /></div>
+            <Separator />
+            <div className="space-y-2"><Label>Image</Label><Input value={section.content.heroImageUrl || ''} onChange={(e) => updateContent({ heroImageUrl: e.target.value })} placeholder="Paste image URL" /><UploadButton label="Upload Image" field="heroImageUrl" /></div>
+          </>
+        );
+
+      case 'heroForm':
+        return (
+          <>
+            <div className="space-y-2"><VarLabel label="Headline" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={2} className="resize-none" /></div>
+            <div className="space-y-2"><VarLabel label="Subheadline" value={section.content.heroSubheadline || ''} onChange={(v) => updateContent({ heroSubheadline: v })} /><Textarea value={section.content.heroSubheadline || ''} onChange={(e) => updateContent({ heroSubheadline: e.target.value })} rows={2} className="resize-none" /></div>
+            <Separator />
+            <div className="space-y-2"><VarLabel label="Form Title" value={section.content.heroFormTitle || ''} onChange={(v) => updateContent({ heroFormTitle: v })} /><Input value={section.content.heroFormTitle || ''} onChange={(e) => updateContent({ heroFormTitle: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.heroFormButtonText || ''} onChange={(e) => updateContent({ heroFormButtonText: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+              <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Recipient Email</Label>
+              <Input type="email" value={section.content.formRecipientEmail || ''} onChange={(e) => updateContent({ formRecipientEmail: e.target.value })} placeholder="your@email.com" />
+              <p className="text-xs text-muted-foreground">Form submissions will be sent to this email</p>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Form Fields</Label>
+              {(section.content.heroFormFields || []).map((field, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input value={field} onChange={(e) => { const f = [...(section.content.heroFormFields || [])]; f[i] = e.target.value; updateContent({ heroFormFields: f }); }} className="flex-1" />
+                  <Button variant="ghost" size="sm" onClick={() => updateContent({ heroFormFields: (section.content.heroFormFields || []).filter((_, idx) => idx !== i) })}><Trash2 className="w-3 h-3" /></Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={() => updateContent({ heroFormFields: [...(section.content.heroFormFields || []), 'New Field'] })} className="w-full"><Plus className="w-3 h-3 mr-2" />Add Field</Button>
+            </div>
+          </>
+        );
       case 'features':
         return (
           <>

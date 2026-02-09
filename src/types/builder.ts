@@ -10,6 +10,9 @@ export type SectionType =
   | 'document'
   | 'spacer'
   | 'hero'
+  | 'heroVideo'
+  | 'heroImage'
+  | 'heroForm'
   | 'features'
   | 'testimonials'
   | 'pricing'
@@ -145,6 +148,10 @@ export interface SectionContent {
   heroSubheadline?: string;
   heroImageUrl?: string;
   heroBadge?: string;
+  // Hero Form
+  heroFormFields?: string[];
+  heroFormButtonText?: string;
+  heroFormTitle?: string;
   // Features
   featureItems?: FeatureItem[];
   // Testimonials
@@ -227,11 +234,32 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     style: { backgroundColor: '#ffffff', paddingY: '24px', height: '60px' },
   },
   hero: {
-    label: 'Hero Section',
+    label: 'Headline + Buttons',
     icon: 'Rocket',
     category: 'Layout',
     content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New', heroImageUrl: '' },
     style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '96px', textAlign: 'center', fontSize: '56px', fontWeight: 'bold', buttonColor: '#6d54df', buttonTextColor: '#ffffff', secondaryButtonColor: 'transparent', secondaryButtonTextColor: '#ffffff' },
+  },
+  heroVideo: {
+    label: 'Hero: Text + Video',
+    icon: 'Play',
+    category: 'Layout',
+    content: { text: 'Your Headline Here', heroSubheadline: 'A compelling subheadline that explains your value proposition.', videoUrl: '' },
+    style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '80px', fontSize: '44px', fontWeight: 'bold', textAlign: 'left' },
+  },
+  heroImage: {
+    label: 'Hero: Text + Image',
+    icon: 'Image',
+    category: 'Layout',
+    content: { text: 'Your Headline Here', heroSubheadline: 'A compelling subheadline that explains your value proposition.', heroImageUrl: '' },
+    style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '80px', fontSize: '44px', fontWeight: 'bold', textAlign: 'left' },
+  },
+  heroForm: {
+    label: 'Hero: Text + Form',
+    icon: 'FileText',
+    category: 'Layout',
+    content: { text: 'Your Headline Here', heroSubheadline: 'A compelling subheadline that explains your value proposition.', heroFormFields: ['First Name', 'Email', 'Company'], heroFormButtonText: 'Get Started', heroFormTitle: 'Get Started Free', formRecipientEmail: '' },
+    style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '80px', fontSize: '44px', fontWeight: 'bold', textAlign: 'left', buttonColor: '#6d54df', buttonTextColor: '#ffffff' },
   },
   footer: {
     label: 'Footer',

@@ -238,6 +238,77 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
           </div>
         );
 
+      case 'heroVideo': {
+        const embedUrl = parseVideoUrl(content.videoUrl || content.videoId || '');
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '1100px' }} className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div style={{ textAlign: 'left' }}>
+                <h1 style={{ ...textStyle, textAlign: 'left', lineHeight: 1.1, marginBottom: '20px' }}>{applyPersonalization(content.text, personalization)}</h1>
+                {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.75, fontSize: '18px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
+              </div>
+              <div>
+                {embedUrl ? (
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                    <iframe src={embedUrl} className="absolute inset-0 w-full h-full rounded-xl" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Video" />
+                  </div>
+                ) : (
+                  <div className="w-full bg-white/10 rounded-xl flex items-center justify-center" style={{ paddingBottom: '56.25%', position: 'relative' }}>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm" style={{ color: style.textColor, opacity: 0.5 }}>Paste a video URL in properties</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      case 'heroImage':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '1100px' }} className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div style={{ textAlign: 'left' }}>
+                <h1 style={{ ...textStyle, textAlign: 'left', lineHeight: 1.1, marginBottom: '20px' }}>{applyPersonalization(content.text, personalization)}</h1>
+                {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.75, fontSize: '18px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
+              </div>
+              <div>
+                {content.heroImageUrl ? (
+                  <img src={content.heroImageUrl} alt="" className="w-full rounded-xl shadow-2xl object-cover" />
+                ) : (
+                  <div className="w-full h-64 bg-white/10 rounded-xl flex items-center justify-center text-sm" style={{ color: style.textColor, opacity: 0.5 }}>Upload or paste an image URL</div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'heroForm':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '1100px' }} className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div style={{ textAlign: 'left' }}>
+                <h1 style={{ ...textStyle, textAlign: 'left', lineHeight: 1.1, marginBottom: '20px' }}>{applyPersonalization(content.text, personalization)}</h1>
+                {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.75, fontSize: '18px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
+              </div>
+              <div className="bg-white/10 rounded-xl p-8 backdrop-blur-sm">
+                {content.heroFormTitle && <h3 className="text-xl font-bold mb-6" style={{ color: style.textColor }}>{applyPersonalization(content.heroFormTitle, personalization)}</h3>}
+                <div className="space-y-4">
+                  {(content.heroFormFields || []).map((field, i) => (
+                    <div key={i}>
+                      <label className="block text-sm font-medium mb-1" style={{ color: style.textColor, opacity: 0.8 }}>{field}</label>
+                      {field.toLowerCase() === 'message' ? (
+                        <textarea className="w-full border rounded-lg px-4 py-3 bg-white/10 resize-none" rows={3} placeholder={`Enter ${field.toLowerCase()}`} style={{ borderColor: 'rgba(255,255,255,0.2)', color: style.textColor }} disabled={isPreview} />
+                      ) : (
+                        <input type={field.toLowerCase().includes('email') ? 'email' : 'text'} className="w-full border rounded-lg px-4 py-3 bg-white/10" placeholder={`Enter ${field.toLowerCase()}`} style={{ borderColor: 'rgba(255,255,255,0.2)', color: style.textColor }} disabled={isPreview} />
+                      )}
+                    </div>
+                  ))}
+                  <button className="w-full rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} disabled={isPreview}>{content.heroFormButtonText || 'Get Started'}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'features':
         return (
           <div style={containerStyle}>
