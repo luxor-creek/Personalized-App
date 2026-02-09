@@ -47,6 +47,7 @@ export interface TemplateData {
   // Form section
   form_section_title: string | null;
   form_section_subtitle: string | null;
+  logo_url: string | null;
 }
 
 export function useTemplateEditor(slug: string | undefined) {
@@ -123,6 +124,7 @@ export function useTemplateEditor(slug: string | undefined) {
           // Form section
           form_section_title: (data as any).form_section_title ?? null,
           form_section_subtitle: (data as any).form_section_subtitle ?? null,
+          logo_url: (data as any).logo_url ?? null,
         };
 
         setTemplate(templateData);
@@ -202,6 +204,7 @@ export function useTemplateEditor(slug: string | undefined) {
           cta_banner_subtitle: template.cta_banner_subtitle,
           form_section_title: template.form_section_title,
           form_section_subtitle: template.form_section_subtitle,
+          logo_url: template.logo_url,
         } as any)
         .eq("id", template.id);
 

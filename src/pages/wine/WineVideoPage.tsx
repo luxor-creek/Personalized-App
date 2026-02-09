@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import BrandLogo from "@/components/BrandLogo";
 import SampleRequestForm from "@/components/SampleRequestForm";
 import { applyPersonalization, type TemplateContent } from "@/hooks/useTemplateContent";
 import {
@@ -126,12 +125,18 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
       {/* Header */}
       <header className="py-4 px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BrandLogo className="h-8" />
-          <span className="text-muted-foreground">×</span>
-          <div className="flex items-center gap-1">
-            <Sparkles className="w-5 h-5 text-amber-500" />
-            <span className="font-semibold text-foreground">{companyName}</span>
-          </div>
+            {template?.logo_url ? (
+              <img src={template.logo_url} alt="Logo" className="h-8 object-contain" />
+            ) : null}
+            {companyName && (
+              <>
+                {template?.logo_url && <span className="text-muted-foreground">×</span>}
+                <div className="flex items-center gap-1">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <span className="font-semibold text-foreground">{companyName}</span>
+                </div>
+              </>
+            )}
         </div>
         <Button variant="outline" className="gap-2" onClick={scrollToForm}>
           <Phone className="w-4 h-4" />
@@ -432,7 +437,9 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
       {/* Footer */}
       <footer className="py-8 px-6 bg-gray-50 border-t">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <BrandLogo className="h-6" />
+          {template?.logo_url ? (
+              <img src={template.logo_url} alt="Logo" className="h-6 object-contain" />
+            ) : null}
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Kicker Video. Professional video production.</p>
         </div>
       </footer>
