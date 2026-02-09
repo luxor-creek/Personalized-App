@@ -779,7 +779,7 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="landing-pages" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="landing-pages">
+            <TabsTrigger value="landing-pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Layout className="w-4 h-4 mr-2" />
               Landing Pages
             </TabsTrigger>
