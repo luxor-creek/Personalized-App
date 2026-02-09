@@ -101,6 +101,7 @@ export type Database = {
           hero_video_id: string | null
           hero_video_thumbnail_url: string | null
           id: string
+          logo_url: string | null
           name: string
           personalization_config: Json | null
           portfolio_strip_url: string | null
@@ -145,6 +146,7 @@ export type Database = {
           hero_video_id?: string | null
           hero_video_thumbnail_url?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           personalization_config?: Json | null
           portfolio_strip_url?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           hero_video_id?: string | null
           hero_video_thumbnail_url?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           personalization_config?: Json | null
           portfolio_strip_url?: string | null

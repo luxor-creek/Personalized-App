@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import VideoPlayer from "@/components/VideoPlayer";
 import SampleRequestForm from "@/components/SampleRequestForm";
-import BrandLogo from "@/components/BrandLogo";
 import clientLogos from "@/assets/client-logos.png";
 import { 
   Play, 
@@ -142,7 +141,9 @@ const B2BDemo = () => {
             <Calendar className="w-4 h-4 mr-2" />
             Book a call
           </Button>
-          <BrandLogo />
+          {template?.logo_url ? (
+            <img src={template.logo_url} alt="Logo" className="h-8 object-contain" />
+          ) : null}
         </div>
       </header>
 

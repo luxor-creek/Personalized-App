@@ -49,6 +49,7 @@ export interface TemplateContent {
   cta_banner_subtitle?: string | null;
   form_section_title?: string | null;
   form_section_subtitle?: string | null;
+  logo_url?: string | null;
 }
 
 interface PersonalizationData {

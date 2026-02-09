@@ -8,11 +8,11 @@ import EditableImage from "@/components/editor/EditableImage";
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import BrandLogo from "@/components/BrandLogo";
 import clientLogos from "@/assets/client-logos.png";
 import portfolioStrip from "@/assets/portfolio-strip.png";
-import { ArrowDown, Play, DollarSign, Mail, ExternalLink, X, Check } from "lucide-react";
+import { ArrowDown, Play, DollarSign, Mail, ExternalLink, X, Check, Upload, Trash2 } from "lucide-react";
 import EditableSampleRequestForm from "@/components/editor/EditableSampleRequestForm";
+import { supabase } from "@/integrations/supabase/client";
 
 const DEFAULT_ABOUT_CONTENT = `Most police recruitment videos aren't broken.
 They're just outdated.
@@ -46,6 +46,34 @@ const TemplateEditor = () => {
     saveChanges,
     discardChanges,
   } = useTemplateEditor(slug);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !template) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please upload an image file.", variant: "destructive" });
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${template.id}/logo.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("template-logos").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("template-logos").getPublicUrl(path);
+      updateField("logo_url", urlData.publicUrl);
+      toast({ title: "Logo uploaded!" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    updateField("logo_url", null);
+  };
 
   const handleSave = async () => {
     const success = await saveChanges();
@@ -132,7 +160,20 @@ const TemplateEditor = () => {
           {/* Header */}
           <header className="py-4 px-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BrandLogo />
+              <div className="relative group">
+                {template.logo_url ? (
+                  <div className="flex items-center gap-2">
+                    <img src={template.logo_url} alt="Logo" className="h-8 object-contain" />
+                    <button onClick={handleRemoveLogo} className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive" title="Remove logo"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                ) : (
+                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors text-sm text-muted-foreground">
+                    <Upload className="w-4 h-4" />
+                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                  </label>
+                )}
+              </div>
               <span className="text-muted-foreground">×</span>
               <div className="flex items-center gap-1">
                 <span className="font-semibold text-foreground">
@@ -646,7 +687,9 @@ const TemplateEditor = () => {
           {/* Footer */}
           <footer className="py-8 px-6 bg-gray-50 border-t">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-              <BrandLogo className="h-6" />
+              {template.logo_url ? (
+                <img src={template.logo_url} alt="Logo" className="h-6 object-contain" />
+              ) : null}
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} Kicker Video. Professional video production.
               </p>
@@ -1132,7 +1175,20 @@ const TemplateEditor = () => {
           <div className="container mx-auto px-4 py-12 lg:py-20 relative z-10">
             {/* Header */}
             <header className="flex items-center justify-between mb-12 lg:mb-16">
-              <BrandLogo className="h-8 md:h-10" />
+              <div className="relative group">
+                {template.logo_url ? (
+                  <div className="flex items-center gap-2">
+                    <img src={template.logo_url} alt="Logo" className="h-8 md:h-10 object-contain" />
+                    <button onClick={handleRemoveLogo} className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive" title="Remove logo"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                ) : (
+                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors text-sm text-muted-foreground">
+                    <Upload className="w-4 h-4" />
+                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                  </label>
+                )}
+              </div>
               <Button variant="outline" size="lg">
                 <EditableText
                   value={template.hero_cta_primary_text || "Get in Touch"}
@@ -1332,7 +1388,9 @@ const TemplateEditor = () => {
         <footer className="py-8 bg-background border-t border-border">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <BrandLogo className="h-6" />
+              {template.logo_url ? (
+                <img src={template.logo_url} alt="Logo" className="h-6 object-contain" />
+              ) : null}
 
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} Kicker Video. Professional video production.
