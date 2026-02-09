@@ -57,6 +57,11 @@ interface LandingPageTemplate {
   thumbnail_url?: string | null;
   user_id?: string | null;
   is_builder_template?: boolean;
+  hero_headline?: string | null;
+  hero_badge?: string | null;
+  hero_subheadline?: string | null;
+  logo_url?: string | null;
+  hero_video_thumbnail_url?: string | null;
 }
 
 interface PersonalizedPage {
@@ -241,7 +246,7 @@ const Admin = () => {
     try {
       const { data, error } = await supabase
         .from("landing_page_templates")
-        .select("id, name, slug, thumbnail_url, user_id, is_builder_template")
+        .select("id, name, slug, thumbnail_url, user_id, is_builder_template, hero_headline, hero_badge, hero_subheadline, logo_url, hero_video_thumbnail_url")
         .order("name");
 
       if (error) throw error;
@@ -1036,8 +1041,16 @@ const Admin = () => {
                         {t.thumbnail_url ? (
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 p-4">
-                            <h3 className="text-lg font-bold text-foreground/70 text-center line-clamp-3">{t.name}</h3>
+                          <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--background))] to-[hsl(var(--muted))] p-3 flex flex-col overflow-hidden" style={{ transform: 'scale(1)', transformOrigin: 'top left' }}>
+                            {t.logo_url && <img src={t.logo_url} alt="" className="h-4 object-contain self-start mb-2 opacity-70" />}
+                            {t.hero_badge && <p className="text-[8px] uppercase tracking-wider text-primary font-medium mb-1 truncate">{t.hero_badge}</p>}
+                            <h4 className="text-[11px] font-bold text-foreground leading-tight line-clamp-2 mb-1">{t.hero_headline || t.name}</h4>
+                            {t.hero_subheadline && <p className="text-[8px] text-muted-foreground leading-tight line-clamp-2">{t.hero_subheadline}</p>}
+                            {t.hero_video_thumbnail_url && (
+                              <div className="mt-auto pt-1">
+                                <img src={t.hero_video_thumbnail_url} alt="" className="w-full rounded-sm object-cover max-h-[60px] opacity-80" />
+                              </div>
+                            )}
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -1114,8 +1127,16 @@ const Admin = () => {
                         {t.thumbnail_url ? (
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 p-4">
-                            <h3 className="text-lg font-bold text-foreground/70 text-center line-clamp-3">{t.name}</h3>
+                          <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--background))] to-[hsl(var(--muted))] p-3 flex flex-col overflow-hidden">
+                            {t.logo_url && <img src={t.logo_url} alt="" className="h-4 object-contain self-start mb-2 opacity-70" />}
+                            {t.hero_badge && <p className="text-[8px] uppercase tracking-wider text-primary font-medium mb-1 truncate">{t.hero_badge}</p>}
+                            <h4 className="text-[11px] font-bold text-foreground leading-tight line-clamp-2 mb-1">{t.hero_headline || t.name}</h4>
+                            {t.hero_subheadline && <p className="text-[8px] text-muted-foreground leading-tight line-clamp-2">{t.hero_subheadline}</p>}
+                            {t.hero_video_thumbnail_url && (
+                              <div className="mt-auto pt-1">
+                                <img src={t.hero_video_thumbnail_url} alt="" className="w-full rounded-sm object-cover max-h-[60px] opacity-80" />
+                              </div>
+                            )}
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
