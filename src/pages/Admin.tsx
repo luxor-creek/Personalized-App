@@ -2035,7 +2035,7 @@ const Admin = () => {
                 </p>
                 <div className="bg-muted rounded-lg p-4 text-sm text-muted-foreground space-y-2 italic">
                   <p>Hi {"{{first_name}}"},</p>
-                  <p>I put together a personalized video just for you. Check it out here:</p>
+                  <p>I put together a personalized offer for you. This page has the information we discussed. Check it out here:</p>
                   <p className="text-primary font-medium not-italic">{"{{landing_page}}"}</p>
                   <p>Let me know what you think!</p>
                 </div>
