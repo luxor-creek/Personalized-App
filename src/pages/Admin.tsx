@@ -1992,7 +1992,7 @@ const Admin = () => {
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Go to Leads/Prospects and select your list</h4>
                 <p className="text-sm text-muted-foreground">
-                  In Snov.io, go to <strong>Leads → Prospects</strong>. Select the list of leads you already imported (the same contacts you added to Personalized Pages), or create a new list here.
+                  In Snov.io, go to <strong>Leads → Prospects</strong>. Select the list of leads you already imported (the same contacts you added to Personalized Pages), or create a new list.
                 </p>
               </div>
             </div>
