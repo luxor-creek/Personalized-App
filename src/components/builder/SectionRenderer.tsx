@@ -1,4 +1,5 @@
 import { BuilderSection } from "@/types/builder";
+import { useState, useEffect } from "react";
 
 interface SectionRendererProps {
   section: BuilderSection;
@@ -15,17 +16,32 @@ const applyPersonalization = (text: string | undefined, personalization?: Record
 
 const parseVideoUrl = (url: string): string | null => {
   if (!url) return null;
-  // YouTube
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-  // Vimeo
   const vimeoMatch = url.match(/(?:vimeo\.com\/)(\d+)/);
   if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?badge=0&autopause=0`;
-  // Pure numeric (legacy Vimeo ID)
   if (/^\d+$/.test(url)) return `https://player.vimeo.com/video/${url}?badge=0&autopause=0`;
-  // Direct URL (assume embeddable)
   if (url.startsWith('http')) return url;
   return null;
+};
+
+const useCountdown = (targetDate: string) => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    const tick = () => {
+      const diff = Math.max(0, new Date(targetDate).getTime() - Date.now());
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetDate]);
+  return timeLeft;
 };
 
 const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalization }: SectionRendererProps) => {
@@ -83,19 +99,11 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
             <div style={innerStyle}>
               {embedUrl ? (
                 <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                  <iframe
-                    src={embedUrl}
-                    className="absolute inset-0 w-full h-full rounded-lg"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
-                    title="Video"
-                  />
+                  <iframe src={embedUrl} className="absolute inset-0 w-full h-full rounded-lg" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Video" />
                 </div>
               ) : (
                 <div className="w-full bg-muted rounded-lg flex items-center justify-center" style={{ paddingBottom: '56.25%', position: 'relative' }}>
-                  <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                    Paste a YouTube, Vimeo, or video URL in properties
-                  </span>
+                  <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">Paste a YouTube, Vimeo, or video URL in properties</span>
                 </div>
               )}
             </div>
@@ -110,32 +118,15 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
         return (
           <div style={containerStyle}>
             <div style={innerStyle}>
-              {hasSingle && (
-                <img
-                  src={content.imageUrl}
-                  alt=""
-                  className="w-full rounded-lg object-cover"
-                  style={{ borderRadius: style.borderRadius }}
-                />
-              )}
+              {hasSingle && <img src={content.imageUrl} alt="" className="w-full rounded-lg object-cover" style={{ borderRadius: style.borderRadius }} />}
               {hasRow && (
                 <div className="flex gap-4 overflow-x-auto">
                   {(content.imageUrls || []).filter(Boolean).map((url, i) => (
-                    <img
-                      key={i}
-                      src={url}
-                      alt=""
-                      className="rounded-lg object-cover flex-shrink-0"
-                      style={{ borderRadius: style.borderRadius, height: '240px' }}
-                    />
+                    <img key={i} src={url} alt="" className="rounded-lg object-cover flex-shrink-0" style={{ borderRadius: style.borderRadius, height: '240px' }} />
                   ))}
                 </div>
               )}
-              {!hasSingle && !hasRow && (
-                <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-                  Upload or paste an image URL
-                </div>
-              )}
+              {!hasSingle && !hasRow && <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">Upload or paste an image URL</div>}
             </div>
           </div>
         );
@@ -146,26 +137,13 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
           <div style={{ ...containerStyle, position: 'relative', overflow: 'hidden' }}>
             {content.imageUrl && (
               <>
-                <img
-                  src={content.imageUrl}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ backgroundColor: style.overlayColor, opacity: style.overlayOpacity }}
-                />
+                <img src={content.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0" style={{ backgroundColor: style.overlayColor, opacity: style.overlayOpacity }} />
               </>
             )}
             <div style={{ position: 'relative', zIndex: 1, ...innerStyle }} className="text-center">
-              <h2 style={{ ...textStyle, lineHeight: 1.2, marginBottom: '16px' }}>
-                {applyPersonalization(content.bannerText, personalization)}
-              </h2>
-              {content.bannerSubtext && (
-                <p style={{ color: style.textColor, opacity: 0.85, fontSize: '18px' }}>
-                  {applyPersonalization(content.bannerSubtext, personalization)}
-                </p>
-              )}
+              <h2 style={{ ...textStyle, lineHeight: 1.2, marginBottom: '16px' }}>{applyPersonalization(content.bannerText, personalization)}</h2>
+              {content.bannerSubtext && <p style={{ color: style.textColor, opacity: 0.85, fontSize: '18px' }}>{applyPersonalization(content.bannerSubtext, personalization)}</p>}
             </div>
           </div>
         );
@@ -174,31 +152,13 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
         return (
           <div style={containerStyle}>
             <div style={innerStyle} className="text-center">
-              <h2 style={{ ...textStyle, lineHeight: 1.2, marginBottom: '32px' }}>
-                {applyPersonalization(content.text, personalization)}
-              </h2>
+              <h2 style={{ ...textStyle, lineHeight: 1.2, marginBottom: '32px' }}>{applyPersonalization(content.text, personalization)}</h2>
               <div className="flex gap-4 justify-center flex-wrap">
                 {content.buttonText && (
-                  <a
-                    href={content.buttonLink || '#'}
-                    className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90"
-                    style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}
-                  >
-                    {content.buttonText}
-                  </a>
+                  <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>
                 )}
                 {content.secondaryButtonText && (
-                  <a
-                    href={content.secondaryButtonLink || '#'}
-                    className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90"
-                    style={{
-                      backgroundColor: style.secondaryButtonColor,
-                      color: style.secondaryButtonTextColor,
-                      borderColor: style.secondaryButtonTextColor,
-                    }}
-                  >
-                    {content.secondaryButtonText}
-                  </a>
+                  <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ backgroundColor: style.secondaryButtonColor, color: style.secondaryButtonTextColor, borderColor: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>
                 )}
               </div>
             </div>
@@ -209,46 +169,20 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
         return (
           <div style={containerStyle}>
             <div style={{ ...innerStyle, maxWidth: style.maxWidth || '600px' }}>
-              {content.formTitle && (
-                <h3 style={{ ...textStyle, fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>
-                  {applyPersonalization(content.formTitle, personalization)}
-                </h3>
-              )}
-              {content.formSubtitle && (
-                <p style={{ color: style.textColor, opacity: 0.7, textAlign: 'center', marginBottom: '24px', fontSize: '16px' }}>
-                  {applyPersonalization(content.formSubtitle, personalization)}
-                </p>
-              )}
+              {content.formTitle && <h3 style={{ ...textStyle, fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>{applyPersonalization(content.formTitle, personalization)}</h3>}
+              {content.formSubtitle && <p style={{ color: style.textColor, opacity: 0.7, textAlign: 'center', marginBottom: '24px', fontSize: '16px' }}>{applyPersonalization(content.formSubtitle, personalization)}</p>}
               <div className="space-y-4">
                 {(content.formFields || []).map((field, i) => (
                   <div key={i}>
                     <label className="block text-sm font-medium mb-1" style={{ color: style.textColor }}>{field}</label>
                     {field.toLowerCase() === 'message' ? (
-                      <textarea
-                        className="w-full border rounded-lg px-4 py-3 bg-transparent resize-none"
-                        rows={4}
-                        placeholder={`Enter ${field.toLowerCase()}`}
-                        style={{ borderColor: style.textColor + '30', color: style.textColor }}
-                        disabled={isPreview}
-                      />
+                      <textarea className="w-full border rounded-lg px-4 py-3 bg-transparent resize-none" rows={4} placeholder={`Enter ${field.toLowerCase()}`} style={{ borderColor: style.textColor + '30', color: style.textColor }} disabled={isPreview} />
                     ) : (
-                      <input
-                        type={field.toLowerCase().includes('email') ? 'email' : 'text'}
-                        className="w-full border rounded-lg px-4 py-3 bg-transparent"
-                        placeholder={`Enter ${field.toLowerCase()}`}
-                        style={{ borderColor: style.textColor + '30', color: style.textColor }}
-                        disabled={isPreview}
-                      />
+                      <input type={field.toLowerCase().includes('email') ? 'email' : 'text'} className="w-full border rounded-lg px-4 py-3 bg-transparent" placeholder={`Enter ${field.toLowerCase()}`} style={{ borderColor: style.textColor + '30', color: style.textColor }} disabled={isPreview} />
                     )}
                   </div>
                 ))}
-                <button
-                  className="w-full rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90"
-                  style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}
-                  disabled={isPreview}
-                >
-                  {content.formButtonText || 'Submit'}
-                </button>
+                <button className="w-full rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} disabled={isPreview}>{content.formButtonText || 'Submit'}</button>
               </div>
             </div>
           </div>
@@ -259,16 +193,9 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
           <div style={{ ...containerStyle, paddingTop: '16px', paddingBottom: '16px' }}>
             <div style={{ maxWidth: style.maxWidth || '1200px', margin: '0 auto', display: 'flex', alignItems: 'center' }}>
               {content.logoUrl ? (
-                <img
-                  src={content.logoUrl}
-                  alt="Logo"
-                  style={{ height: style.height || '40px' }}
-                  className="object-contain"
-                />
+                <img src={content.logoUrl} alt="Logo" style={{ height: style.height || '40px' }} className="object-contain" />
               ) : (
-                <div className="h-10 w-36 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">
-                  Upload a logo
-                </div>
+                <div className="h-10 w-36 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">Upload a logo</div>
               )}
             </div>
           </div>
@@ -278,24 +205,9 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
         return (
           <div style={containerStyle}>
             <div style={{ ...innerStyle, maxWidth: style.maxWidth || '700px', textAlign: 'center' }}>
-              {content.documentTitle && (
-                <h3 style={{ ...textStyle, fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-                  {applyPersonalization(content.documentTitle, personalization)}
-                </h3>
-              )}
-              {content.documentDescription && (
-                <p style={{ color: style.textColor, opacity: 0.7, marginBottom: '24px', fontSize: '16px' }}>
-                  {applyPersonalization(content.documentDescription, personalization)}
-                </p>
-              )}
-              <a
-                href={content.documentUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90"
-                style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}
-                onClick={(e) => !content.documentUrl && e.preventDefault()}
-              >
+              {content.documentTitle && <h3 style={{ ...textStyle, fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>{applyPersonalization(content.documentTitle, personalization)}</h3>}
+              {content.documentDescription && <p style={{ color: style.textColor, opacity: 0.7, marginBottom: '24px', fontSize: '16px' }}>{applyPersonalization(content.documentDescription, personalization)}</p>}
+              <a href={content.documentUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} onClick={(e) => !content.documentUrl && e.preventDefault()}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 {content.documentButtonText || 'Download PDF'}
               </a>
@@ -304,8 +216,349 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
         );
 
       case 'spacer':
+        return <div style={{ backgroundColor: style.backgroundColor, height: style.height || '48px' }} />;
+
+      // === NEW SECTIONS ===
+
+      case 'hero':
         return (
-          <div style={{ backgroundColor: style.backgroundColor, height: style.height || '48px' }} />
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '1100px', textAlign: style.textAlign as any || 'center' }}>
+              {content.heroBadge && <span className="inline-block rounded-full px-4 py-1 text-xs font-semibold mb-6" style={{ backgroundColor: (style.buttonColor || '#6d54df') + '20', color: style.buttonColor || '#6d54df' }}>{content.heroBadge}</span>}
+              <h1 style={{ ...textStyle, lineHeight: 1.1, marginBottom: '24px' }}>{applyPersonalization(content.text, personalization)}</h1>
+              {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.75, fontSize: '20px', maxWidth: '700px', margin: '0 auto 40px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
+              <div className="flex gap-4 justify-center flex-wrap">
+                {content.buttonText && <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>}
+                {content.secondaryButtonText && <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ borderColor: style.secondaryButtonTextColor, color: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>}
+              </div>
+              {content.heroImageUrl && <img src={content.heroImageUrl} alt="" className="mt-12 mx-auto rounded-xl shadow-2xl max-w-full" />}
+            </div>
+          </div>
+        );
+
+      case 'features':
+        return (
+          <div style={containerStyle}>
+            <div>
+              <div className="grid gap-8" style={{ gridTemplateColumns: `repeat(${style.columns || 3}, 1fr)`, ...innerStyle }}>
+                {(content.featureItems || []).map((item, i) => (
+                  <div key={i} className="text-center p-6 rounded-xl" style={{ backgroundColor: style.backgroundColor === '#ffffff' ? '#f8fafc' : 'rgba(255,255,255,0.05)' }}>
+                    <span className="text-3xl mb-4 block">{item.icon}</span>
+                    <h4 className="font-semibold text-lg mb-2" style={{ color: style.textColor }}>{item.title}</h4>
+                    <p className="text-sm leading-relaxed" style={{ color: style.textColor, opacity: 0.7 }}>{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'testimonials':
+        return (
+          <div style={containerStyle}>
+            <div>
+              <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${Math.min((content.testimonialItems || []).length, 3)}, 1fr)`, ...innerStyle }}>
+                {(content.testimonialItems || []).map((item, i) => (
+                  <div key={i} className="p-6 rounded-xl border" style={{ borderColor: (style.textColor || '#1a1a1a') + '15' }}>
+                    <p className="text-base leading-relaxed mb-4" style={{ color: style.textColor }}>"{item.quote}"</p>
+                    <div className="flex items-center gap-3">
+                      {item.avatar ? (
+                        <img src={item.avatar} alt={item.author} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm" style={{ backgroundColor: '#6d54df20', color: '#6d54df' }}>{item.author.charAt(0)}</div>
+                      )}
+                      <div>
+                        <p className="font-semibold text-sm" style={{ color: style.textColor }}>{item.author}</p>
+                        <p className="text-xs" style={{ color: style.textColor, opacity: 0.6 }}>{item.role}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'pricing':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, textAlign: 'center' }}>
+              {content.pricingTitle && <h2 className="text-3xl font-bold mb-2" style={{ color: style.textColor }}>{content.pricingTitle}</h2>}
+              {content.pricingSubtitle && <p className="text-base mb-10" style={{ color: style.textColor, opacity: 0.6 }}>{content.pricingSubtitle}</p>}
+              <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${Math.min((content.pricingItems || []).length, 3)}, 1fr)` }}>
+                {(content.pricingItems || []).map((tier, i) => (
+                  <div key={i} className="p-8 rounded-xl border-2 text-left" style={{ borderColor: tier.highlighted ? (style.accentColor || '#6d54df') : (style.textColor || '#1a1a1a') + '15', backgroundColor: tier.highlighted ? (style.accentColor || '#6d54df') + '08' : 'transparent' }}>
+                    <p className="font-semibold text-lg mb-1" style={{ color: style.textColor }}>{tier.name}</p>
+                    <p className="mb-4"><span className="text-4xl font-bold" style={{ color: style.textColor }}>{tier.price}</span>{tier.period && <span className="text-sm" style={{ color: style.textColor, opacity: 0.5 }}>{tier.period}</span>}</p>
+                    <ul className="space-y-2 mb-6">
+                      {tier.features.map((f, fi) => (
+                        <li key={fi} className="flex items-center gap-2 text-sm" style={{ color: style.textColor }}>
+                          <span style={{ color: style.accentColor || '#22c55e' }}>✓</span> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button className="w-full rounded-lg px-6 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: tier.highlighted ? style.buttonColor : 'transparent', color: tier.highlighted ? style.buttonTextColor : style.buttonColor, border: tier.highlighted ? 'none' : `2px solid ${style.buttonColor}` }}>{tier.buttonText || 'Choose Plan'}</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'faq':
+        return (
+          <div style={containerStyle}>
+            <div style={innerStyle} className="space-y-4">
+              {(content.faqItems || []).map((item, i) => (
+                <details key={i} className="border rounded-lg p-4 group" style={{ borderColor: (style.textColor || '#1a1a1a') + '15' }}>
+                  <summary className="font-semibold cursor-pointer list-none flex items-center justify-between" style={{ color: style.textColor }}>
+                    {item.question}
+                    <span className="text-lg ml-2" style={{ color: style.accentColor || '#6d54df' }}>+</span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed" style={{ color: style.textColor, opacity: 0.7 }}>{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'stats':
+        return (
+          <div style={containerStyle}>
+            <div style={innerStyle} className="flex justify-center">
+              <div className="grid gap-8" style={{ gridTemplateColumns: `repeat(${(content.statItems || []).length}, 1fr)` }}>
+                {(content.statItems || []).map((stat, i) => (
+                  <div key={i} className="text-center px-6">
+                    <p className="text-4xl font-bold mb-1" style={{ color: style.accentColor || style.textColor }}>{stat.value}</p>
+                    <p className="text-sm" style={{ color: style.textColor, opacity: 0.6 }}>{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'team':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, textAlign: 'center' }}>
+              {content.teamTitle && <h2 className="text-3xl font-bold mb-2" style={{ color: style.textColor }}>{content.teamTitle}</h2>}
+              {content.teamSubtitle && <p className="text-base mb-10" style={{ color: style.textColor, opacity: 0.6 }}>{content.teamSubtitle}</p>}
+              <div className="grid gap-8" style={{ gridTemplateColumns: `repeat(${Math.min((content.teamMembers || []).length, 4)}, 1fr)` }}>
+                {(content.teamMembers || []).map((member, i) => (
+                  <div key={i} className="text-center">
+                    {member.imageUrl ? (
+                      <img src={member.imageUrl} alt={member.name} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold" style={{ backgroundColor: '#6d54df20', color: '#6d54df' }}>{member.name.charAt(0)}</div>
+                    )}
+                    <p className="font-semibold" style={{ color: style.textColor }}>{member.name}</p>
+                    <p className="text-sm" style={{ color: style.textColor, opacity: 0.6 }}>{member.role}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'logoCloud':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '1000px', textAlign: 'center' }}>
+              {content.logoCloudTitle && <p className="text-sm font-medium uppercase tracking-wider mb-8" style={{ color: style.textColor }}>{content.logoCloudTitle}</p>}
+              {(content.logoUrls || []).length > 0 ? (
+                <div className="flex items-center justify-center gap-12 flex-wrap">
+                  {(content.logoUrls || []).filter(Boolean).map((url, i) => (
+                    <img key={i} src={url} alt="" className="h-8 object-contain opacity-50 hover:opacity-100 transition-opacity" />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground py-4">Add partner/client logos in properties</div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'newsletter':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: style.maxWidth || '600px', textAlign: 'center' }}>
+              {content.newsletterTitle && <h3 className="text-2xl font-bold mb-2" style={{ color: style.textColor }}>{applyPersonalization(content.newsletterTitle, personalization)}</h3>}
+              {content.newsletterSubtitle && <p className="text-base mb-6" style={{ color: style.textColor, opacity: 0.7 }}>{applyPersonalization(content.newsletterSubtitle, personalization)}</p>}
+              <div className="flex gap-3 max-w-md mx-auto">
+                <input type="email" className="flex-1 border rounded-lg px-4 py-3 bg-transparent" placeholder={content.newsletterPlaceholder || 'Enter your email'} style={{ borderColor: style.textColor + '30', color: style.textColor }} disabled={isPreview} />
+                <button className="rounded-lg px-6 py-3 font-semibold transition-all hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }} disabled={isPreview}>{content.newsletterButtonText || 'Subscribe'}</button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'comparison':
+        return (
+          <div style={containerStyle}>
+            <div style={innerStyle}>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left p-3 text-sm font-semibold" style={{ color: style.textColor }}>Feature</th>
+                    <th className="text-center p-3 text-sm font-semibold" style={{ color: style.accentColor || '#6d54df' }}>{content.comparisonHeaderA || 'Us'}</th>
+                    <th className="text-center p-3 text-sm font-semibold" style={{ color: style.textColor, opacity: 0.5 }}>{content.comparisonHeaderB || 'Others'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(content.comparisonRows || []).map((row, i) => (
+                    <tr key={i} className="border-t" style={{ borderColor: (style.textColor || '#1a1a1a') + '10' }}>
+                      <td className="p-3 text-sm" style={{ color: style.textColor }}>{row.feature}</td>
+                      <td className="p-3 text-sm text-center font-medium" style={{ color: style.accentColor || '#22c55e' }}>{row.optionA}</td>
+                      <td className="p-3 text-sm text-center" style={{ color: style.textColor, opacity: 0.5 }}>{row.optionB}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+
+      case 'steps':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, textAlign: 'center' }}>
+              {content.stepsTitle && <h2 className="text-3xl font-bold mb-2" style={{ color: style.textColor }}>{content.stepsTitle}</h2>}
+              {content.stepsSubtitle && <p className="text-base mb-10" style={{ color: style.textColor, opacity: 0.6 }}>{content.stepsSubtitle}</p>}
+              <div className="space-y-8 text-left max-w-lg mx-auto">
+                {(content.stepItems || []).map((step, i) => (
+                  <div key={i} className="flex gap-4 items-start">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0" style={{ backgroundColor: (style.accentColor || '#6d54df') + '15', color: style.accentColor || '#6d54df' }}>{i + 1}</div>
+                    <div>
+                      <h4 className="font-semibold mb-1" style={{ color: style.textColor }}>{step.title}</h4>
+                      <p className="text-sm" style={{ color: style.textColor, opacity: 0.7 }}>{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'gallery':
+        return (
+          <div style={containerStyle}>
+            <div style={innerStyle}>
+              {(content.galleryUrls || []).length > 0 ? (
+                <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${content.galleryColumns || 3}, 1fr)` }}>
+                  {(content.galleryUrls || []).filter(Boolean).map((url, i) => (
+                    <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-lg" style={{ borderRadius: style.borderRadius }} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">Add images in properties to create a gallery</div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'footer':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '1100px' }}>
+              <div className="grid gap-8" style={{ gridTemplateColumns: `repeat(${Math.max((content.footerColumns || []).length, 2)}, 1fr)` }}>
+                {(content.footerColumns || []).map((col, i) => (
+                  <div key={i}>
+                    <p className="font-semibold text-sm mb-3" style={{ color: '#ffffff' }}>{col.title}</p>
+                    <ul className="space-y-2">
+                      {col.links.map((link, li) => (
+                        <li key={li}><a href={link.url} className="text-sm hover:underline" style={{ color: style.textColor }}>{link.label}</a></li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              {content.footerCopyright && <p className="mt-8 pt-6 text-xs border-t" style={{ color: style.textColor, borderColor: 'rgba(255,255,255,0.1)' }}>{content.footerCopyright}</p>}
+            </div>
+          </div>
+        );
+
+      case 'divider':
+        return (
+          <div style={{ ...containerStyle, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {content.dividerStyle === 'gradient' ? (
+              <div className="h-px w-full max-w-lg" style={{ background: `linear-gradient(to right, transparent, ${style.accentColor || '#e2e8f0'}, transparent)` }} />
+            ) : (
+              <hr className="w-full max-w-lg border-0" style={{ borderTop: `2px ${content.dividerStyle || 'solid'} ${style.accentColor || '#e2e8f0'}` }} />
+            )}
+          </div>
+        );
+
+      case 'quote':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, textAlign: 'center' }}>
+              <div className="text-5xl mb-4" style={{ color: style.accentColor || '#6d54df', opacity: 0.3 }}>"</div>
+              <blockquote className="mb-4" style={{ ...textStyle, fontStyle: 'italic', lineHeight: 1.6 }}>{applyPersonalization(content.quoteText, personalization)}</blockquote>
+              {content.quoteAuthor && <p className="font-semibold text-sm" style={{ color: style.textColor }}>{content.quoteAuthor}</p>}
+              {content.quoteRole && <p className="text-xs" style={{ color: style.textColor, opacity: 0.5 }}>{content.quoteRole}</p>}
+            </div>
+          </div>
+        );
+
+      case 'countdown': {
+        return <CountdownRenderer section={section} containerStyle={containerStyle} innerStyle={innerStyle} personalization={personalization} />;
+      }
+
+      case 'socialProof':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '900px', textAlign: 'center' }}>
+              {content.socialProofTitle && <p className="text-sm font-medium uppercase tracking-wider mb-8" style={{ color: style.textColor, opacity: 0.6 }}>{content.socialProofTitle}</p>}
+              <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${(content.socialProofItems || []).length}, 1fr)` }}>
+                {(content.socialProofItems || []).map((item, i) => (
+                  <div key={i} className="text-center">
+                    <p className="text-3xl font-bold mb-1" style={{ color: style.accentColor || style.textColor }}>{item.count}</p>
+                    <p className="text-sm font-medium" style={{ color: style.textColor }}>{item.label}</p>
+                    <p className="text-xs mt-1" style={{ color: style.textColor, opacity: 0.4 }}>{item.platform}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'benefits':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, textAlign: 'center' }}>
+              {content.benefitsTitle && <h2 className="text-3xl font-bold mb-2" style={{ color: style.textColor }}>{content.benefitsTitle}</h2>}
+              {content.benefitsSubtitle && <p className="text-base mb-8" style={{ color: style.textColor, opacity: 0.6 }}>{content.benefitsSubtitle}</p>}
+              <ul className="space-y-3 text-left max-w-md mx-auto">
+                {(content.benefitItems || []).map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-base" style={{ color: style.textColor }}>
+                    <span className="text-lg" style={{ color: style.accentColor || '#22c55e' }}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 'cards':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, textAlign: 'center' }}>
+              {content.cardsTitle && <h2 className="text-3xl font-bold mb-10" style={{ color: style.textColor }}>{content.cardsTitle}</h2>}
+              <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${style.columns || 3}, 1fr)` }}>
+                {(content.cardItems || []).map((card, i) => (
+                  <div key={i} className="rounded-xl overflow-hidden border text-left" style={{ borderColor: (style.textColor || '#1a1a1a') + '10' }}>
+                    {card.imageUrl && <img src={card.imageUrl} alt="" className="w-full h-40 object-cover" />}
+                    <div className="p-6">
+                      <h4 className="font-semibold text-lg mb-2" style={{ color: style.textColor }}>{card.title}</h4>
+                      <p className="text-sm leading-relaxed" style={{ color: style.textColor, opacity: 0.7 }}>{card.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         );
 
       default:
@@ -321,6 +574,35 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
           {type}
         </div>
       )}
+    </div>
+  );
+};
+
+// Separate component for countdown to use hooks
+const CountdownRenderer = ({ section, containerStyle, innerStyle, personalization }: { section: BuilderSection; containerStyle: React.CSSProperties; innerStyle: React.CSSProperties; personalization?: Record<string, string> }) => {
+  const { content, style } = section;
+  const timeLeft = useCountdown(content.countdownDate || new Date().toISOString());
+  const boxStyle: React.CSSProperties = { backgroundColor: (style.accentColor || '#6d54df') + '20', color: style.textColor, borderRadius: '12px', padding: '16px 20px', textAlign: 'center', minWidth: '80px' };
+
+  return (
+    <div style={containerStyle}>
+      <div style={{ ...innerStyle, maxWidth: '700px', textAlign: 'center' }}>
+        {content.countdownTitle && <h3 className="text-2xl font-bold mb-2" style={{ color: style.textColor }}>{applyPersonalization(content.countdownTitle, personalization)}</h3>}
+        {content.countdownSubtitle && <p className="text-base mb-8" style={{ color: style.textColor, opacity: 0.7 }}>{applyPersonalization(content.countdownSubtitle, personalization)}</p>}
+        <div className="flex gap-4 justify-center">
+          {[
+            { v: timeLeft.days, l: 'Days' },
+            { v: timeLeft.hours, l: 'Hours' },
+            { v: timeLeft.minutes, l: 'Minutes' },
+            { v: timeLeft.seconds, l: 'Seconds' },
+          ].map(({ v, l }) => (
+            <div key={l} style={boxStyle}>
+              <p className="text-3xl font-bold">{String(v).padStart(2, '0')}</p>
+              <p className="text-xs mt-1 opacity-60">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
