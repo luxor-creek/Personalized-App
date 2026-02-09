@@ -101,6 +101,7 @@ export type Database = {
           hero_video_id: string | null
           hero_video_thumbnail_url: string | null
           id: string
+          is_builder_template: boolean | null
           logo_url: string | null
           name: string
           personalization_config: Json | null
@@ -109,6 +110,7 @@ export type Database = {
           pricing_subtitle: string | null
           pricing_tiers: Json | null
           pricing_title: string | null
+          sections: Json | null
           slug: string
           testimonials: Json | null
           testimonials_subtitle: string | null
@@ -147,6 +149,7 @@ export type Database = {
           hero_video_id?: string | null
           hero_video_thumbnail_url?: string | null
           id?: string
+          is_builder_template?: boolean | null
           logo_url?: string | null
           name: string
           personalization_config?: Json | null
@@ -155,6 +158,7 @@ export type Database = {
           pricing_subtitle?: string | null
           pricing_tiers?: Json | null
           pricing_title?: string | null
+          sections?: Json | null
           slug: string
           testimonials?: Json | null
           testimonials_subtitle?: string | null
@@ -193,6 +197,7 @@ export type Database = {
           hero_video_id?: string | null
           hero_video_thumbnail_url?: string | null
           id?: string
+          is_builder_template?: boolean | null
           logo_url?: string | null
           name?: string
           personalization_config?: Json | null
@@ -201,6 +206,7 @@ export type Database = {
           pricing_subtitle?: string | null
           pricing_tiers?: Json | null
           pricing_title?: string | null
+          sections?: Json | null
           slug?: string
           testimonials?: Json | null
           testimonials_subtitle?: string | null

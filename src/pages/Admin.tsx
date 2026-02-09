@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,6 +56,7 @@ interface LandingPageTemplate {
   slug: string;
   thumbnail_url?: string | null;
   user_id?: string | null;
+  is_builder_template?: boolean;
 }
 
 interface PersonalizedPage {
@@ -228,7 +229,7 @@ const Admin = () => {
     try {
       const { data, error } = await supabase
         .from("landing_page_templates")
-        .select("id, name, slug, thumbnail_url, user_id")
+        .select("id, name, slug, thumbnail_url, user_id, is_builder_template")
         .order("name");
 
       if (error) throw error;
@@ -899,6 +900,25 @@ const Admin = () => {
               </p>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Build from scratch card */}
+                <Link to="/builder" className="group bg-card rounded-xl border border-dashed border-primary/30 overflow-hidden hover:border-primary transition-all hover:shadow-lg">
+                  <div className="aspect-video bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <div className="text-center p-4">
+                      <Hammer className="w-12 h-12 text-primary/60 mx-auto mb-2 group-hover:text-primary transition-colors" />
+                      <p className="text-sm font-medium text-primary">Build from Scratch</p>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-foreground mb-1">Page Builder</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create a custom page with the visual builder.
+                    </p>
+                    <Button size="sm" className="w-full">
+                      <Hammer className="w-4 h-4 mr-2" />
+                      Start Building
+                    </Button>
+                  </div>
+                </Link>
                 {templates
                   .filter((t) => t.user_id === user?.id)
                   .map((t) => (
@@ -922,7 +942,7 @@ const Admin = () => {
                         <h3 className="font-semibold text-foreground mb-1">{t.name}</h3>
                         <p className="text-xs text-muted-foreground mb-4 font-mono">{t.slug}</p>
                         <div className="flex gap-2">
-                          <Link to={`/template-editor/${t.slug}`} className="flex-1">
+                          <Link to={t.is_builder_template ? `/builder/${t.slug}` : `/template-editor/${t.slug}`} className="flex-1">
                             <Button size="sm" className="w-full">
                               <Pencil className="w-4 h-4 mr-2" />
                               Edit
