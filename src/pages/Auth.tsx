@@ -269,7 +269,7 @@ const Auth = () => {
                   Create a unique landing page for every contact on your list. No manual work. No complex setup.
                 </p>
                 <p>
-                  Choose a template, upload your email list, and the app automatically generates a personalized landing page for each person. Every page is ready to drop into your existing sales or lead-generation campaigns.
+                  Choose a pre-built template or create one from scratch in a few clicks. Then upload your email list, and the app automatically generates a personalized landing page for each person. Every page is ready to drop into your existing sales or lead-generation campaigns.
                 </p>
                 <p className="font-medium text-foreground">
                   Launch a full personalized campaign in just a few clicks.
