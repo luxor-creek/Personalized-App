@@ -1,4 +1,5 @@
 import { useState } from "react";
+import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTemplateEditor } from "@/hooks/useTemplateEditor";
 import EditorSidebar from "@/components/editor/EditorSidebar";
@@ -143,7 +144,7 @@ const TemplateEditor = () => {
   // Wine Video template
   if (template.slug === "wine-video") {
     return (
-      <div className="min-h-screen bg-[#f0f4f8]">
+      <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-[#f0f4f8]">
         {/* Sidebar */}
         <EditorSidebar
           templateName={template.name}
@@ -696,7 +697,7 @@ const TemplateEditor = () => {
             </div>
           </footer>
         </div>
-      </div>
+      </TemplateAccentProvider>
     );
   }
 
@@ -737,7 +738,7 @@ const TemplateEditor = () => {
     const pricingTiers = (template.pricing_tiers as typeof defaultPricingTiers)?.length > 0 ? template.pricing_tiers as typeof defaultPricingTiers : defaultPricingTiers;
 
     return (
-      <div className="min-h-screen bg-white">
+      <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-white">
         {/* Sidebar */}
         <EditorSidebar
           templateName={template.name}
@@ -1139,13 +1140,13 @@ const TemplateEditor = () => {
             </div>
           </footer>
         </div>
-      </div>
+      </TemplateAccentProvider>
     );
   }
 
   // Default template (Police Recruitment) - Full page with all sections
   return (
-    <div className="min-h-screen bg-background">
+    <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-background">
       {/* Sidebar */}
       <EditorSidebar
         templateName={template.name}
@@ -1408,7 +1409,7 @@ const TemplateEditor = () => {
           </div>
         </footer>
       </div>
-    </div>
+    </TemplateAccentProvider>
   );
 };
 

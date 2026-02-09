@@ -49,6 +49,7 @@ export interface TemplateData {
   form_section_subtitle: string | null;
   logo_url: string | null;
   user_id: string | null;
+  accent_color: string | null;
 }
 
 export function useTemplateEditor(slug: string | undefined) {
@@ -127,6 +128,7 @@ export function useTemplateEditor(slug: string | undefined) {
           form_section_subtitle: (data as any).form_section_subtitle ?? null,
           logo_url: (data as any).logo_url ?? null,
           user_id: (data as any).user_id ?? null,
+          accent_color: (data as any).accent_color ?? null,
         };
 
         setTemplate(templateData);
