@@ -478,21 +478,13 @@ const PersonalizedLanding = () => {
         </section>
 
         {/* Footer */}
-        <footer className="py-8 px-6 bg-gray-50 border-t">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            {template?.logo_url ? (
+        {template?.logo_url && (
+          <footer className="py-8 px-6 bg-gray-50 border-t">
+            <div className="max-w-6xl mx-auto flex justify-center">
               <img src={template.logo_url} alt="Logo" className="h-6 object-contain" />
-            ) : null}
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} Kicker Video. Professional video production.
-              </p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                We collect anonymous analytics to improve our service.
-              </p>
             </div>
-          </div>
-        </footer>
+          </footer>
+        )}
       </div>
     );
   }

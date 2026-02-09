@@ -399,13 +399,13 @@ const B2BDemo = () => {
       <SampleRequestForm />
 
       {/* Footer */}
-      <footer className="py-6 bg-gray-100 border-t border-gray-200">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-gray-500">
-            © {new Date().getFullYear()} Kicker Video. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      {template?.logo_url && (
+        <footer className="py-6 bg-gray-100 border-t border-gray-200">
+          <div className="container mx-auto px-4 flex justify-center">
+            <img src={template.logo_url} alt="Logo" className="h-6 object-contain" />
+          </div>
+        </footer>
+      )}
     </div>
   );
 };
