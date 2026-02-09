@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import PersonalizedHeroSection from "@/components/PersonalizedHeroSection";
+import SectionRenderer from "@/components/builder/SectionRenderer";
 import LogoCarousel from "@/components/LogoCarousel";
 import AboutSection from "@/components/AboutSection";
 import PortfolioStrip from "@/components/PortfolioStrip";
@@ -123,6 +124,22 @@ const PersonalizedLanding = () => {
     company: pageData?.company || "",
     full_name: `${pageData?.first_name || ""} ${pageData?.last_name || ""}`.trim(),
   };
+
+  // Render builder template if applicable
+  if (template?.is_builder_template && Array.isArray(template.sections) && template.sections.length > 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        {template.sections.map((section: any) => (
+          <SectionRenderer
+            key={section.id}
+            section={section}
+            isPreview={true}
+            personalization={personalizationData}
+          />
+        ))}
+      </div>
+    );
+  }
 
   // Render Wine Video Template
   if (templateSlug === "wine-video") {

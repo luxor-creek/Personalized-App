@@ -12,6 +12,7 @@ import PersonalizedLanding from "./pages/PersonalizedLanding";
 import B2BDemo from "./pages/B2BDemo";
 import TemplateEditor from "./pages/TemplateEditor";
 import WineVideoTemplate from "./pages/WineVideoTemplate";
+import BuilderPage from "./pages/BuilderPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,8 @@ const App = () => (
           <Route path="/wine-video" element={<WineVideoTemplate />} />
           <Route path="/view/:token" element={<PersonalizedLanding />} />
           <Route path="/template-editor/:slug" element={<TemplateEditor />} />
+          <Route path="/builder" element={<BuilderPage />} />
+          <Route path="/builder/:slug" element={<BuilderPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

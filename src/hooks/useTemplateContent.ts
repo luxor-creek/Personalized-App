@@ -50,6 +50,8 @@ export interface TemplateContent {
   form_section_title?: string | null;
   form_section_subtitle?: string | null;
   logo_url?: string | null;
+  is_builder_template?: boolean;
+  sections?: any[] | null;
 }
 
 interface PersonalizationData {
@@ -133,7 +135,9 @@ export function useTemplateContent(slug: string) {
             cta_banner_title,
             cta_banner_subtitle,
             form_section_title,
-            form_section_subtitle
+            form_section_subtitle,
+            is_builder_template,
+            sections
           `)
           .eq("slug", slug)
           .single();
@@ -166,6 +170,7 @@ export function useTemplateContent(slug: string) {
             comparison_solution_items: Array.isArray((data as any).comparison_solution_items)
               ? ((data as any).comparison_solution_items as string[])
               : null,
+            sections: Array.isArray((data as any).sections) ? (data as any).sections : null,
           };
           setTemplate(templateData);
         }
@@ -237,7 +242,9 @@ export function useTemplateContentById(templateId: string | null) {
             cta_banner_title,
             cta_banner_subtitle,
             form_section_title,
-            form_section_subtitle
+            form_section_subtitle,
+            is_builder_template,
+            sections
           `)
           .eq("id", templateId)
           .single();
@@ -269,6 +276,7 @@ export function useTemplateContentById(templateId: string | null) {
             comparison_solution_items: Array.isArray((data as any).comparison_solution_items)
               ? ((data as any).comparison_solution_items as string[])
               : null,
+            sections: Array.isArray((data as any).sections) ? (data as any).sections : null,
           };
           setTemplate(templateData);
         }
