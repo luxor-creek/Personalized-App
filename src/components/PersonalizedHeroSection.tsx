@@ -1,7 +1,6 @@
 import VideoPlayer from "./VideoPlayer";
 import { Button } from "./ui/button";
 import { ArrowDown } from "lucide-react";
-import BrandLogo from "@/components/BrandLogo";
 import { applyPersonalization } from "@/hooks/useTemplateContent";
 import { renderFormattedText } from "@/lib/formatText";
 
@@ -11,7 +10,7 @@ interface PersonalizedHeroSectionProps {
   lastName?: string;
   company?: string;
   customMessage?: string;
-  // Template content props
+  logoUrl?: string | null;
   badge?: string;
   headline?: string;
   subheadline?: string;
@@ -26,6 +25,7 @@ const PersonalizedHeroSection = ({
   lastName,
   company,
   customMessage,
+  logoUrl,
   badge,
   headline,
   subheadline,
@@ -37,7 +37,6 @@ const PersonalizedHeroSection = ({
     document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Personalization data
   const personalizationData = {
     first_name: firstName,
     last_name: lastName || "",
@@ -45,41 +44,26 @@ const PersonalizedHeroSection = ({
     full_name: `${firstName || ""} ${lastName || ""}`.trim(),
   };
 
-  // Apply personalization to template content or use custom logic
   const getBadge = () => {
-    if (badge) {
-      return applyPersonalization(badge, personalizationData);
-    }
+    if (badge) return applyPersonalization(badge, personalizationData);
     return company ? `Prepared for ${company}` : "Police Recruitment Video Demo";
   };
 
   const getHeadline = () => {
-    if (headline) {
-      return applyPersonalization(headline, personalizationData);
-    }
-    // Default personalized headline
-    if (firstName) {
-      return `${firstName}, here's our latest officer recruitment video for you to review.`;
-    }
+    if (headline) return applyPersonalization(headline, personalizationData);
+    if (firstName) return `${firstName}, here's our latest officer recruitment video for you to review.`;
     return "A recruitment video that actually helps your hiring pipeline.";
   };
 
   const getSubheadline = () => {
-    if (customMessage) {
-      return customMessage;
-    }
-    if (subheadline) {
-      return applyPersonalization(subheadline, personalizationData);
-    }
-    if (company) {
-      return `We created this video specifically for ${company}. Watch how we help the right people self-select into the job.`;
-    }
+    if (customMessage) return customMessage;
+    if (subheadline) return applyPersonalization(subheadline, personalizationData);
+    if (company) return `We created this video specifically for ${company}. Watch how we help the right people self-select into the job.`;
     return "Watch how we create recruitment videos that help the right people self-select into the job.";
   };
 
   return (
     <section className="min-h-screen hero-gradient relative overflow-hidden">
-      {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div 
           className="absolute inset-0" 
@@ -91,15 +75,17 @@ const PersonalizedHeroSection = ({
       </div>
 
       <div className="container mx-auto px-4 py-12 lg:py-20 relative z-10">
-        {/* Header */}
         <header className="flex items-center justify-between mb-12 lg:mb-16 animate-fade-up">
-          <BrandLogo className="h-8 md:h-10" />
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="h-8 md:h-10 object-contain" />
+          ) : (
+            <div />
+          )}
           <Button variant="heroOutline" size="lg" onClick={scrollToContact}>
             {ctaPrimaryText}
           </Button>
         </header>
 
-        {/* Main Content */}
         <div className="max-w-5xl mx-auto text-center mb-12 lg:mb-16">
           <p className="text-primary font-medium tracking-wider uppercase mb-4 animate-fade-up">
             {renderFormattedText(getBadge())}
@@ -112,12 +98,10 @@ const PersonalizedHeroSection = ({
           </p>
         </div>
 
-        {/* Video Player */}
         <div className="max-w-4xl mx-auto animate-fade-up-delay-2">
           <VideoPlayer videoId={videoId} thumbnailUrl={thumbnailUrl} />
         </div>
 
-        {/* Scroll indicator */}
         <div className="flex justify-center mt-12 lg:mt-16 animate-fade-up-delay-2">
           <button 
             onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}

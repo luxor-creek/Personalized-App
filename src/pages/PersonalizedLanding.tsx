@@ -506,6 +506,7 @@ const PersonalizedLanding = () => {
         lastName={pageData?.last_name || undefined}
         company={pageData?.company || undefined}
         customMessage={pageData?.custom_message || undefined}
+        logoUrl={template?.logo_url}
         badge={template?.hero_badge || undefined}
         headline={template?.hero_headline || undefined}
         subheadline={template?.hero_subheadline || undefined}
@@ -517,7 +518,7 @@ const PersonalizedLanding = () => {
       <AboutSection />
       <PortfolioStrip />
       <CTASection />
-      <Footer />
+      <Footer logoUrl={template?.logo_url} />
     </div>
   );
 };
