@@ -2091,16 +2091,21 @@ const Admin = () => {
             </div>
 
             {/* CTA */}
-            <div className="border-t border-border pt-4 flex flex-col sm:flex-row gap-3">
-              <a href="https://app.snov.io/campaigns" target="_blank" rel="noopener noreferrer" className="flex-1">
-                <Button className="w-full">
-                  Continue to Snov.io
-                  <ExternalLink className="w-4 h-4 ml-2" />
+            <div className="border-t border-border pt-4 space-y-3">
+              <p className="text-xs text-muted-foreground">
+                <strong>Tip:</strong> Snov.io will open in a new tab so you can follow these steps side-by-side.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a href="https://app.snov.io/campaigns" target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button className="w-full">
+                    Open Snov.io in New Tab
+                    <ExternalLink className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
+                <Button variant="outline" onClick={() => setSnovGuideOpen(false)}>
+                  Done
                 </Button>
-              </a>
-              <Button variant="outline" onClick={() => setSnovGuideOpen(false)}>
-                Close
-              </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
