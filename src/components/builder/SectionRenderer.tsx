@@ -72,6 +72,19 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
     !isPreview ? 'cursor-pointer hover:outline hover:outline-2 hover:outline-primary/30' : ''
   } ${isSelected ? 'outline outline-2 outline-primary ring-2 ring-primary/20' : ''}`;
 
+  // Sections that already have their own button logic
+  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing'];
+
+  const renderOptionalButton = () => {
+    if (sectionsWithOwnButtons.includes(type)) return null;
+    if (content.hideButton || !content.buttonText) return null;
+    return (
+      <div className="mt-6" style={{ textAlign: (style.textAlign as any) || 'center' }}>
+        <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor || '#6d54df', color: style.buttonTextColor || '#ffffff' }}>{content.buttonText}</a>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     switch (type) {
       case 'headline':
@@ -642,6 +655,7 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
   return (
     <div className={wrapperClasses} onClick={onClick}>
       {renderContent()}
+      {renderOptionalButton()}
       {isSelected && !isPreview && (
         <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded font-medium z-10">
           {type}

@@ -716,10 +716,40 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
     }
   };
 
+  // Sections that already have their own button controls
+  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing', 'spacer', 'divider', 'logo', 'footer'];
+
+  const renderOptionalButtonFields = () => {
+    if (sectionsWithOwnButtons.includes(section.type)) return null;
+    return (
+      <>
+        <Separator />
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Button</h4>
+        <div className="flex items-center justify-between"><Label className="text-xs">Show Button</Label><Switch checked={!!section.content.buttonText && !section.content.hideButton} onCheckedChange={(v) => {
+          if (v) {
+            updateContent({ hideButton: false, buttonText: section.content.buttonText || 'Learn More', buttonLink: section.content.buttonLink || '#' });
+          } else {
+            updateContent({ hideButton: true });
+          }
+        }} /></div>
+        {section.content.buttonText && !section.content.hideButton && (
+          <>
+            <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Button Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} placeholder="#section or https://..." /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+              <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  };
+
   // Determine which sections show typography controls
-  const textSections = ['headline', 'body', 'banner', 'cta', 'hero', 'quote'];
+  const textSections = ['headline', 'body', 'banner', 'cta', 'hero', 'heroVideo', 'heroImage', 'heroForm', 'quote'];
   const colorSections = section.type !== 'spacer';
-  const maxWidthSections = ['headline', 'body', 'video', 'image', 'form', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'gallery', 'comparison', 'cards', 'benefits', 'socialProof', 'newsletter', 'document', 'quote', 'footer'];
+  const maxWidthSections = ['headline', 'body', 'video', 'image', 'form', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'gallery', 'comparison', 'cards', 'benefits', 'socialProof', 'newsletter', 'document', 'quote', 'footer', 'heroVideo', 'heroImage', 'heroForm'];
 
   const handleCursorCapture = (e: React.SyntheticEvent) => {
     const el = e.target as HTMLElement;
@@ -739,8 +769,7 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-5">
           {renderContentFields()}
-
-          {/* Typography */}
+          {renderOptionalButtonFields()}
           {textSections.includes(section.type) && (
             <>
               <Separator />
@@ -789,7 +818,7 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                     <Input value={section.style.backgroundColor || '#ffffff'} onChange={(e) => updateStyle({ backgroundColor: e.target.value })} className="flex-1 font-mono text-xs" />
                   </div>
                 </div>
-                {['headline', 'body', 'banner', 'cta', 'form', 'hero', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'comparison', 'benefits', 'cards', 'socialProof', 'newsletter', 'quote', 'footer', 'document', 'countdown'].includes(section.type) && (
+                {['headline', 'body', 'banner', 'cta', 'form', 'hero', 'heroVideo', 'heroImage', 'heroForm', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'comparison', 'benefits', 'cards', 'socialProof', 'newsletter', 'quote', 'footer', 'document', 'countdown'].includes(section.type) && (
                   <div className="space-y-1"><Label className="text-xs">Text Color</Label>
                     <div className="flex gap-2 items-center">
                       <input type="color" value={section.style.textColor || '#1a1a1a'} onChange={(e) => updateStyle({ textColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
