@@ -1420,18 +1420,14 @@ const Admin = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {usedSnovWorkflow && (
-                            <>
-                              <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
-                                <TrendingUp className="w-4 h-4 mr-2" />
-                                View Stats
-                              </Button>
-                              <Button size="sm" onClick={() => setSnovGuideOpen(true)}>
-                                Open Snov.io
-                                <ArrowRight className="w-4 h-4 ml-2" />
-                              </Button>
-                            </>
-                          )}
+                          <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            View Stats
+                          </Button>
+                          <Button size="sm" onClick={() => setSnovGuideOpen(true)}>
+                            Open Snov.io
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
                         </div>
                       </div>
                     )}
