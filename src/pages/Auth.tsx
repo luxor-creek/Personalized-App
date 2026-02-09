@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,81 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Lock, Mail, Eye, EyeOff, UserPlus, LogIn, HelpCircle, X } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, UserPlus, LogIn, HelpCircle, X, Send } from "lucide-react";
 import { z } from "zod";
 import type { User, Session } from "@supabase/supabase-js";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const infoSchema = z.object({
+  firstName: z.string().trim().min(1, "Required").max(100),
+  email: z.string().trim().email("Invalid email").max(255),
+});
+
+const InfoRequestForm = () => {
+  const [firstName, setFirstName] = useState("");
+  const [infoEmail, setInfoEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const handleInfoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    const result = infoSchema.safeParse({ firstName, email: infoEmail });
+    if (!result.success) {
+      setFormError(result.error.errors[0].message);
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("info_requests").insert({
+        first_name: result.data.firstName,
+        email: result.data.email,
+      });
+      if (error) throw error;
+      setSubmitted(true);
+    } catch {
+      setFormError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="pt-6 border-t border-border mt-6">
+        <p className="text-sm text-primary font-medium">Thanks! We'll be in touch.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleInfoSubmit} className="pt-6 border-t border-border mt-6 space-y-3">
+      <p className="text-xs font-medium text-foreground">Interested? Leave your info.</p>
+      <Input
+        placeholder="First name"
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        className="h-9 text-sm"
+        required
+      />
+      <Input
+        type="email"
+        placeholder="Email"
+        value={infoEmail}
+        onChange={(e) => setInfoEmail(e.target.value)}
+        className="h-9 text-sm"
+        required
+      />
+      {formError && <p className="text-xs text-destructive">{formError}</p>}
+      <Button type="submit" size="sm" className="w-full" disabled={submitting}>
+        <Send className="w-3.5 h-3.5 mr-1.5" />
+        {submitting ? "Sending..." : "Send"}
+      </Button>
+    </form>
+  );
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -185,13 +254,13 @@ const Auth = () => {
             </div>
 
             <div className="flex-1 flex flex-col justify-center">
-              <h2 className="text-3xl font-bold text-foreground leading-tight mb-6">
+              <h2 className="text-2xl font-bold text-foreground leading-tight mb-4">
                 Personalized landing pages.<br />
                 At scale.<br />
                 In minutes.
               </h2>
 
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
                 <p>
                   Create a unique landing page for every contact on your list. No manual work. No complex setup.
                 </p>
@@ -203,12 +272,15 @@ const Auth = () => {
                 </p>
               </div>
 
-              <div className="mt-10">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <div className="mt-6">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                   Now in Beta
                 </span>
               </div>
             </div>
+
+            {/* Interest Form */}
+            <InfoRequestForm />
           </div>
         </div>
       </div>

@@ -49,6 +49,27 @@ export type Database = {
           },
         ]
       }
+      info_requests: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
       landing_page_templates: {
         Row: {
           about_content: string | null
