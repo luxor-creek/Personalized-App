@@ -189,8 +189,34 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Authenticate the user
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing authorization" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const jwt = authHeader.replace("Bearer ", "").trim();
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(jwt);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const {
@@ -199,6 +225,20 @@ const handler = async (req: Request): Promise<Response> => {
       snovCampaignListId,
       templateId,
     }: SendCampaignRequest = await req.json();
+
+    // Verify user owns the campaign
+    const { data: campaignData, error: campaignError } = await supabase
+      .from("campaigns")
+      .select("user_id")
+      .eq("id", campaignId)
+      .single();
+
+    if (campaignError || !campaignData || campaignData.user_id !== userId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Access denied" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Validate required fields
     if (!listId || !campaignId || !snovCampaignListId) {
