@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Lock, Mail, Eye, EyeOff, UserPlus, LogIn } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, UserPlus, LogIn, HelpCircle, X } from "lucide-react";
 import { z } from "zod";
 import type { User, Session } from "@supabase/supabase-js";
 
-// Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
@@ -27,28 +26,24 @@ const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setCheckingAuth(false);
-        
-        // Redirect to admin if authenticated
         if (session?.user) {
           navigate("/admin");
         }
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setCheckingAuth(false);
-      
       if (session?.user) {
         navigate("/admin");
       }
@@ -59,102 +54,49 @@ const Auth = () => {
 
   const validateForm = (): boolean => {
     const newErrors: { email?: string; password?: string } = {};
-    
-    try {
-      emailSchema.parse(email);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.email = e.errors[0].message;
-      }
+    try { emailSchema.parse(email); } catch (e) {
+      if (e instanceof z.ZodError) newErrors.email = e.errors[0].message;
     }
-    
-    try {
-      passwordSchema.parse(password);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.password = e.errors[0].message;
-      }
+    try { passwordSchema.parse(password); } catch (e) {
+      if (e instanceof z.ZodError) newErrors.password = e.errors[0].message;
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
     setLoading(true);
     setErrors({});
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
-            toast({
-              title: "Login failed",
-              description: "Invalid email or password. Please try again.",
-              variant: "destructive",
-            });
+            toast({ title: "Login failed", description: "Invalid email or password. Please try again.", variant: "destructive" });
           } else if (error.message.includes("Email not confirmed")) {
-            toast({
-              title: "Email not verified",
-              description: "Please check your email and verify your account before logging in.",
-              variant: "destructive",
-            });
-          } else {
-            throw error;
-          }
+            toast({ title: "Email not verified", description: "Please check your email and verify your account before logging in.", variant: "destructive" });
+          } else { throw error; }
           return;
         }
-
-        toast({
-          title: "Welcome back!",
-          description: "You have been logged in successfully.",
-        });
+        toast({ title: "Welcome back!", description: "You have been logged in successfully." });
       } else {
         const redirectUrl = `${window.location.origin}/admin`;
-        
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-          },
-        });
-
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectUrl } });
         if (error) {
           if (error.message.includes("User already registered")) {
-            toast({
-              title: "Account exists",
-              description: "An account with this email already exists. Please log in instead.",
-              variant: "destructive",
-            });
+            toast({ title: "Account exists", description: "An account with this email already exists. Please log in instead.", variant: "destructive" });
             setIsLogin(true);
-          } else {
-            throw error;
-          }
+          } else { throw error; }
           return;
         }
-
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account before logging in.",
-        });
+        toast({ title: "Account created!", description: "Please check your email to verify your account before logging in." });
         setIsLogin(true);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "An unexpected error occurred", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -169,83 +111,108 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <BrandLogo className="h-10 mx-auto mb-6 justify-center" />
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Admin Login
-          </h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className={`pl-10 ${errors.email ? "border-destructive" : ""}`}
-                required
-              />
+    <>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <BrandLogo className="h-10 mx-auto mb-6 justify-center" />
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-primary" />
             </div>
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
-            )}
+            <h1 className="text-2xl font-bold text-foreground">Login</h1>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className={`pl-10 pr-10 ${errors.password ? "border-destructive" : ""}`}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={`pl-10 ${errors.email ? "border-destructive" : ""}`} required />
+              </div>
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className={`pl-10 pr-10 ${errors.password ? "border-destructive" : ""}`} required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : isLogin ? (
+                <><LogIn className="w-4 h-4 mr-2" />Sign In</>
+              ) : (
+                <><UserPlus className="w-4 h-4 mr-2" />Create Account</>
+              )}
+            </Button>
+          </form>
+
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => setShowInfo(true)}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5"
+            >
+              <HelpCircle className="w-4 h-4" />
+              What is this?
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Info Sidebar Overlay */}
+      <div
+        className={`fixed inset-0 z-50 transition-opacity duration-300 ${showInfo ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+      >
+        <div className="absolute inset-0 bg-black/40" onClick={() => setShowInfo(false)} />
+        <div
+          className={`absolute top-0 right-0 h-full w-full max-w-md bg-background border-l border-border shadow-2xl transform transition-transform duration-300 ease-out ${showInfo ? "translate-x-0" : "translate-x-full"}`}
+        >
+          <div className="flex flex-col h-full p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="w-8 h-8 bg-primary rounded" />
+              <button onClick={() => setShowInfo(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password}</p>
-            )}
+
+            <div className="flex-1 flex flex-col justify-center">
+              <h2 className="text-3xl font-bold text-foreground leading-tight mb-6">
+                Personalized landing pages.<br />
+                At scale.<br />
+                In minutes.
+              </h2>
+
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>
+                  Create a unique landing page for every contact on your list. No manual work. No complex setup.
+                </p>
+                <p>
+                  Choose a template, upload your email list, and the app automatically generates a personalized landing page for each person. Every page is ready to drop into your existing sales or lead-generation campaigns.
+                </p>
+                <p className="font-medium text-foreground">
+                  Launch a full personalized campaign in just a few clicks.
+                </p>
+              </div>
+
+              <div className="mt-10">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  Now in Beta
+                </span>
+              </div>
+            </div>
           </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : isLogin ? (
-              <>
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign In
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Create Account
-              </>
-            )}
-          </Button>
-
-        </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
