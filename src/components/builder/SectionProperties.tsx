@@ -48,13 +48,18 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string, accept?: string) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Only allow image uploads
+    if (!file.type.startsWith('image/')) {
+      toast({ title: "Only images can be uploaded", description: "For documents and videos, paste a shared link instead.", variant: "destructive" });
+      return;
+    }
     setUploading(true);
     try {
       const ext = file.name.split('.').pop();
-      const path = `builder/docs/${Date.now()}.${ext}`;
+      const path = `builder/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('template-logos').upload(path, file);
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from('template-logos').getPublicUrl(path);
@@ -67,15 +72,16 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
     }
   };
 
-  const UploadButton = ({ label, field, accept = "image/*" }: { label: string; field: string; accept?: string }) => (
+  const UploadButton = ({ label, field }: { label: string; field: string }) => (
     <div className="relative">
       <Button variant="outline" size="sm" className="w-full" disabled={uploading}>
         <Upload className="w-4 h-4 mr-2" />
         {uploading ? "Uploading..." : label}
       </Button>
-      <input type="file" accept={accept} className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => accept.includes('image') ? handleImageUpload(e, field) : handleFileUpload(e, field)} />
+      <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleImageUpload(e, field)} />
     </div>
   );
+
 
   const renderArrayEditor = <T extends Record<string, any>>(
     items: T[],
@@ -244,8 +250,11 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           <div className="space-y-3">
             <div className="space-y-2"><Label>Title</Label><Input value={section.content.documentTitle || ''} onChange={(e) => updateContent({ documentTitle: e.target.value })} /></div>
             <div className="space-y-2"><Label>Description</Label><Textarea value={section.content.documentDescription || ''} onChange={(e) => updateContent({ documentDescription: e.target.value })} rows={3} className="resize-none" /></div>
-            <div className="space-y-2"><Label>Document URL</Label><Input value={section.content.documentUrl || ''} onChange={(e) => updateContent({ documentUrl: e.target.value })} /></div>
-            <UploadButton label="Upload Document" field="documentUrl" accept=".pdf,.doc,.docx,.ppt,.pptx" />
+            <div className="space-y-2">
+              <Label>Shared Link</Label>
+              <Input value={section.content.documentUrl || ''} onChange={(e) => updateContent({ documentUrl: e.target.value })} placeholder="Dropbox, Google Drive, Box, or OneDrive link" />
+              <p className="text-xs text-muted-foreground">Paste a shared link from Dropbox, Google Drive, Box, or OneDrive</p>
+            </div>
             <div className="space-y-2"><Label>Button Text</Label><Input value={section.content.documentButtonText || ''} onChange={(e) => updateContent({ documentButtonText: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
