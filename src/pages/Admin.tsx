@@ -414,6 +414,9 @@ const Admin = () => {
       const messageIndex = headers.findIndex((h) => 
         h === "custom_message" || h === "message" || h === "custom message"
       );
+      const emailIndex = headers.findIndex((h) => 
+        h === "email" || h === "email_address" || h === "email address"
+      );
 
       const pagesToCreate = [];
 
@@ -430,6 +433,7 @@ const Admin = () => {
           last_name: truncateField(lastNameIndex >= 0 ? values[lastNameIndex] : null, MAX_CSV_LENGTHS.last_name),
           company: truncateField(companyIndex >= 0 ? values[companyIndex] : null, MAX_CSV_LENGTHS.company),
           custom_message: truncateField(messageIndex >= 0 ? values[messageIndex] : null, MAX_CSV_LENGTHS.custom_message),
+          email: truncateField(emailIndex >= 0 ? values[emailIndex] : null, 255),
         });
       }
 
@@ -543,7 +547,7 @@ const Admin = () => {
     if (!selectedCampaign || pages.length === 0) return;
     
     // CSV header
-    const headers = ["First Name", "Last Name", "Company", "Link"];
+    const headers = ["First Name", "Last Name", "Company", "Email", "Link"];
     
     // Build CSV rows
     const rows = pages.map((page) => {
@@ -561,6 +565,7 @@ const Admin = () => {
         escapeCsvValue(page.first_name),
         escapeCsvValue(page.last_name),
         escapeCsvValue(page.company),
+        escapeCsvValue((page as any).email),
         getPageUrl(page.token),
       ].join(",");
     });

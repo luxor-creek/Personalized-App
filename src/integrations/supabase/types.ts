@@ -222,6 +222,7 @@ export type Database = {
           company: string | null
           created_at: string
           custom_message: string | null
+          email: string | null
           first_name: string
           id: string
           last_name: string | null
@@ -233,6 +234,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           custom_message?: string | null
+          email?: string | null
           first_name: string
           id?: string
           last_name?: string | null
@@ -244,6 +246,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           custom_message?: string | null
+          email?: string | null
           first_name?: string
           id?: string
           last_name?: string | null

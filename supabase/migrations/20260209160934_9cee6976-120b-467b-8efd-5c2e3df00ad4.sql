@@ -1,0 +1,1 @@
+ALTER TABLE public.personalized_pages ADD COLUMN email text;
