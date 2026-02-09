@@ -32,8 +32,11 @@ export interface SectionStyle {
 export interface SectionContent {
   text?: string;
   html?: string;
+  videoUrl?: string;
   videoId?: string;
   imageUrl?: string;
+  imageUrls?: string[];
+  imageLayout?: 'single' | 'row';
   logoUrl?: string;
   buttonText?: string;
   buttonLink?: string;
@@ -70,13 +73,13 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
   video: {
     label: 'Video Embed',
     icon: 'Play',
-    content: { videoId: '' },
+    content: { videoUrl: '' },
     style: { backgroundColor: '#000000', paddingY: '48px', maxWidth: '900px' },
   },
   image: {
     label: 'Image',
     icon: 'Image',
-    content: { imageUrl: '' },
+    content: { imageUrl: '', imageUrls: [], imageLayout: 'single' },
     style: { backgroundColor: '#ffffff', paddingY: '32px', maxWidth: '900px', borderRadius: '8px' },
   },
   banner: {
