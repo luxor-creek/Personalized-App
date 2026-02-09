@@ -103,6 +103,15 @@ const Admin = () => {
   });
   const [addingPerson, setAddingPerson] = useState(false);
 
+  // Edit contact dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingPage, setEditingPage] = useState<PersonalizedPage | null>(null);
+  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", company: "", email: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Test email dialog
+  const [testEmailDialogOpen, setTestEmailDialogOpen] = useState(false);
+
   // Snov.io integration state
   const [snovDialogOpen, setSnovDialogOpen] = useState(false);
   const [snovLists, setSnovLists] = useState<Array<{ id: number; name: string; contacts: number }>>([]);
@@ -541,6 +550,59 @@ const Admin = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copied to clipboard!" });
+  };
+
+  const openEditDialog = (page: PersonalizedPage) => {
+    setEditingPage(page);
+    setEditForm({
+      first_name: page.first_name,
+      last_name: page.last_name || "",
+      company: page.company || "",
+      email: (page as any).email || "",
+    });
+    setEditDialogOpen(true);
+  };
+
+  const saveEditContact = async () => {
+    if (!editingPage || !editForm.first_name.trim()) return;
+    setSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from("personalized_pages")
+        .update({
+          first_name: editForm.first_name.trim(),
+          last_name: editForm.last_name.trim() || null,
+          company: editForm.company.trim() || null,
+          email: editForm.email.trim() || null,
+        })
+        .eq("id", editingPage.id);
+      if (error) throw error;
+      toast({ title: "Contact updated!" });
+      setEditDialogOpen(false);
+      setEditingPage(null);
+      if (selectedCampaign) fetchPages(selectedCampaign.id);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const openTestEmail = () => {
+    setTestEmailDialogOpen(true);
+  };
+
+  const handleSendTestEmail = () => {
+    if (pages.length === 0 || !user) return;
+    const firstContact = pages[0];
+    const pageLink = getPageUrl(firstContact.token);
+    const subject = encodeURIComponent(`Test: Personalized page for ${firstContact.first_name}${firstContact.company ? ` at ${firstContact.company}` : ""}`);
+    const body = encodeURIComponent(
+      `Hi ${firstContact.first_name},\n\nI created a personalized video just for you. Check it out here:\n\n${pageLink}\n\nLet me know what you think!\n\nBest regards`
+    );
+    const mailto = `mailto:${user.email}?subject=${subject}&body=${body}`;
+    window.open(mailto, "_blank");
+    setTestEmailDialogOpen(false);
   };
 
   const handleDownloadCsv = () => {
@@ -1010,6 +1072,15 @@ const Admin = () => {
                         {selectedCampaign.name}
                       </h3>
                       <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={openTestEmail}
+                          disabled={pages.length === 0}
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          Send Test Email
+                        </Button>
                         <Dialog open={addPersonDialogOpen} onOpenChange={setAddPersonDialogOpen}>
                         <Button 
                           variant="outline" 
@@ -1231,7 +1302,7 @@ const Admin = () => {
                           </TableHeader>
                           <TableBody>
                             {pages.map((page) => (
-                              <TableRow key={page.id}>
+                              <TableRow key={page.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEditDialog(page)}>
                                 <TableCell>{page.first_name}</TableCell>
                                 <TableCell className="text-muted-foreground">
                                   {page.last_name || "-"}
@@ -1247,7 +1318,7 @@ const Admin = () => {
                                     variant="link"
                                     size="sm"
                                     className="p-0 h-auto text-primary"
-                                    onClick={() => copyToClipboard(getPageUrl(page.token))}
+                                    onClick={(e) => { e.stopPropagation(); copyToClipboard(getPageUrl(page.token)); }}
                                   >
                                     Copy Link
                                   </Button>
@@ -1259,13 +1330,22 @@ const Admin = () => {
                                   </span>
                                 </TableCell>
                                 <TableCell>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => deletePage(page.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                                  </Button>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => { e.stopPropagation(); openEditDialog(page); }}
+                                    >
+                                      <Pencil className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => { e.stopPropagation(); deletePage(page.id); }}
+                                    >
+                                      <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                                    </Button>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -1284,6 +1364,61 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </div>
+      {/* Edit Contact Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Contact</DialogTitle>
+            <DialogDescription>Update the contact details. Page link cannot be changed.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>First Name *</Label>
+                <Input value={editForm.first_name} onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Last Name</Label>
+                <Input value={editForm.last_name} onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Company</Label>
+              <Input value={editForm.company} onChange={(e) => setEditForm({ ...editForm, company: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+            </div>
+            <Button onClick={saveEditContact} className="w-full" disabled={savingEdit || !editForm.first_name.trim()}>
+              {savingEdit ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Test Email Dialog */}
+      <Dialog open={testEmailDialogOpen} onOpenChange={setTestEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+            <DialogDescription>Preview the email content for the first contact, sent to your account email.</DialogDescription>
+          </DialogHeader>
+          {pages.length > 0 && user && (
+            <div className="space-y-4 pt-4">
+              <div className="bg-muted rounded-lg p-4 space-y-2 text-sm">
+                <p><span className="font-medium text-foreground">To:</span> <span className="text-muted-foreground">{user.email}</span></p>
+                <p><span className="font-medium text-foreground">Contact Name:</span> <span className="text-muted-foreground">{pages[0].first_name}{pages[0].last_name ? ` ${pages[0].last_name}` : ""}</span></p>
+                <p><span className="font-medium text-foreground">Company:</span> <span className="text-muted-foreground">{pages[0].company || "-"}</span></p>
+                <p><span className="font-medium text-foreground">Page Link:</span> <span className="text-muted-foreground break-all">{getPageUrl(pages[0].token)}</span></p>
+              </div>
+              <Button onClick={handleSendTestEmail} className="w-full">
+                Next — Open in Email Client
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
