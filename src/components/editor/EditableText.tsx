@@ -113,14 +113,14 @@ const EditableText = ({
     return (
       <div className={cn("relative group", className)}>
         <div className="absolute -inset-2 bg-primary/10 rounded-lg border-2 border-primary border-dashed z-10" />
-        <div className="relative z-20">
+      <div className="relative z-20" style={{ color: '#111' }}>
           {multiline ? (
             <Textarea
               ref={inputRef as React.RefObject<HTMLTextAreaElement>}
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-[100px] bg-white text-foreground"
+              className="min-h-[100px] bg-white text-gray-900 border-gray-300"
               placeholder={placeholder}
             />
           ) : (
@@ -129,7 +129,7 @@ const EditableText = ({
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="bg-white text-foreground"
+              className="bg-white text-gray-900 border-gray-300"
               placeholder={placeholder}
             />
           )}
@@ -165,25 +165,22 @@ const EditableText = ({
             </div>
             
             <div className="flex items-center gap-1">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 w-7 p-0"
+              <button
+                className="h-7 w-7 p-0 inline-flex items-center justify-center rounded-md bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
                 onClick={handleCancel}
               >
                 <X className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                className="h-7 w-7 p-0"
+              </button>
+              <button
+                className="h-7 w-7 p-0 inline-flex items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700"
                 onClick={handleSave}
               >
                 <Check className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           </div>
           
-          <div className="text-xs text-muted-foreground mt-1">
+          <div className="text-xs text-gray-500 mt-1">
             Editing: {fieldName}
           </div>
         </div>
