@@ -778,6 +778,7 @@ const TemplateEditor = () => {
                     alt="Custom section"
                     onImageChange={(url) => updateField("custom_section_image_url", url)}
                     className="w-full h-full object-cover"
+                    templateId={template.id}
                   />
                 </div>
               </div>
@@ -1051,6 +1052,7 @@ const TemplateEditor = () => {
                   onImageChange={(url) => updateField("client_logos_url", url)}
                   fieldName="Client Logos"
                   className="max-w-2xl opacity-60"
+                  templateId={template.id}
                 />
               </div>
             </div>
