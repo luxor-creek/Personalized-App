@@ -174,8 +174,10 @@ const Admin = () => {
 
   // Live campaign tracking per template
   const [liveTemplateIds, setLiveTemplateIds] = useState<Set<string>>(new Set());
+  const [liveTemplateCampaigns, setLiveTemplateCampaigns] = useState<Record<string, string[]>>({});
   const [liveWarningDialogOpen, setLiveWarningDialogOpen] = useState(false);
   const [liveWarningTemplateName, setLiveWarningTemplateName] = useState("");
+  const [liveWarningCampaignNames, setLiveWarningCampaignNames] = useState<string[]>([]);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -248,19 +250,25 @@ const Admin = () => {
     try {
       const { data: allCampaigns } = await supabase
         .from("campaigns")
-        .select("id, template_id");
-      if (!allCampaigns || allCampaigns.length === 0) { setLiveTemplateIds(new Set()); return; }
+        .select("id, name, template_id");
+      if (!allCampaigns || allCampaigns.length === 0) { setLiveTemplateIds(new Set()); setLiveTemplateCampaigns({}); return; }
 
       const liveIds = new Set<string>();
+      const campaignMap: Record<string, string[]> = {};
       for (const campaign of allCampaigns) {
         if (!campaign.template_id) continue;
         const { count } = await supabase
           .from("personalized_pages")
           .select("*", { count: "exact", head: true })
           .eq("campaign_id", campaign.id);
-        if (count && count > 0) liveIds.add(campaign.template_id);
+        if (count && count > 0) {
+          liveIds.add(campaign.template_id);
+          if (!campaignMap[campaign.template_id]) campaignMap[campaign.template_id] = [];
+          campaignMap[campaign.template_id].push(campaign.name);
+        }
       }
       setLiveTemplateIds(liveIds);
+      setLiveTemplateCampaigns(campaignMap);
     } catch (err) {
       console.error("Error fetching live template IDs:", err);
     }
@@ -1291,6 +1299,7 @@ const Admin = () => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 setLiveWarningTemplateName(t.name);
+                                setLiveWarningCampaignNames(liveTemplateCampaigns[t.id] || []);
                                 setLiveWarningDialogOpen(true);
                               }}
                               className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500 text-white text-xs font-semibold rounded animate-pulse hover:bg-emerald-600 transition-colors"
@@ -2519,7 +2528,7 @@ const Admin = () => {
             </DialogTitle>
             <DialogDescription className="text-left space-y-3 pt-2">
               <p>
-                <strong>"{liveWarningTemplateName}"</strong> is currently being used by an active campaign with live personalized links.
+                <strong>"{liveWarningTemplateName}"</strong> is currently being used by the campaign{liveWarningCampaignNames.length > 1 ? 's' : ''} <strong>{liveWarningCampaignNames.map((n, i) => <span key={i}>{i > 0 && ', '}"{n}"</span>)}</strong> with live personalized links.
               </p>
               <p>
                 Any edits you make to this template could <strong>break the live Personalized Page links</strong> that have already been sent to your contacts.
