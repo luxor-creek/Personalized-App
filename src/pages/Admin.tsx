@@ -868,6 +868,16 @@ const Admin = () => {
     if (!user) return;
     setDuplicating(templateSlug);
     try {
+      // Check if user already has a clone of this template (by matching slug prefix)
+      const existingClone = templates.find(
+        (t) => t.user_id === user.id && t.slug.startsWith(`${templateSlug}-copy-`)
+      );
+      if (existingClone) {
+        // Navigate to existing clone instead of creating another
+        navigate(existingClone.is_builder_template ? `/builder/${existingClone.slug}` : `/template-editor/${existingClone.slug}`);
+        return;
+      }
+
       const { data: source, error: fetchErr } = await supabase
         .from("landing_page_templates")
         .select("*")
@@ -915,6 +925,38 @@ const Admin = () => {
       if (insertErr) throw insertErr;
 
       toast({ title: "Template cloned!", description: `"${newName}" added to My Templates.` });
+      fetchTemplates();
+    } catch (err: any) {
+      toast({ title: "Error duplicating", description: err.message, variant: "destructive" });
+    } finally {
+      setDuplicating(null);
+    }
+  };
+
+  // Force-create a duplicate (used by the explicit Duplicate button on My Templates)
+  const forceDuplicateTemplate = async (templateSlug: string) => {
+    if (!user) return;
+    setDuplicating(templateSlug);
+    try {
+      const { data: source, error: fetchErr } = await supabase
+        .from("landing_page_templates")
+        .select("*")
+        .eq("slug", templateSlug)
+        .single();
+      if (fetchErr || !source) throw fetchErr || new Error("Template not found");
+
+      const timestamp = Date.now().toString(36);
+      const newSlug = `${source.slug}-copy-${timestamp}`;
+      const newName = `${source.name} (Copy)`;
+      const { id, slug, name, created_at, updated_at, user_id: _uid, ...rest } = source;
+      const cloneData = { ...rest, slug: newSlug, name: newName, user_id: user.id };
+
+      const { error: insertErr } = await supabase
+        .from("landing_page_templates")
+        .insert(cloneData as any);
+      if (insertErr) throw insertErr;
+
+      toast({ title: "Template duplicated!", description: `"${newName}" added to My Templates.` });
       fetchTemplates();
     } catch (err: any) {
       toast({ title: "Error duplicating", description: err.message, variant: "destructive" });
@@ -1109,7 +1151,7 @@ const Admin = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => duplicateTemplate(t.slug)}
+                            onClick={() => forceDuplicateTemplate(t.slug)}
                             disabled={duplicating === t.slug}
                             title="Duplicate"
                           >
