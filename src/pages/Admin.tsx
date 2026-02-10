@@ -1732,8 +1732,8 @@ const Admin = () => {
                         {pages.length > 0 ? "Add more contacts" : "Choose how to add contacts"}
                       </button>
 
-                      {workflowCardsExpanded && (
-                        <div className="grid md:grid-cols-2 gap-6">
+                    {(workflowCardsExpanded || uploadDialogOpen || gsheetDialogOpen || addPersonDialogOpen || snovDialogOpen) && (
+                        <div className={`grid md:grid-cols-2 gap-6 ${!workflowCardsExpanded && (uploadDialogOpen || gsheetDialogOpen || addPersonDialogOpen || snovDialogOpen) ? "hidden" : ""}`}>
                           {/* Primary: Snov.io Integration Card */}
                           <div className="bg-card rounded-xl border-2 border-primary/30 p-6 space-y-4 relative">
                             <span className="absolute -top-3 left-4 bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded">Recommended</span>
