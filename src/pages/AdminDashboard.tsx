@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,11 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import BrandLogo from "@/components/BrandLogo";
 import {
   LogOut, Users, Layout, HelpCircle, FileText, Shield,
   BarChart3, Crown, Clock, UserPlus, Pencil, Trash2, Mail,
-  DollarSign, TrendingUp, AlertTriangle
+  DollarSign, TrendingUp, AlertTriangle, ChevronRight, ArrowLeft,
+  Send, CheckSquare
 } from "lucide-react";
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
@@ -50,6 +52,11 @@ interface InfoRequest {
   created_at: string;
 }
 
+interface Campaign {
+  id: string;
+  name: string;
+}
+
 const PLAN_LIMITS: Record<string, { max_pages: number; max_live_pages: number; max_campaigns: number }> = {
   trial: { max_pages: 3, max_live_pages: 1, max_campaigns: 1 },
   starter: { max_pages: 25, max_live_pages: 25, max_campaigns: 50 },
@@ -67,6 +74,16 @@ const planBadgeVariant = (plan: string) => {
   }
 };
 
+type DrilldownFilter = "trial_active" | "trial_expired" | "starter" | "pro" | "enterprise" | null;
+
+const DRILLDOWN_LABELS: Record<string, string> = {
+  trial_active: "Trial (Active)",
+  trial_expired: "Trial (Expired)",
+  starter: "Starter",
+  pro: "Pro",
+  enterprise: "Enterprise",
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -79,6 +96,17 @@ const AdminDashboard = () => {
   const [editPlan, setEditPlan] = useState("");
   const [editTrialDays, setEditTrialDays] = useState("");
   const [savingUser, setSavingUser] = useState(false);
+
+  // Drilldown
+  const [drilldownFilter, setDrilldownFilter] = useState<DrilldownFilter>(null);
+
+  // Add to campaign
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [addToCampaignOpen, setAddToCampaignOpen] = useState(false);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState("");
+  const [addingToCampaign, setAddingToCampaign] = useState(false);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(false);
 
   // Beta questions
   const [infoRequests, setInfoRequests] = useState<InfoRequest[]>([]);
@@ -102,7 +130,7 @@ const AdminDashboard = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       setUsers((data as UserProfile[]) || []);
@@ -110,6 +138,22 @@ const AdminDashboard = () => {
       toast({ title: "Error loading users", description: err.message, variant: "destructive" });
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const fetchCampaigns = async () => {
+    setLoadingCampaigns(true);
+    try {
+      const { data, error } = await supabase
+        .from("campaigns")
+        .select("id, name")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setCampaigns(data || []);
+    } catch (err: any) {
+      toast({ title: "Error loading campaigns", description: err.message, variant: "destructive" });
+    } finally {
+      setLoadingCampaigns(false);
     }
   };
 
@@ -146,7 +190,6 @@ const AdminDashboard = () => {
         max_campaigns: limits.max_campaigns,
       };
 
-      // If extending trial, set new trial_ends_at
       if (editTrialDays && parseInt(editTrialDays) > 0) {
         const daysToAdd = parseInt(editTrialDays);
         const baseDate = editingUser.trial_ends_at ? new Date(editingUser.trial_ends_at) : new Date();
@@ -203,22 +246,192 @@ const AdminDashboard = () => {
     return `${daysLeft} days left`;
   };
 
+  const isTrialExpired = (profile: UserProfile) => {
+    if (profile.plan !== "trial" || !profile.trial_ends_at) return false;
+    return new Date(profile.trial_ends_at) <= new Date();
+  };
+
+  // Internal user number is based on creation order (ascending)
+  const userNumberMap = useMemo(() => {
+    const map = new Map<string, number>();
+    users.forEach((u, i) => map.set(u.id, i + 1));
+    return map;
+  }, [users]);
+
   // Computed stats
   const totalUsers = users.length;
-  const trialUsers = users.filter(u => u.plan === "trial").length;
-  const activeTrials = users.filter(u => {
-    if (u.plan !== "trial" || !u.trial_ends_at) return false;
-    return new Date(u.trial_ends_at) > new Date();
-  }).length;
-  const expiredTrials = users.filter(u => {
-    if (u.plan !== "trial" || !u.trial_ends_at) return false;
-    return new Date(u.trial_ends_at) <= new Date();
-  }).length;
+  const activeTrials = users.filter(u => u.plan === "trial" && u.trial_ends_at && new Date(u.trial_ends_at) > new Date()).length;
+  const expiredTrials = users.filter(u => u.plan === "trial" && u.trial_ends_at && new Date(u.trial_ends_at) <= new Date()).length;
   const paidUsers = users.filter(u => u.plan === "starter" || u.plan === "pro").length;
   const starterUsers = users.filter(u => u.plan === "starter").length;
   const proUsers = users.filter(u => u.plan === "pro").length;
   const enterpriseUsers = users.filter(u => u.plan === "enterprise").length;
   const estimatedMRR = (starterUsers * 29) + (proUsers * 59);
+
+  // Drilldown filtered users
+  const drilldownUsers = useMemo(() => {
+    if (!drilldownFilter) return [];
+    return users.filter(u => {
+      switch (drilldownFilter) {
+        case "trial_active":
+          return u.plan === "trial" && u.trial_ends_at && new Date(u.trial_ends_at) > new Date();
+        case "trial_expired":
+          return u.plan === "trial" && u.trial_ends_at && new Date(u.trial_ends_at) <= new Date();
+        case "starter":
+          return u.plan === "starter";
+        case "pro":
+          return u.plan === "pro";
+        case "enterprise":
+          return u.plan === "enterprise";
+        default:
+          return false;
+      }
+    });
+  }, [drilldownFilter, users]);
+
+  // Selection helpers
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = (visibleUsers: UserProfile[]) => {
+    const allSelected = visibleUsers.every(u => selectedUserIds.has(u.id));
+    if (allSelected) {
+      setSelectedUserIds(prev => {
+        const next = new Set(prev);
+        visibleUsers.forEach(u => next.delete(u.id));
+        return next;
+      });
+    } else {
+      setSelectedUserIds(prev => {
+        const next = new Set(prev);
+        visibleUsers.forEach(u => next.add(u.id));
+        return next;
+      });
+    }
+  };
+
+  const openAddToCampaign = () => {
+    fetchCampaigns();
+    setSelectedCampaignId("");
+    setAddToCampaignOpen(true);
+  };
+
+  const addSelectedToCampaign = async () => {
+    if (!selectedCampaignId || selectedUserIds.size === 0) return;
+    setAddingToCampaign(true);
+    try {
+      const selectedUsers = users.filter(u => selectedUserIds.has(u.id));
+      const inserts = selectedUsers.map(u => ({
+        campaign_id: selectedCampaignId,
+        first_name: u.full_name?.split(" ")[0] || u.email?.split("@")[0] || "User",
+        last_name: u.full_name?.split(" ").slice(1).join(" ") || null,
+        email: u.email,
+        company: null,
+      }));
+
+      const { error } = await supabase.from("personalized_pages").insert(inserts);
+      if (error) throw error;
+
+      toast({ title: `${inserts.length} user(s) added to campaign` });
+      setAddToCampaignOpen(false);
+      setSelectedUserIds(new Set());
+    } catch (err: any) {
+      toast({ title: "Error adding to campaign", description: err.message, variant: "destructive" });
+    } finally {
+      setAddingToCampaign(false);
+    }
+  };
+
+  // Shared user table component
+  const UserTable = ({ userList, showSelect = true }: { userList: UserProfile[]; showSelect?: boolean }) => (
+    <div className="bg-card rounded-lg border border-border overflow-x-auto">
+      {showSelect && selectedUserIds.size > 0 && (
+        <div className="px-4 py-2 bg-primary/5 border-b border-border flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">{selectedUserIds.size} user(s) selected</span>
+          <Button size="sm" variant="outline" onClick={openAddToCampaign}>
+            <Send className="w-3.5 h-3.5 mr-1.5" />Add to Campaign
+          </Button>
+        </div>
+      )}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {showSelect && (
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={userList.length > 0 && userList.every(u => selectedUserIds.has(u.id))}
+                  onCheckedChange={() => toggleAllVisible(userList)}
+                />
+              </TableHead>
+            )}
+            <TableHead className="w-16">#</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Plan</TableHead>
+            <TableHead>Started</TableHead>
+            <TableHead>Trial Ends</TableHead>
+            <TableHead>Limits</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {userList.map((profile) => (
+            <TableRow key={profile.id}>
+              {showSelect && (
+                <TableCell>
+                  <Checkbox
+                    checked={selectedUserIds.has(profile.id)}
+                    onCheckedChange={() => toggleUserSelection(profile.id)}
+                  />
+                </TableCell>
+              )}
+              <TableCell className="text-muted-foreground font-mono text-xs">
+                {userNumberMap.get(profile.id) ?? "—"}
+              </TableCell>
+              <TableCell className="font-medium">{profile.email || "—"}</TableCell>
+              <TableCell className="text-muted-foreground">{profile.full_name || "—"}</TableCell>
+              <TableCell>
+                <Badge variant={planBadgeVariant(profile.plan) as any} className="capitalize">
+                  {profile.plan}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {new Date(profile.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                {profile.plan === "trial" ? (
+                  <span className={`text-sm ${
+                    isTrialExpired(profile) ? "text-destructive font-medium" :
+                    getTrialStatus(profile)?.includes("1 day") ? "text-amber-500" :
+                    "text-muted-foreground"
+                  }`}>
+                    {profile.trial_ends_at ? new Date(profile.trial_ends_at).toLocaleDateString() : "—"}
+                    <span className="ml-1 text-xs opacity-70">({getTrialStatus(profile)})</span>
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {profile.max_pages >= 999999 ? "∞" : profile.max_pages} pages / {profile.max_campaigns >= 999999 ? "∞" : profile.max_campaigns} campaigns
+              </TableCell>
+              <TableCell className="text-right">
+                <Button variant="outline" size="sm" onClick={() => openEditUser(profile)}>
+                  <Pencil className="w-3 h-3 mr-1" />Manage
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 
   if (checkingAuth) {
     return (
@@ -298,32 +511,86 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Breakdown */}
+            {/* Plan Distribution — drilldown or summary */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-card rounded-lg border border-border p-6">
-                <h3 className="font-semibold text-foreground mb-4">Plan Distribution</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Trial (active)</span>
-                    <span className="font-medium text-foreground">{activeTrials}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground flex items-center gap-1"><AlertTriangle className="w-3 h-3 text-amber-500" />Trial (expired)</span>
-                    <span className="font-medium text-foreground">{expiredTrials}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Starter ($29/mo)</span>
-                    <span className="font-medium text-foreground">{starterUsers}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Pro ($59/mo)</span>
-                    <span className="font-medium text-foreground">{proUsers}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Enterprise</span>
-                    <span className="font-medium text-foreground">{enterpriseUsers}</span>
-                  </div>
-                </div>
+                {drilldownFilter ? (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setDrilldownFilter(null); setSelectedUserIds(new Set()); }}>
+                          <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                        <h3 className="font-semibold text-foreground">{DRILLDOWN_LABELS[drilldownFilter]}</h3>
+                        <Badge variant="secondary" className="text-xs">{drilldownUsers.length}</Badge>
+                      </div>
+                      {selectedUserIds.size > 0 && (
+                        <Button size="sm" variant="outline" onClick={openAddToCampaign}>
+                          <Send className="w-3.5 h-3.5 mr-1.5" />Campaign
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-1 max-h-[400px] overflow-y-auto">
+                      {drilldownUsers.map(profile => (
+                        <div key={profile.id} className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-muted/50 text-sm group">
+                          <Checkbox
+                            checked={selectedUserIds.has(profile.id)}
+                            onCheckedChange={() => toggleUserSelection(profile.id)}
+                          />
+                          <span className="font-mono text-xs text-muted-foreground w-6">
+                            {userNumberMap.get(profile.id)}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate">{profile.email || "—"}</p>
+                            <p className="text-xs text-muted-foreground">{profile.full_name || "No name"}</p>
+                          </div>
+                          <div className="text-right text-xs text-muted-foreground shrink-0">
+                            <p>Joined {new Date(profile.created_at).toLocaleDateString()}</p>
+                            {profile.plan === "trial" && profile.trial_ends_at && (
+                              <p className={isTrialExpired(profile) ? "text-destructive" : ""}>
+                                {isTrialExpired(profile) ? "Expired" : "Ends"} {new Date(profile.trial_ends_at).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100" onClick={() => openEditUser(profile)}>
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                      {drilldownUsers.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">No users in this group.</p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-foreground mb-4">Plan Distribution</h3>
+                    <div className="space-y-1">
+                      {([
+                        { key: "trial_active" as DrilldownFilter, label: "Trial (active)", count: activeTrials, icon: null },
+                        { key: "trial_expired" as DrilldownFilter, label: "Trial (expired)", count: expiredTrials, icon: <AlertTriangle className="w-3 h-3 text-amber-500" /> },
+                        { key: "starter" as DrilldownFilter, label: "Starter ($29/mo)", count: starterUsers, icon: null },
+                        { key: "pro" as DrilldownFilter, label: "Pro ($59/mo)", count: proUsers, icon: null },
+                        { key: "enterprise" as DrilldownFilter, label: "Enterprise", count: enterpriseUsers, icon: null },
+                      ]).map(row => (
+                        <button
+                          key={row.key}
+                          onClick={() => { setDrilldownFilter(row.key); setSelectedUserIds(new Set()); }}
+                          className="w-full flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors group"
+                        >
+                          <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                            {row.icon}
+                            {row.label}
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">{row.count}</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="bg-card rounded-lg border border-border p-6">
@@ -357,7 +624,7 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Users</h2>
-                <p className="text-muted-foreground">Manage users, plans, and trials.</p>
+                <p className="text-muted-foreground">Manage users, plans, and trials. Select users to add to a campaign.</p>
               </div>
             </div>
 
@@ -366,58 +633,7 @@ const AdminDashboard = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : (
-              <div className="bg-card rounded-lg border border-border overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Trial Status</TableHead>
-                      <TableHead>Limits</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((profile) => (
-                      <TableRow key={profile.id}>
-                        <TableCell className="font-medium">{profile.email || "—"}</TableCell>
-                        <TableCell className="text-muted-foreground">{profile.full_name || "—"}</TableCell>
-                        <TableCell>
-                          <Badge variant={planBadgeVariant(profile.plan) as any} className="capitalize">
-                            {profile.plan}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {profile.plan === "trial" ? (
-                            <span className={`text-sm ${
-                              getTrialStatus(profile) === "expired" ? "text-destructive font-medium" :
-                              getTrialStatus(profile)?.includes("1 day") ? "text-amber-500" :
-                              "text-muted-foreground"
-                            }`}>
-                              {getTrialStatus(profile)}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {profile.max_pages >= 999999 ? "∞" : profile.max_pages} pages / {profile.max_campaigns >= 999999 ? "∞" : profile.max_campaigns} campaigns
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(profile.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => openEditUser(profile)}>
-                            <Pencil className="w-3 h-3 mr-1" />Manage
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <UserTable userList={users} />
             )}
           </TabsContent>
 
@@ -558,6 +774,50 @@ const AdminDashboard = () => {
             </div>
             <Button onClick={sendBetaEmail} className="w-full" disabled={sendingBetaEmail}>
               {sendingBetaEmail ? "Sending..." : "Send Email"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add to Campaign Dialog */}
+      <Dialog open={addToCampaignOpen} onOpenChange={setAddToCampaignOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add {selectedUserIds.size} User(s) to Campaign</DialogTitle>
+            <DialogDescription>
+              Selected users will be added as personalized page contacts in the chosen campaign.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Campaign</Label>
+              {loadingCampaigns ? (
+                <p className="text-sm text-muted-foreground">Loading campaigns...</p>
+              ) : campaigns.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No campaigns found. Create one first from the User Dashboard.</p>
+              ) : (
+                <Select value={selectedCampaignId} onValueChange={setSelectedCampaignId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a campaign" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {campaigns.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="bg-muted rounded-lg p-3 text-sm max-h-32 overflow-y-auto">
+              <p className="font-medium text-foreground mb-1">Selected users:</p>
+              {users.filter(u => selectedUserIds.has(u.id)).map(u => (
+                <p key={u.id} className="text-muted-foreground text-xs">{u.email || u.full_name || "Unknown"}</p>
+              ))}
+            </div>
+
+            <Button onClick={addSelectedToCampaign} className="w-full" disabled={addingToCampaign || !selectedCampaignId}>
+              {addingToCampaign ? "Adding..." : `Add ${selectedUserIds.size} User(s)`}
             </Button>
           </div>
         </DialogContent>
