@@ -155,6 +155,11 @@ const Admin = () => {
   });
   const [sendingSnov, setSendingSnov] = useState(false);
 
+  // Google Sheet import state
+  const [gsheetDialogOpen, setGsheetDialogOpen] = useState(false);
+  const [gsheetUrl, setGsheetUrl] = useState("");
+  const [importingGsheet, setImportingGsheet] = useState(false);
+
   // Snov.io stats state
   const [snovStatsDialogOpen, setSnovStatsDialogOpen] = useState(false);
   const [snovCampaigns, setSnovCampaigns] = useState<Array<{ id: number; name: string; listId: number; status: string; createdAt: string | null; startedAt: string | null }>>([]);
@@ -553,6 +558,86 @@ const Admin = () => {
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleGsheetImport = async () => {
+    if (!gsheetUrl.trim() || !selectedCampaign) return;
+    setImportingGsheet(true);
+    try {
+      // Extract Google Sheet ID from various URL formats
+      const match = gsheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (!match) throw new Error("Invalid Google Sheet URL. Please paste a full Google Sheets link.");
+      const sheetId = match[1];
+
+      // Fetch as CSV via public export URL
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+      const res = await fetch(csvUrl);
+      if (!res.ok) throw new Error("Could not fetch the sheet. Make sure it's shared as 'Anyone with the link can view'.");
+      const text = await res.text();
+
+      const lines = text.split("\n").filter((line) => line.trim());
+      if (lines.length < 2) throw new Error("Sheet must have a header row and at least one data row");
+
+      // Parse CSV properly (handle quoted values with commas)
+      const parseCsvLine = (line: string): string[] => {
+        const result: string[] = [];
+        let current = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = "";
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      };
+
+      const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase().replace(/^"|"$/g, ""));
+      const firstNameIndex = headers.findIndex((h) => h === "first_name" || h === "firstname" || h === "first name");
+      if (firstNameIndex === -1) throw new Error("Sheet must have a 'first_name' column");
+
+      const lastNameIndex = headers.findIndex((h) => h === "last_name" || h === "lastname" || h === "last name");
+      const companyIndex = headers.findIndex((h) => h === "company" || h === "organization");
+      const emailIndex = headers.findIndex((h) => h === "email" || h === "email_address" || h === "email address");
+      const messageIndex = headers.findIndex((h) => h === "custom_message" || h === "message" || h === "custom message");
+
+      const pagesToCreate = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCsvLine(lines[i]).map((v) => sanitizeCsvValue(v));
+        const firstName = truncateField(values[firstNameIndex], MAX_CSV_LENGTHS.first_name);
+        if (!firstName) continue;
+        pagesToCreate.push({
+          campaign_id: selectedCampaign.id,
+          template_id: selectedCampaign.template_id,
+          first_name: firstName,
+          last_name: truncateField(lastNameIndex >= 0 ? values[lastNameIndex] : null, MAX_CSV_LENGTHS.last_name),
+          company: truncateField(companyIndex >= 0 ? values[companyIndex] : null, MAX_CSV_LENGTHS.company),
+          custom_message: truncateField(messageIndex >= 0 ? values[messageIndex] : null, MAX_CSV_LENGTHS.custom_message),
+          email: truncateField(emailIndex >= 0 ? values[emailIndex] : null, 255),
+        });
+      }
+
+      if (pagesToCreate.length === 0) throw new Error("No valid rows found in sheet");
+
+      const { error } = await supabase.from("personalized_pages").insert(pagesToCreate);
+      if (error) throw error;
+
+      toast({ title: "Success!", description: `Imported ${pagesToCreate.length} contacts from Google Sheet` });
+      setGsheetUrl("");
+      setGsheetDialogOpen(false);
+      fetchPages(selectedCampaign.id);
+      fetchCampaigns();
+    } catch (error: any) {
+      toast({ title: "Import failed", description: error.message, variant: "destructive" });
+    } finally {
+      setImportingGsheet(false);
     }
   };
 
@@ -1431,6 +1516,10 @@ const Admin = () => {
                               <Download className="w-4 h-4 mr-2" />
                               Download CSV
                             </Button>
+                            <Button variant="outline" size="sm" onClick={() => setGsheetDialogOpen(true)}>
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Import Google Sheet
+                            </Button>
                           </>
                         )}
                         <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
@@ -1761,6 +1850,37 @@ const Admin = () => {
                                       className="w-full"
                                     >
                                       {uploading ? "Uploading..." : "Upload & Create Pages"}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+
+                              <Dialog open={gsheetDialogOpen} onOpenChange={(open) => { setGsheetDialogOpen(open); if (open) setWorkflowCardsExpanded(false); }}>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" className="flex-1">
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    Google Sheet
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Import from Google Sheet</DialogTitle>
+                                    <DialogDescription>
+                                      Paste a Google Sheet URL. The sheet must be shared as "Anyone with the link can view" and have columns: first_name (required), last_name, company, email, custom_message.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4 pt-4">
+                                    <Input
+                                      placeholder="https://docs.google.com/spreadsheets/d/..."
+                                      value={gsheetUrl}
+                                      onChange={(e) => setGsheetUrl(e.target.value)}
+                                    />
+                                    <Button
+                                      onClick={handleGsheetImport}
+                                      disabled={!gsheetUrl.trim() || importingGsheet}
+                                      className="w-full"
+                                    >
+                                      {importingGsheet ? "Importing..." : "Import Contacts"}
                                     </Button>
                                   </div>
                                 </DialogContent>
