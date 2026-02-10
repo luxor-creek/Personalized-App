@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import TemplateAccentProvider from "@/components/TemplateAccentProvider";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTemplateEditor } from "@/hooks/useTemplateEditor";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import EditableText from "@/components/editor/EditableText";
@@ -36,6 +36,8 @@ If your current recruitment video is more than a few years old, it's worth askin
 const TemplateEditor = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPreviewOnly = searchParams.get("preview") === "true";
   const { toast } = useToast();
   const {
     template,
@@ -185,18 +187,20 @@ const TemplateEditor = () => {
     return (
       <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-[#f0f4f8]">
         {/* Sidebar */}
-        <EditorSidebar
-          templateName={template.name}
-          hasChanges={hasChanges}
-          isSaving={saving}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onPreview={handlePreview}
-          onInsertToken={handleInsertToken}
-        />
+        {!isPreviewOnly && (
+          <EditorSidebar
+            templateName={template.name}
+            hasChanges={hasChanges}
+            isSaving={saving}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            onPreview={handlePreview}
+            onInsertToken={handleInsertToken}
+          />
+        )}
 
         {/* Live campaign warning */}
-        {activeCampaignCount > 0 && (
+        {!isPreviewOnly && activeCampaignCount > 0 && (
           <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800">
@@ -211,7 +215,7 @@ const TemplateEditor = () => {
         )}
 
         {/* Main content - with right margin for sidebar */}
-        <div className="mr-80">
+        <div className={isPreviewOnly ? "" : "mr-80"}>
           {/* Header */}
           <header className="py-4 px-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -794,18 +798,20 @@ const TemplateEditor = () => {
     return (
       <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-white">
         {/* Sidebar */}
-        <EditorSidebar
-          templateName={template.name}
-          hasChanges={hasChanges}
-          isSaving={saving}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onPreview={handlePreview}
-          onInsertToken={handleInsertToken}
-        />
+        {!isPreviewOnly && (
+          <EditorSidebar
+            templateName={template.name}
+            hasChanges={hasChanges}
+            isSaving={saving}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            onPreview={handlePreview}
+            onInsertToken={handleInsertToken}
+          />
+        )}
 
         {/* Live campaign warning */}
-        {activeCampaignCount > 0 && (
+        {!isPreviewOnly && activeCampaignCount > 0 && (
           <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800">
@@ -820,7 +826,7 @@ const TemplateEditor = () => {
         )}
 
         {/* Main content - with right margin for sidebar */}
-        <div className="mr-80">
+        <div className={isPreviewOnly ? "" : "mr-80"}>
           {/* Hero Section */}
           <section className="pt-24 pb-16 bg-gradient-to-b from-amber-50/50 to-white">
             <div className="container mx-auto px-4">
