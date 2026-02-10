@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect } from "react";
 
 interface TemplateAccentProviderProps {
   accentColor?: string | null;
@@ -12,17 +12,33 @@ interface TemplateAccentProviderProps {
  * accentColor should be an HSL string like "24 95% 53%" (orange) or null for default.
  */
 const TemplateAccentProvider = ({ accentColor, children, className }: TemplateAccentProviderProps) => {
-  const style = useMemo(() => {
-    if (!accentColor) return undefined;
-    return {
-      "--primary": accentColor,
-      "--accent": accentColor,
-      "--ring": accentColor,
-    } as React.CSSProperties;
+  useEffect(() => {
+    if (!accentColor) return;
+
+    const root = document.documentElement;
+    const prev = {
+      primary: root.style.getPropertyValue("--primary"),
+      accent: root.style.getPropertyValue("--accent"),
+      ring: root.style.getPropertyValue("--ring"),
+    };
+
+    root.style.setProperty("--primary", accentColor);
+    root.style.setProperty("--accent", accentColor);
+    root.style.setProperty("--ring", accentColor);
+
+    return () => {
+      // Restore originals on unmount
+      if (prev.primary) root.style.setProperty("--primary", prev.primary);
+      else root.style.removeProperty("--primary");
+      if (prev.accent) root.style.setProperty("--accent", prev.accent);
+      else root.style.removeProperty("--accent");
+      if (prev.ring) root.style.setProperty("--ring", prev.ring);
+      else root.style.removeProperty("--ring");
+    };
   }, [accentColor]);
 
   return (
-    <div style={style} className={className}>
+    <div className={className}>
       {children}
     </div>
   );
