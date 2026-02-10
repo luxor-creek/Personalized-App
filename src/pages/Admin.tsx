@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import { Textarea } from "@/components/ui/textarea";
@@ -172,6 +172,11 @@ const Admin = () => {
   const [snovStats, setSnovStats] = useState<{ analytics: any; replies: any; opens: any; clicks: any } | null>(null);
   const [loadingSnovStats, setLoadingSnovStats] = useState(false);
 
+  // Live campaign tracking per template
+  const [liveTemplateIds, setLiveTemplateIds] = useState<Set<string>>(new Set());
+  const [liveWarningDialogOpen, setLiveWarningDialogOpen] = useState(false);
+  const [liveWarningTemplateName, setLiveWarningTemplateName] = useState("");
+
   // Check authentication and admin role
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -234,8 +239,32 @@ const Admin = () => {
       fetchCampaigns();
       fetchTemplates();
       fetchInfoRequests();
+      fetchLiveTemplateIds();
     }
   }, [user, isAdmin]);
+
+  // Determine which templates are actively used by campaigns with contacts
+  const fetchLiveTemplateIds = async () => {
+    try {
+      const { data: allCampaigns } = await supabase
+        .from("campaigns")
+        .select("id, template_id");
+      if (!allCampaigns || allCampaigns.length === 0) { setLiveTemplateIds(new Set()); return; }
+
+      const liveIds = new Set<string>();
+      for (const campaign of allCampaigns) {
+        if (!campaign.template_id) continue;
+        const { count } = await supabase
+          .from("personalized_pages")
+          .select("*", { count: "exact", head: true })
+          .eq("campaign_id", campaign.id);
+        if (count && count > 0) liveIds.add(campaign.template_id);
+      }
+      setLiveTemplateIds(liveIds);
+    } catch (err) {
+      console.error("Error fetching live template IDs:", err);
+    }
+  };
 
   const fetchInfoRequests = async () => {
     try {
@@ -1252,10 +1281,24 @@ const Admin = () => {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-3 left-3">
+                        <div className="absolute bottom-3 left-3 flex items-center gap-2">
                           <span className="inline-block px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-medium rounded">
                             My Template
                           </span>
+                          {liveTemplateIds.has(t.id) && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setLiveWarningTemplateName(t.name);
+                                setLiveWarningDialogOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500 text-white text-xs font-semibold rounded animate-pulse hover:bg-emerald-600 transition-colors"
+                            >
+                              <Radio className="w-3 h-3" />
+                              LIVE
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="p-4">
@@ -2462,6 +2505,34 @@ const Admin = () => {
                 </Button>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Live Campaign Warning Dialog */}
+      <Dialog open={liveWarningDialogOpen} onOpenChange={setLiveWarningDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              Live Campaign Warning
+            </DialogTitle>
+            <DialogDescription className="text-left space-y-3 pt-2">
+              <p>
+                <strong>"{liveWarningTemplateName}"</strong> is currently being used by an active campaign with live personalized links.
+              </p>
+              <p>
+                Any edits you make to this template will <strong>immediately update all live links</strong> sent to your contacts.
+              </p>
+              <p className="text-amber-700 font-medium">
+                To edit safely, clone this template first and edit the clone instead. Then use the clone for future campaigns.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setLiveWarningDialogOpen(false)}>
+              Got it
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

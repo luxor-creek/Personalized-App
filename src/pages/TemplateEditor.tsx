@@ -192,11 +192,16 @@ const TemplateEditor = () => {
 
         {/* Live campaign warning */}
         {activeCampaignCount > 0 && (
-          <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-            <p className="text-sm text-amber-800">
-              <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
-            </p>
+          <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              <p>
+                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
+              </p>
+              <p className="mt-1 text-amber-700">
+                To edit safely, go back and clone this template first — then edit the clone instead.
+              </p>
+            </div>
           </div>
         )}
 
@@ -796,11 +801,16 @@ const TemplateEditor = () => {
 
         {/* Live campaign warning */}
         {activeCampaignCount > 0 && (
-          <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-            <p className="text-sm text-amber-800">
-              <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
-            </p>
+          <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              <p>
+                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
+              </p>
+              <p className="mt-1 text-amber-700">
+                To edit safely, go back and clone this template first — then edit the clone instead.
+              </p>
+            </div>
           </div>
         )}
 
@@ -1214,11 +1224,16 @@ const TemplateEditor = () => {
 
         {/* Live campaign warning */}
         {activeCampaignCount > 0 && (
-          <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-            <p className="text-sm text-amber-800">
-              <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
-            </p>
+          <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              <p>
+                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
+              </p>
+              <p className="mt-1 text-amber-700">
+                To edit safely, go back and clone this template first — then edit the clone instead.
+              </p>
+            </div>
           </div>
         )}
 
