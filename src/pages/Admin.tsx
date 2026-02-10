@@ -2582,11 +2582,12 @@ const Admin = () => {
             </div>
             <DialogDescription className="sr-only">Preview of the template in read-only mode</DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden" style={{ height: 'calc(90vh - 60px)' }}>
+          <div className="flex-1 overflow-auto" style={{ height: 'calc(90vh - 60px)' }}>
             {previewTemplateSlug && (
               <iframe
                 src={`/template-editor/${previewTemplateSlug}`}
-                className="w-full h-full border-0 pointer-events-none"
+                className="w-full border-0 pointer-events-none"
+                style={{ height: '300vh' }}
                 title="Template preview"
               />
             )}
