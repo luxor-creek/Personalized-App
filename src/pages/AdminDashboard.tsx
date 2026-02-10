@@ -92,6 +92,7 @@ const AdminDashboard = () => {
   const { user, isAdmin, checkingAuth, handleLogout } = useAuth(true);
 
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [userPageCounts, setUserPageCounts] = useState<Record<string, number>>({});
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -102,7 +103,7 @@ const AdminDashboard = () => {
 
   // Drilldown
   const [drilldownFilter, setDrilldownFilter] = useState<DrilldownFilter>(null);
-  const [drilldownSort, setDrilldownSort] = useState<"newest" | "oldest" | "name_asc" | "ending_soon">("newest");
+  const [drilldownSort, setDrilldownSort] = useState<"newest" | "oldest" | "name_asc" | "ending_soon" | "most_pages" | "least_pages">("newest");
 
   // Add to campaign
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
@@ -147,6 +148,36 @@ const AdminDashboard = () => {
 
       if (error) throw error;
       setUsers((data as UserProfile[]) || []);
+
+      // Fetch page counts per user via campaigns join
+      const userIds = (data || []).map((u: any) => u.user_id);
+      if (userIds.length > 0) {
+        const { data: campaigns } = await supabase
+          .from("campaigns")
+          .select("id, user_id")
+          .in("user_id", userIds);
+
+        if (campaigns && campaigns.length > 0) {
+          const campaignIds = campaigns.map(c => c.id);
+          const { data: pages } = await supabase
+            .from("personalized_pages")
+            .select("id, campaign_id")
+            .in("campaign_id", campaignIds);
+
+          // Build user_id -> page count map
+          const campaignToUser = new Map<string, string>();
+          campaigns.forEach(c => campaignToUser.set(c.id, c.user_id));
+
+          const counts: Record<string, number> = {};
+          (pages || []).forEach(p => {
+            const uid = campaignToUser.get(p.campaign_id);
+            if (uid) counts[uid] = (counts[uid] || 0) + 1;
+          });
+          setUserPageCounts(counts);
+        } else {
+          setUserPageCounts({});
+        }
+      }
     } catch (err: any) {
       toast({ title: "Error loading users", description: err.message, variant: "destructive" });
     } finally {
@@ -358,9 +389,15 @@ const AdminDashboard = () => {
           return aEnd - bEnd;
         });
         break;
+      case "most_pages":
+        sorted.sort((a, b) => (userPageCounts[b.user_id] || 0) - (userPageCounts[a.user_id] || 0));
+        break;
+      case "least_pages":
+        sorted.sort((a, b) => (userPageCounts[a.user_id] || 0) - (userPageCounts[b.user_id] || 0));
+        break;
     }
     return sorted;
-  }, [drilldownFilter, users, drilldownSort]);
+  }, [drilldownFilter, users, drilldownSort, userPageCounts]);
 
   // Selection helpers
   const toggleUserSelection = (userId: string) => {
@@ -449,6 +486,7 @@ const AdminDashboard = () => {
             <TableHead>Plan</TableHead>
             <TableHead>Started</TableHead>
             <TableHead>Trial Ends</TableHead>
+            <TableHead>Pages Used</TableHead>
             <TableHead>Limits</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -490,6 +528,21 @@ const AdminDashboard = () => {
                 ) : (
                   <span className="text-sm text-muted-foreground">—</span>
                 )}
+              </TableCell>
+              <TableCell>
+                {(() => {
+                  const count = userPageCounts[profile.user_id] || 0;
+                  const max = profile.max_pages >= 999999 ? Infinity : profile.max_pages;
+                  const pct = max === Infinity ? 0 : (count / max) * 100;
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-medium ${count === 0 ? "text-muted-foreground" : pct >= 80 ? "text-amber-500" : "text-foreground"}`}>
+                        {count}
+                      </span>
+                      <span className="text-xs text-muted-foreground">/ {max === Infinity ? "∞" : max}</span>
+                    </div>
+                  );
+                })()}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {profile.max_pages >= 999999 ? "∞" : profile.max_pages} pages / {profile.max_campaigns >= 999999 ? "∞" : profile.max_campaigns} campaigns
@@ -622,6 +675,8 @@ const AdminDashboard = () => {
                             <SelectItem value="oldest">Oldest first</SelectItem>
                             <SelectItem value="name_asc">Name A–Z</SelectItem>
                             <SelectItem value="ending_soon">Ending soon</SelectItem>
+                            <SelectItem value="most_pages">Most pages</SelectItem>
+                            <SelectItem value="least_pages">Least pages</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
