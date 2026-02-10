@@ -12,7 +12,7 @@ import {
   LogOut, Users, Layout, HelpCircle, FileText, Shield,
   BarChart3, Crown, Clock, UserPlus, Pencil, Trash2, Mail,
   DollarSign, TrendingUp, AlertTriangle, ChevronRight, ArrowLeft,
-  Send, CheckSquare
+  Send, CheckSquare, Plug
 } from "lucide-react";
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
+import IntegrationsPanel from "@/components/admin/IntegrationsPanel";
 
 
 interface UserProfile {
@@ -541,7 +542,7 @@ const AdminDashboard = () => {
               Beta Questions {infoRequestCount > 0 && <span className="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">{infoRequestCount}</span>}
             </TabsTrigger>
             <TabsTrigger value="form-submissions"><FileText className="w-4 h-4 mr-2" />Form Submissions</TabsTrigger>
-            
+            <TabsTrigger value="integrations"><Plug className="w-4 h-4 mr-2" />Integrations</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -776,6 +777,11 @@ const AdminDashboard = () => {
               <p className="text-muted-foreground mb-6">View all form submissions from your landing pages.</p>
             </div>
             <FormSubmissionsPanel />
+          </TabsContent>
+
+          {/* Integrations Tab */}
+          <TabsContent value="integrations" className="space-y-6">
+            <IntegrationsPanel />
           </TabsContent>
 
         </Tabs>
