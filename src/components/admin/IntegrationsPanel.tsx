@@ -8,7 +8,10 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ExternalLink, Settings2, Plus, Pencil, Trash2, Check, Code,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  ExternalLink, Settings2, Plus, Pencil, Trash2, Check, Code, X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,9 +30,10 @@ interface IntegrationConfig {
   logo?: string;
   docsUrl?: string;
   fields: IntegrationField[];
+  isCustom?: boolean;
 }
 
-const INTEGRATIONS: IntegrationConfig[] = [
+const BUILT_IN_INTEGRATIONS: IntegrationConfig[] = [
   {
     id: "tolt",
     name: "Tolt",
@@ -74,6 +78,7 @@ const INTEGRATIONS: IntegrationConfig[] = [
 ];
 
 const STORAGE_KEY = "admin_integrations_config";
+const CUSTOM_INTEGRATIONS_KEY = "admin_custom_integrations";
 
 function loadSavedConfig(): Record<string, Record<string, string>> {
   try {
@@ -88,14 +93,37 @@ function saveConfig(config: Record<string, Record<string, string>>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }
 
+function loadCustomIntegrations(): IntegrationConfig[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_INTEGRATIONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomIntegrations(integrations: IntegrationConfig[]) {
+  localStorage.setItem(CUSTOM_INTEGRATIONS_KEY, JSON.stringify(integrations));
+}
+
 export default function IntegrationsPanel() {
   const { toast } = useToast();
   const [savedConfigs, setSavedConfigs] = useState<Record<string, Record<string, string>>>(loadSavedConfig);
+  const [customIntegrations, setCustomIntegrations] = useState<IntegrationConfig[]>(loadCustomIntegrations);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Some integrations are connected via backend secrets, not localStorage
+  // Add custom integration state
+  const [addCustomOpen, setAddCustomOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newDocsUrl, setNewDocsUrl] = useState("");
+  const [newFields, setNewFields] = useState<IntegrationField[]>([
+    { key: "", label: "", type: "text", placeholder: "" },
+  ]);
+
+  const allIntegrations = [...BUILT_IN_INTEGRATIONS, ...customIntegrations];
   const BACKEND_CONNECTED = new Set(["snov", "resend"]);
 
   const isConnected = (id: string) => {
@@ -107,7 +135,7 @@ export default function IntegrationsPanel() {
   const openEdit = (integration: IntegrationConfig) => {
     setEditingId(integration.id);
     setFormValues(savedConfigs[integration.id] || {});
-    setAddDialogOpen(true);
+    setEditDialogOpen(true);
   };
 
   const handleSave = () => {
@@ -115,7 +143,7 @@ export default function IntegrationsPanel() {
     const updated = { ...savedConfigs, [editingId]: { ...formValues } };
     setSavedConfigs(updated);
     saveConfig(updated);
-    setAddDialogOpen(false);
+    setEditDialogOpen(false);
     setEditingId(null);
     toast({ title: "Integration saved", description: "Configuration updated successfully." });
   };
@@ -128,7 +156,77 @@ export default function IntegrationsPanel() {
     toast({ title: "Integration removed", description: "Configuration cleared." });
   };
 
-  const currentIntegration = INTEGRATIONS.find((i) => i.id === editingId);
+  const handleDeleteCustom = (id: string) => {
+    const updatedCustom = customIntegrations.filter((i) => i.id !== id);
+    setCustomIntegrations(updatedCustom);
+    saveCustomIntegrations(updatedCustom);
+    // Also remove saved config
+    const updatedConfigs = { ...savedConfigs };
+    delete updatedConfigs[id];
+    setSavedConfigs(updatedConfigs);
+    saveConfig(updatedConfigs);
+    toast({ title: "Integration deleted", description: "Custom integration removed." });
+  };
+
+  // Custom integration field management
+  const addField = () => {
+    setNewFields((prev) => [...prev, { key: "", label: "", type: "text", placeholder: "" }]);
+  };
+
+  const removeField = (index: number) => {
+    setNewFields((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateField = (index: number, updates: Partial<IntegrationField>) => {
+    setNewFields((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, ...updates } : f))
+    );
+  };
+
+  const handleCreateCustom = () => {
+    if (!newName.trim()) {
+      toast({ title: "Name required", variant: "destructive" });
+      return;
+    }
+
+    const validFields = newFields
+      .filter((f) => f.label.trim())
+      .map((f) => ({
+        ...f,
+        key: f.key || f.label.toLowerCase().replace(/\s+/g, "_"),
+      }));
+
+    if (validFields.length === 0) {
+      toast({ title: "Add at least one field", variant: "destructive" });
+      return;
+    }
+
+    const id = `custom_${Date.now()}`;
+    const newIntegration: IntegrationConfig = {
+      id,
+      name: newName.trim(),
+      description: newDescription.trim() || `Custom integration for ${newName.trim()}.`,
+      docsUrl: newDocsUrl.trim() || undefined,
+      fields: validFields,
+      isCustom: true,
+    };
+
+    const updatedCustom = [...customIntegrations, newIntegration];
+    setCustomIntegrations(updatedCustom);
+    saveCustomIntegrations(updatedCustom);
+    setAddCustomOpen(false);
+    resetCustomForm();
+    toast({ title: "Integration added", description: `${newName} is ready to configure.` });
+  };
+
+  const resetCustomForm = () => {
+    setNewName("");
+    setNewDescription("");
+    setNewDocsUrl("");
+    setNewFields([{ key: "", label: "", type: "text", placeholder: "" }]);
+  };
+
+  const currentIntegration = allIntegrations.find((i) => i.id === editingId);
 
   return (
     <div className="space-y-6">
@@ -139,10 +237,13 @@ export default function IntegrationsPanel() {
             Manage API keys, tracking scripts, and webhook URLs for third-party services.
           </p>
         </div>
+        <Button onClick={() => { resetCustomForm(); setAddCustomOpen(true); }}>
+          <Plus className="w-4 h-4 mr-2" />Add Integration
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {INTEGRATIONS.map((integration) => {
+        {allIntegrations.map((integration) => {
           const connected = isConnected(integration.id);
           return (
             <div
@@ -155,7 +256,12 @@ export default function IntegrationsPanel() {
                     <Code className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">{integration.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground">{integration.name}</h3>
+                      {integration.isCustom && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">Custom</Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{integration.description}</p>
                   </div>
                 </div>
@@ -174,13 +280,20 @@ export default function IntegrationsPanel() {
                     <Button size="sm" variant="outline" onClick={() => openEdit(integration)}>
                       <Pencil className="w-3.5 h-3.5 mr-1.5" />Edit
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDisconnect(integration.id)}>
-                      <Trash2 className="w-3.5 h-3.5 mr-1.5" />Remove
-                    </Button>
+                    {!BACKEND_CONNECTED.has(integration.id) && (
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDisconnect(integration.id)}>
+                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />Remove
+                      </Button>
+                    )}
                   </>
                 ) : (
                   <Button size="sm" variant="outline" onClick={() => openEdit(integration)}>
                     <Settings2 className="w-3.5 h-3.5 mr-1.5" />Configure
+                  </Button>
+                )}
+                {integration.isCustom && (
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDeleteCustom(integration.id)}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" />Delete
                   </Button>
                 )}
                 {integration.docsUrl && (
@@ -197,7 +310,7 @@ export default function IntegrationsPanel() {
       </div>
 
       {/* Edit / Configure Dialog */}
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -237,11 +350,107 @@ export default function IntegrationsPanel() {
               ))}
 
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleSave}>Save Configuration</Button>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Custom Integration Dialog */}
+      <Dialog open={addCustomOpen} onOpenChange={setAddCustomOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Custom Integration</DialogTitle>
+            <DialogDescription>
+              Define a new third-party service with the fields you need to store.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-name">Service Name *</Label>
+              <Input
+                id="custom-name"
+                placeholder="e.g. Zapier, HubSpot, Intercom"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-desc">Description</Label>
+              <Input
+                id="custom-desc"
+                placeholder="What does this integration do?"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-docs">Documentation URL</Label>
+              <Input
+                id="custom-docs"
+                placeholder="https://docs.example.com"
+                value={newDocsUrl}
+                onChange={(e) => setNewDocsUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Configuration Fields *</Label>
+                <Button size="sm" variant="outline" onClick={addField}>
+                  <Plus className="w-3.5 h-3.5 mr-1" />Add Field
+                </Button>
+              </div>
+
+              {newFields.map((field, index) => (
+                <div key={index} className="border border-border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Field {index + 1}</span>
+                    {newFields.length > 1 && (
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive" onClick={() => removeField(index)}>
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Label (e.g. API Key)"
+                      value={field.label}
+                      onChange={(e) => updateField(index, { label: e.target.value })}
+                    />
+                    <Select
+                      value={field.type}
+                      onValueChange={(v) => updateField(index, { type: v as IntegrationField["type"] })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">Text</SelectItem>
+                        <SelectItem value="password">Password / Secret</SelectItem>
+                        <SelectItem value="textarea">Multi-line / Script</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Input
+                    placeholder="Placeholder text (optional)"
+                    value={field.placeholder}
+                    onChange={(e) => updateField(index, { placeholder: e.target.value })}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setAddCustomOpen(false)}>Cancel</Button>
+              <Button onClick={handleCreateCustom}>Create Integration</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
