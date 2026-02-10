@@ -209,6 +209,7 @@ export function useTemplateEditor(slug: string | undefined) {
           form_section_title: template.form_section_title,
           form_section_subtitle: template.form_section_subtitle,
           logo_url: template.logo_url,
+          accent_color: template.accent_color,
         } as any)
         .eq("id", template.id)
         .select();

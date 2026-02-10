@@ -1,8 +1,10 @@
-import { Save, X, Eye, Tag, Type, Image, Video, Info, ArrowLeft } from "lucide-react";
+import { Save, X, Eye, Tag, Type, Image, Video, Info, ArrowLeft, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useState, useEffect, useCallback } from "react";
 
 interface EditorSidebarProps {
   templateName: string;
@@ -12,6 +14,8 @@ interface EditorSidebarProps {
   onCancel: () => void;
   onPreview: () => void;
   onInsertToken?: (token: string) => void;
+  accentColor?: string | null;
+  onAccentColorChange?: (color: string) => void;
 }
 
 const PERSONALIZATION_TOKENS = [
@@ -21,6 +25,35 @@ const PERSONALIZATION_TOKENS = [
   { token: "{{full_name}}", label: "Full Name", description: "First + Last name combined" },
 ];
 
+const PRESET_COLORS = [
+  { label: "Purple", hex: "#7c5cfc", hsl: "252 64% 60%" },
+  { label: "Blue", hex: "#3b82f6", hsl: "217 91% 60%" },
+  { label: "Red", hex: "#ef4444", hsl: "0 84% 60%" },
+  { label: "Orange", hex: "#f97316", hsl: "25 95% 53%" },
+  { label: "Green", hex: "#22c55e", hsl: "142 71% 45%" },
+  { label: "Teal", hex: "#14b8a6", hsl: "173 80% 40%" },
+  { label: "Pink", hex: "#ec4899", hsl: "330 81% 60%" },
+  { label: "Gold", hex: "#eab308", hsl: "48 96% 47%" },
+];
+
+function hexToHsl(hex: string): string {
+  let r = parseInt(hex.slice(1, 3), 16) / 255;
+  let g = parseInt(hex.slice(3, 5), 16) / 255;
+  let b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
 const EditorSidebar = ({
   templateName,
   hasChanges,
@@ -29,11 +62,25 @@ const EditorSidebar = ({
   onCancel,
   onPreview,
   onInsertToken,
+  accentColor,
+  onAccentColorChange,
 }: EditorSidebarProps) => {
   const copyToClipboard = (token: string) => {
     navigator.clipboard.writeText(token);
     onInsertToken?.(token);
   };
+
+  // Convert current HSL accent to closest hex for the color input
+  const [customHex, setCustomHex] = useState("#7c5cfc");
+
+  const handlePresetClick = (hsl: string) => {
+    onAccentColorChange?.(hsl);
+  };
+
+  const handleCustomColorChange = useCallback((hex: string) => {
+    setCustomHex(hex);
+    onAccentColorChange?.(hexToHsl(hex));
+  }, [onAccentColorChange]);
 
   return (
     <div className="w-80 bg-gray-900 text-white flex flex-col h-screen fixed right-0 top-0 z-50 shadow-2xl">
@@ -74,6 +121,44 @@ const EditorSidebar = ({
               </div>
             </div>
           </div>
+
+          <Separator className="bg-gray-700" />
+
+          {/* Accent Color Picker */}
+          {onAccentColorChange && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Accent Color
+              </h3>
+              <p className="text-xs text-gray-400">
+                Change the template's primary color. Affects buttons, icons, and highlights.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c.label}
+                    title={c.label}
+                    onClick={() => handlePresetClick(c.hsl)}
+                    className={cn(
+                      "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
+                      accentColor === c.hsl ? "border-white scale-110" : "border-gray-600"
+                    )}
+                    style={{ backgroundColor: c.hex }}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={customHex}
+                  onChange={(e) => handleCustomColorChange(e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                />
+                <span className="text-xs text-gray-400">Custom color</span>
+              </div>
+            </div>
+          )}
 
           <Separator className="bg-gray-700" />
 

@@ -196,6 +196,8 @@ const TemplateEditor = () => {
             onCancel={handleCancel}
             onPreview={handlePreview}
             onInsertToken={handleInsertToken}
+            accentColor={template.accent_color}
+            onAccentColorChange={(color) => updateField("accent_color", color)}
           />
         )}
 
@@ -870,6 +872,8 @@ const TemplateEditor = () => {
             onCancel={handleCancel}
             onPreview={handlePreview}
             onInsertToken={handleInsertToken}
+            accentColor={template.accent_color}
+            onAccentColorChange={(color) => updateField("accent_color", color)}
           />
         )}
 
@@ -1303,6 +1307,8 @@ const TemplateEditor = () => {
           onCancel={handleCancel}
           onPreview={handlePreview}
           onInsertToken={handleInsertToken}
+          accentColor={template.accent_color}
+          onAccentColorChange={(color) => updateField("accent_color", color)}
         />
       )}
 
