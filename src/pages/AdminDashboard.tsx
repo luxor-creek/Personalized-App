@@ -274,7 +274,11 @@ const AdminDashboard = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast({ title: "User created", description: `Welcome email sent to ${newUserEmail}` });
+      if (data?.email_error) {
+        toast({ title: "User created, but invite email failed", description: data.email_error, variant: "destructive" });
+      } else {
+        toast({ title: "User created", description: `Welcome email sent to ${newUserEmail}` });
+      }
       setCreateUserOpen(false);
       setNewUserName("");
       setNewUserEmail("");

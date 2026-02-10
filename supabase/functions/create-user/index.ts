@@ -101,6 +101,7 @@ serve(async (req: Request) => {
 
     // Send welcome email with password setup link via Resend
     const resendKey = Deno.env.get("RESEND_API_KEY");
+    console.log("[create-user] RESEND_API_KEY present:", !!resendKey);
     if (resendKey) {
       const resend = new Resend(resendKey);
       const firstName = full_name.split(" ")[0];
@@ -150,7 +151,8 @@ serve(async (req: Request) => {
           </div>
         `;
 
-      await resend.emails.send({
+      console.log("[create-user] Sending invite email to:", email, "from: Personalized Pages <noreply@personalizedpages.io>");
+      const emailResult = await resend.emails.send({
         from: "Personalized Pages <noreply@personalizedpages.io>",
         to: [email],
         subject: isPaid
@@ -158,6 +160,22 @@ serve(async (req: Request) => {
           : "Welcome to Personalized Pages — Your free trial starts now",
         html: emailHtml,
       });
+      console.log("[create-user] Resend response:", JSON.stringify(emailResult));
+
+      if (emailResult.error) {
+        console.error("[create-user] Resend rejected email:", JSON.stringify(emailResult.error));
+        return new Response(
+          JSON.stringify({ success: true, user_id: newUser.id, email_error: emailResult.error.message }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      console.log("[create-user] Email sent successfully, id:", emailResult.data?.id);
+    } else {
+      console.warn("[create-user] RESEND_API_KEY not found — skipping invite email");
+      return new Response(
+        JSON.stringify({ success: true, user_id: newUser.id, email_error: "Email service not configured" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     return new Response(
