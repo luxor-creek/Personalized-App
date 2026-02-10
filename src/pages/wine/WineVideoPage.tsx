@@ -289,7 +289,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           <div className="grid md:grid-cols-3 gap-6">
             {portfolioVideos.map((item, index) => (
               <Card key={index} className="overflow-hidden group">
-                <div className="relative aspect-video bg-black">
+                <div className="relative bg-black" style={{ aspectRatio: '16/10.58' }}>
                   <iframe
                     src={`https://player.vimeo.com/video/${item.videoId || "1084786498"}?badge=0&autopause=0&player_id=0&app_id=58479`}
                     frameBorder="0"
