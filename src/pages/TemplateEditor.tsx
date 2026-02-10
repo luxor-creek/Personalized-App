@@ -1223,18 +1223,20 @@ const TemplateEditor = () => {
   return (
     <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-background">
       {/* Sidebar */}
-      <EditorSidebar
-        templateName={template.name}
-        hasChanges={hasChanges}
-        isSaving={saving}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        onPreview={handlePreview}
-        onInsertToken={handleInsertToken}
-      />
+      {!isPreviewOnly && (
+        <EditorSidebar
+          templateName={template.name}
+          hasChanges={hasChanges}
+          isSaving={saving}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onPreview={handlePreview}
+          onInsertToken={handleInsertToken}
+        />
+      )}
 
         {/* Live campaign warning */}
-        {activeCampaignCount > 0 && (
+        {!isPreviewOnly && activeCampaignCount > 0 && (
           <div className="mr-80 bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800">
@@ -1249,7 +1251,7 @@ const TemplateEditor = () => {
         )}
 
         {/* Main content - with right margin for sidebar */}
-        <div className="mr-80">
+        <div className={isPreviewOnly ? "" : "mr-80"}>
         {/* Hero Section */}
         <section className="min-h-screen hero-gradient relative overflow-hidden">
           {/* Subtle background pattern */}
