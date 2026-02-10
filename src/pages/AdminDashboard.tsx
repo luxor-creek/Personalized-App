@@ -12,7 +12,7 @@ import {
   LogOut, Users, Layout, HelpCircle, FileText, Shield,
   BarChart3, Crown, Clock, UserPlus, Pencil, Trash2, Mail,
   DollarSign, TrendingUp, AlertTriangle, ChevronRight, ArrowLeft,
-  Send, CheckSquare, Link2
+  Send, CheckSquare
 } from "lucide-react";
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
@@ -29,7 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
-import AffiliatePanel from "@/components/admin/AffiliatePanel";
+
 
 interface UserProfile {
   id: string;
@@ -541,7 +541,7 @@ const AdminDashboard = () => {
               Beta Questions {infoRequestCount > 0 && <span className="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">{infoRequestCount}</span>}
             </TabsTrigger>
             <TabsTrigger value="form-submissions"><FileText className="w-4 h-4 mr-2" />Form Submissions</TabsTrigger>
-            <TabsTrigger value="affiliates"><Link2 className="w-4 h-4 mr-2" />Affiliates</TabsTrigger>
+            
           </TabsList>
 
           {/* Overview Tab */}
@@ -778,10 +778,6 @@ const AdminDashboard = () => {
             <FormSubmissionsPanel />
           </TabsContent>
 
-          {/* Affiliates Tab */}
-          <TabsContent value="affiliates" className="space-y-6">
-            <AffiliatePanel />
-          </TabsContent>
         </Tabs>
       </div>
 
