@@ -1399,17 +1399,15 @@ const Admin = () => {
                         )}
                         <p className="text-xs text-muted-foreground mb-4 font-mono">{t.slug}</p>
                         <div className="grid grid-cols-2 gap-2">
-                          {liveTemplateIds.has(t.id) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setPreviewTemplateSlug(t.slug)}
-                              title="View template (read-only)"
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewTemplateSlug(t.slug)}
+                            title="View template (read-only)"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
                           {liveTemplateIds.has(t.id) ? (
                             <Button
                               size="sm"
