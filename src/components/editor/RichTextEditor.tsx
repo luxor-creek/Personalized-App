@@ -58,28 +58,35 @@ const TEXT_COLORS = [
 
 const ColorPickerPopover = ({ onSelectColor, onSelectCustomColor }: { onSelectColor: (marker: string) => void; onSelectCustomColor: (hex: string) => void }) => {
   const [customHex, setCustomHex] = useState("#");
+  const [open, setOpen] = useState(false);
   
+  const handleSwatchClick = (marker: string) => {
+    onSelectColor(marker);
+    setOpen(false);
+  };
+
   const handleCustomApply = () => {
     const hex = customHex.trim();
     if (/^#[0-9a-fA-F]{3,8}$/.test(hex)) {
       onSelectCustomColor(hex);
       setCustomHex("#");
+      setOpen(false);
     }
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 h-8 px-3">
         <Palette className="w-4 h-4 mr-1" />
         Color
         <ChevronDown className="w-3 h-3 ml-1" />
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-3" align="start">
+      <PopoverContent className="w-56 p-3" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
         <div className="grid grid-cols-7 gap-1.5 mb-3">
           {TEXT_COLORS.filter(c => c.marker).map((color) => (
             <button
               key={color.value}
-              onClick={() => onSelectColor(color.marker)}
+              onClick={() => handleSwatchClick(color.marker)}
               className="w-7 h-7 rounded-full border border-border hover:scale-110 transition-transform relative group"
               style={{ backgroundColor: color.color }}
               title={color.label}
