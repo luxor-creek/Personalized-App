@@ -18,7 +18,7 @@ const SIZE_CLASSES: Record<string, string> = {
 };
 
 const COLOR_MAP: Record<string, string> = {
-  primary: "#f97316",
+  primary: "hsl(var(--primary))",
   muted: "#6b7280",
   destructive: "#ef4444",
   blue: "#3b82f6",
