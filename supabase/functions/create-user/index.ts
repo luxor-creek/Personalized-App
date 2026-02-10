@@ -30,23 +30,30 @@ serve(async (req: Request) => {
   try {
     // Verify caller is admin
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("Missing authorization");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
-    // Verify the caller is an admin using their JWT
+    // Verify the caller's JWT using getClaims (local verification, more reliable)
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user: callerUser }, error: authError } = await callerClient.auth.getUser();
-    if (authError || !callerUser) throw new Error("Unauthorized");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      console.error("[create-user] JWT verification failed:", claimsError?.message);
+      throw new Error("Unauthorized");
+    }
+    const callerUserId = claimsData.claims.sub as string;
+    console.log("[create-user] Authenticated caller:", callerUserId);
 
+    // Check admin role
     const { data: roleData } = await callerClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", callerUser.id)
+      .eq("user_id", callerUserId)
       .single();
 
     if (roleData?.role !== "admin") throw new Error("Admin access required");
