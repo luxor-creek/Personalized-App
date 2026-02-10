@@ -95,7 +95,11 @@ export default function IntegrationsPanel() {
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
+  // Some integrations are connected via backend secrets, not localStorage
+  const BACKEND_CONNECTED = new Set(["snov", "resend"]);
+
   const isConnected = (id: string) => {
+    if (BACKEND_CONNECTED.has(id)) return true;
     const cfg = savedConfigs[id];
     return cfg && Object.values(cfg).some((v) => v.trim().length > 0);
   };
