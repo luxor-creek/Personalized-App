@@ -98,6 +98,9 @@ export function useAuth(requireAdmin = false) {
   };
 
   const handleLogout = async () => {
+    // Clear sensitive integration credentials from localStorage on logout
+    localStorage.removeItem("admin_integrations_config");
+    localStorage.removeItem("admin_custom_integrations");
     await supabase.auth.signOut();
     navigate("/auth");
   };

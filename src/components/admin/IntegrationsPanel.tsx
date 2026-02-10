@@ -82,7 +82,7 @@ const CUSTOM_INTEGRATIONS_KEY = "admin_custom_integrations";
 
 function loadSavedConfig(): Record<string, Record<string, string>> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -90,12 +90,12 @@ function loadSavedConfig(): Record<string, Record<string, string>> {
 }
 
 function saveConfig(config: Record<string, Record<string, string>>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }
 
 function loadCustomIntegrations(): IntegrationConfig[] {
   try {
-    const raw = localStorage.getItem(CUSTOM_INTEGRATIONS_KEY);
+    const raw = sessionStorage.getItem(CUSTOM_INTEGRATIONS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -103,7 +103,7 @@ function loadCustomIntegrations(): IntegrationConfig[] {
 }
 
 function saveCustomIntegrations(integrations: IntegrationConfig[]) {
-  localStorage.setItem(CUSTOM_INTEGRATIONS_KEY, JSON.stringify(integrations));
+  sessionStorage.setItem(CUSTOM_INTEGRATIONS_KEY, JSON.stringify(integrations));
 }
 
 export default function IntegrationsPanel() {
