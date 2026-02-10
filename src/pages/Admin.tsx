@@ -1123,8 +1123,21 @@ const Admin = () => {
   };
 
   const deleteTemplate = async (templateSlug: string, templateName: string) => {
-    if (!confirm(`Delete "${templateName}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete "${templateName}"? This cannot be undone. Any campaigns using this template will be unlinked.`)) return;
     try {
+      // First, get the template id
+      const { data: tmpl } = await supabase
+        .from("landing_page_templates")
+        .select("id")
+        .eq("slug", templateSlug)
+        .maybeSingle();
+      if (tmpl) {
+        // Unlink any campaigns referencing this template
+        await supabase
+          .from("campaigns")
+          .update({ template_id: null })
+          .eq("template_id", tmpl.id);
+      }
       const { error } = await supabase
         .from("landing_page_templates")
         .delete()
