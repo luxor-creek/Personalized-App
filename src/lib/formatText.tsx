@@ -109,7 +109,7 @@ export function renderFormattedText(text: string, keyPrefix = ""): React.ReactNo
     // Personalization tokens {{token}}
     else if (fullMatch.match(/{{[^}]+}}/)) {
       elements.push(
-        <span key={`${keyPrefix}${key++}`} className="text-primary font-medium">
+        <span key={`${keyPrefix}${key++}`} className="font-medium">
           {fullMatch}
         </span>
       );
