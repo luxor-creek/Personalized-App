@@ -239,7 +239,7 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     style: { backgroundColor: '#ffffff', paddingY: '24px', height: '60px' },
   },
   hero: {
-    label: 'Headline + Buttons',
+    label: 'Hero: Headline + Buttons',
     icon: 'Rocket',
     category: 'Layout',
     content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New', heroImageUrl: '' },
