@@ -4,6 +4,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import SampleRequestForm from "@/components/SampleRequestForm";
 import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import clientLogos from "@/assets/client-logos.png";
+import { renderFormattedText } from "@/lib/formatText";
 import { 
   Play, 
   DollarSign, 
@@ -163,12 +164,12 @@ const B2BDemo = () => {
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              {headline}
+              {renderFormattedText(headline, "b2b-headline-")}
             </h1>
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              {subheadline}
+              {renderFormattedText(subheadline, "b2b-sub-")}
             </p>
 
             {/* CTA Buttons */}
@@ -222,10 +223,10 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              {featuresTitle}
+              {renderFormattedText(featuresTitle, "b2b-feat-title-")}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-              {featuresSubtitle}
+              {renderFormattedText(featuresSubtitle, "b2b-feat-sub-")}
             </p>
 
             {/* Check List */}
@@ -290,10 +291,10 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              {testimonialsTitle}
+              {renderFormattedText(testimonialsTitle, "b2b-test-title-")}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12">
-              {testimonialsSubtitle}
+              {renderFormattedText(testimonialsSubtitle, "b2b-test-sub-")}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -320,10 +321,10 @@ const B2BDemo = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              {pricingTitle}
+              {renderFormattedText(pricingTitle, "b2b-price-title-")}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12">
-              {pricingSubtitle}
+              {renderFormattedText(pricingSubtitle, "b2b-price-sub-")}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6">
