@@ -98,6 +98,7 @@ const AdminDashboard = () => {
   const [editPlan, setEditPlan] = useState("");
   const [editTrialDays, setEditTrialDays] = useState("");
   const [savingUser, setSavingUser] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(false);
 
   // Drilldown
   const [drilldownFilter, setDrilldownFilter] = useState<DrilldownFilter>(null);
@@ -839,6 +840,39 @@ const AdminDashboard = () => {
             <Button onClick={saveUserChanges} className="w-full" disabled={savingUser}>
               {savingUser ? "Saving..." : "Save Changes"}
             </Button>
+
+            <div className="border-t border-border pt-4 mt-2">
+              <Button
+                variant="destructive"
+                className="w-full"
+                disabled={deletingUser || editingUser?.user_id === user?.id}
+                onClick={async () => {
+                  if (!editingUser) return;
+                  if (!confirm(`Are you sure you want to permanently delete ${editingUser.email}? This cannot be undone.`)) return;
+                  setDeletingUser(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke("delete-user", {
+                      body: { user_id: editingUser.user_id },
+                    });
+                    if (error) throw error;
+                    if (data?.error) throw new Error(data.error);
+                    toast({ title: "User deleted" });
+                    setEditUserOpen(false);
+                    fetchUsers();
+                  } catch (err: any) {
+                    toast({ title: "Error deleting user", description: err.message, variant: "destructive" });
+                  } finally {
+                    setDeletingUser(false);
+                  }
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {deletingUser ? "Deleting..." : "Delete User"}
+              </Button>
+              {editingUser?.user_id === user?.id && (
+                <p className="text-xs text-muted-foreground mt-1 text-center">You cannot delete your own account</p>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
