@@ -246,6 +246,13 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New', heroImageUrl: '' },
     style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '96px', textAlign: 'center', fontSize: '56px', fontWeight: 'bold', buttonColor: '#6d54df', buttonTextColor: '#ffffff', secondaryButtonColor: 'transparent', secondaryButtonTextColor: '#ffffff' },
   },
+  heroBg: {
+    label: 'Hero: Image + Headline + Buttons',
+    icon: 'Image',
+    category: 'Layout',
+    content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New', imageUrl: '' },
+    style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '96px', textAlign: 'center', fontSize: '56px', fontWeight: 'bold', buttonColor: '#6d54df', buttonTextColor: '#ffffff', secondaryButtonColor: 'transparent', secondaryButtonTextColor: '#ffffff', overlayColor: '#6d54df', overlayOpacity: 0.6 },
+  },
   heroVideo: {
     label: 'Hero: Text + Video',
     icon: 'Play',
@@ -259,13 +266,6 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     category: 'Layout',
     content: { text: 'Your Headline Here', heroSubheadline: 'A compelling subheadline that explains your value proposition.', heroImageUrl: '' },
     style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '80px', fontSize: '44px', fontWeight: 'bold', textAlign: 'left' },
-  },
-  heroBg: {
-    label: 'Hero: Image + Headline + Buttons',
-    icon: 'Image',
-    category: 'Layout',
-    content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New', imageUrl: '' },
-    style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '96px', textAlign: 'center', fontSize: '56px', fontWeight: 'bold', buttonColor: '#6d54df', buttonTextColor: '#ffffff', secondaryButtonColor: 'transparent', secondaryButtonTextColor: '#ffffff', overlayColor: '#6d54df', overlayOpacity: 0.6 },
   },
   heroForm: {
     label: 'Hero: Text + Form',
