@@ -356,7 +356,8 @@ const RichTextEditor = ({
         elements.push(
           <span 
             key={key++} 
-            className="bg-primary/20 text-primary px-1 rounded font-mono text-[0.85em]"
+            className="px-1 rounded font-mono text-[0.85em]"
+            style={{ backgroundColor: "rgba(255,255,255,0.25)", color: "inherit" }}
           >
             {fullMatch}
           </span>
