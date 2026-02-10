@@ -1,4 +1,5 @@
-import { Save, X, Eye, Tag, Type, Image, Video, Info, ArrowLeft, Palette, Menu, LayoutList } from "lucide-react";
+import { Save, X, Eye, Tag, Type, Image, Video, ArrowLeft, Palette, Menu, LayoutList } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -113,26 +114,26 @@ const SidebarContent = ({
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-6">
-          {/* Instructions */}
-          <div className="space-y-3">
+          {/* Variable Picker */}
+          <div className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-              <Info className="w-4 h-4" />
-              How to Edit
+              <Tag className="w-4 h-4" />
+              Insert Variable
             </h3>
-            <div className="space-y-2 text-xs text-gray-400">
-              <div className="flex items-start gap-2">
-                <Type className="w-4 h-4 mt-0.5 text-primary" />
-                <span>Click on any text to edit it directly</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Video className="w-4 h-4 mt-0.5 text-primary" />
-                <span>Click on the video to change the Vimeo ID</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Image className="w-4 h-4 mt-0.5 text-primary" />
-                <span>Click on images to replace them with a URL</span>
-              </div>
-            </div>
+            <Select onValueChange={(token) => { navigator.clipboard.writeText(token); onInsertToken?.(token); }}>
+              <SelectTrigger className="h-9 bg-gray-800 border-gray-600 text-gray-200 text-xs">
+                <SelectValue placeholder="Copy a variable…" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-600 z-[100]">
+                {PERSONALIZATION_TOKENS.map((item) => (
+                  <SelectItem key={item.token} value={item.token} className="text-xs text-gray-200 focus:bg-gray-700 focus:text-white">
+                    <code className="font-mono text-primary mr-2">{item.token}</code>
+                    <span className="text-gray-400">{item.label}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-gray-500">Select to copy, then paste into any text field.</p>
           </div>
 
           <Separator className="bg-gray-700" />
@@ -200,32 +201,8 @@ const SidebarContent = ({
             </>
           )}
 
-          <Separator className="bg-gray-700" />
 
-          {/* Personalization Tokens */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Personalization Variables
-            </h3>
-            <p className="text-xs text-gray-400">
-              Click to copy, then paste into any text field. These will be replaced with recipient data.
-            </p>
-            <div className="space-y-2">
-              {PERSONALIZATION_TOKENS.map((item) => (
-                <button
-                  key={item.token}
-                  onClick={() => copyToClipboard(item.token)}
-                  className="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors group"
-                >
-                  <code className="text-primary font-mono text-sm">{item.token}</code>
-                  <p className="text-xs text-gray-400 mt-1">{item.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
 
-          <Separator className="bg-gray-700" />
 
           {/* Tips */}
           <div className="space-y-3">
