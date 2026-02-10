@@ -382,6 +382,46 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           </>
         );
 
+      case 'heroVideoBg':
+        return (
+          <>
+            <div className="space-y-2"><VarLabel label="Badge" value={section.content.heroBadge || ''} onChange={(v) => updateContent({ heroBadge: v })} /><Input value={section.content.heroBadge || ''} onChange={(e) => updateContent({ heroBadge: e.target.value })} placeholder="e.g. New, Beta" /></div>
+            <div className="space-y-2"><VarLabel label="Headline" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={2} className="resize-none" /></div>
+            <div className="space-y-2"><VarLabel label="Subheadline" value={section.content.heroSubheadline || ''} onChange={(v) => updateContent({ heroSubheadline: v })} /><Textarea value={section.content.heroSubheadline || ''} onChange={(e) => updateContent({ heroSubheadline: e.target.value })} rows={2} className="resize-none" /></div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Background Video URL</Label>
+              <Input value={section.content.videoUrl || ''} onChange={(e) => updateContent({ videoUrl: e.target.value })} placeholder="YouTube, Vimeo, or direct .mp4 URL" />
+              <p className="text-xs text-muted-foreground">Video plays silently in the background. Supports YouTube, Vimeo, or direct video links.</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Overlay Color</Label>
+              <input type="color" value={section.style.overlayColor || '#000000'} onChange={(e) => updateStyle({ overlayColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
+            </div>
+            <div className="space-y-2">
+              <Label>Overlay Opacity</Label>
+              <input type="range" min="0" max="100" value={Math.round((section.style.overlayOpacity ?? 0.5) * 100)} onChange={(e) => updateStyle({ overlayOpacity: parseInt(e.target.value) / 100 })} className="w-full" />
+              <span className="text-xs text-muted-foreground">{Math.round((section.style.overlayOpacity ?? 0.5) * 100)}%</span>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Primary Button</Label><Switch checked={!section.content.hideButton} onCheckedChange={(v) => updateContent({ hideButton: !v })} /></div>
+            {!section.content.hideButton && (
+              <>
+                <div className="space-y-2"><Label>Primary Button</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Primary Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} /></div>
+              </>
+            )}
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Secondary Button</Label><Switch checked={!section.content.hideSecondaryButton} onCheckedChange={(v) => updateContent({ hideSecondaryButton: !v })} /></div>
+            {!section.content.hideSecondaryButton && (
+              <div className="space-y-2"><Label>Secondary Button</Label><Input value={section.content.secondaryButtonText || ''} onChange={(e) => updateContent({ secondaryButtonText: e.target.value })} /></div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+              <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+            </div>
+          </>
+        );
+
       case 'heroVideo':
         return (
           <>
@@ -878,7 +918,7 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                     <Input value={section.style.backgroundColor || '#ffffff'} onChange={(e) => updateStyle({ backgroundColor: e.target.value })} className="flex-1 font-mono text-xs" />
                   </div>
                 </div>
-                {['headline', 'body', 'banner', 'cta', 'form', 'hero', 'heroBg', 'heroVideo', 'heroImage', 'heroForm', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'comparison', 'benefits', 'cards', 'socialProof', 'newsletter', 'quote', 'footer', 'document', 'countdown', 'logo'].includes(section.type) && (
+                {['headline', 'body', 'banner', 'cta', 'form', 'hero', 'heroBg', 'heroVideoBg', 'heroVideo', 'heroImage', 'heroForm', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'comparison', 'benefits', 'cards', 'socialProof', 'newsletter', 'quote', 'footer', 'document', 'countdown', 'logo'].includes(section.type) && (
                   <div className="space-y-1"><Label className="text-xs">Text Color</Label>
                     <div className="flex gap-2 items-center">
                       <input type="color" value={section.style.textColor || '#1a1a1a'} onChange={(e) => updateStyle({ textColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
