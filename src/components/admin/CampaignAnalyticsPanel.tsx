@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Eye, Play, Trophy, Mail, User } from "lucide-react";
+import { ArrowLeft, Eye, Play, Trophy, Mail, User, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -131,10 +131,20 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
         <Button variant="ghost" size="sm" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
-        <div>
+        <div className="flex-1">
           <h3 className="text-xl font-semibold text-foreground">Campaign Analytics</h3>
           <p className="text-sm text-muted-foreground">{campaignName}</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchAnalytics}
+          disabled={loading}
+          className="bg-white text-black border-[#6d54df] hover:bg-[#6d54df]/5"
+        >
+          <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Summary Cards */}
