@@ -53,6 +53,7 @@ export interface TemplateContent {
   is_builder_template?: boolean;
   sections?: any[] | null;
   accent_color?: string | null;
+  personalization_config?: Record<string, boolean> | null;
 }
 
 interface PersonalizationData {
@@ -140,7 +141,8 @@ export function useTemplateContent(slug: string) {
             logo_url,
             is_builder_template,
             sections,
-            accent_color
+            accent_color,
+            personalization_config
           `)
           .eq("slug", slug)
           .single();
@@ -174,6 +176,9 @@ export function useTemplateContent(slug: string) {
               ? ((data as any).comparison_solution_items as string[])
               : null,
             sections: Array.isArray((data as any).sections) ? (data as any).sections : null,
+            personalization_config: typeof data.personalization_config === 'object' && data.personalization_config !== null && !Array.isArray(data.personalization_config)
+              ? data.personalization_config as Record<string, boolean>
+              : null,
           };
           setTemplate(templateData);
         }
@@ -249,7 +254,8 @@ export function useTemplateContentById(templateId: string | null) {
             logo_url,
             is_builder_template,
             sections,
-            accent_color
+            accent_color,
+            personalization_config
           `)
           .eq("id", templateId)
           .single();
@@ -282,6 +288,9 @@ export function useTemplateContentById(templateId: string | null) {
               ? ((data as any).comparison_solution_items as string[])
               : null,
             sections: Array.isArray((data as any).sections) ? (data as any).sections : null,
+            personalization_config: typeof data.personalization_config === 'object' && data.personalization_config !== null && !Array.isArray(data.personalization_config)
+              ? data.personalization_config as Record<string, boolean>
+              : null,
           };
           setTemplate(templateData);
         }

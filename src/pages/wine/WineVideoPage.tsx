@@ -97,6 +97,9 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
     document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const vis = template?.personalization_config || {};
+  const isSectionVisible = (key: string) => vis[key] !== false;
+
   const portfolioVideos = template?.portfolio_videos?.length
     ? template.portfolio_videos
     : DEFAULT_PORTFOLIO_VIDEOS;
@@ -205,6 +208,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
       </section>
 
       {/* Simple Video Production Section */}
+      {isSectionVisible("show_features") && (
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -225,8 +229,10 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* Process Section */}
+      {isSectionVisible("show_process") && (
       <section className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
@@ -258,8 +264,10 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* Portfolio Section */}
+      {isSectionVisible("show_portfolio") && (
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -292,8 +300,10 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* Testimonials Section */}
+      {isSectionVisible("show_testimonials") && (
       <section className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-10 text-center">
@@ -310,8 +320,10 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* Comparison Section */}
+      {isSectionVisible("show_comparison") && (
       <section className="py-16 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8">
@@ -344,8 +356,10 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* Pricing Section */}
+      {isSectionVisible("show_pricing") && (
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -389,8 +403,10 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA Banner */}
+      {isSectionVisible("show_cta_banner") && (
       <section className="py-16 px-6 bg-gradient-to-br from-primary to-primary/80">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
@@ -404,14 +420,18 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </p>
         </div>
       </section>
+      )}
 
       {/* Sample Request Form Section */}
+      {isSectionVisible("show_form") && (
       <SampleRequestForm
         title={template?.form_section_title || undefined}
         subtitle={template?.form_section_subtitle || undefined}
       />
+      )}
 
       {/* Final CTA Section */}
+      {isSectionVisible("show_contact") && (
       <section className="py-16 px-6 bg-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -433,6 +453,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
           </div>
         </div>
       </section>
+      )}
 
       {/* Footer */}
       <footer className="py-8 px-6 bg-gray-50 border-t">

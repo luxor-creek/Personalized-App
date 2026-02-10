@@ -183,6 +183,24 @@ const TemplateEditor = () => {
 
 
   // Wine Video template
+  const WINE_SECTION_TOGGLES = [
+    { key: "show_features", label: "Features Section" },
+    { key: "show_process", label: "Process Steps" },
+    { key: "show_portfolio", label: "Portfolio / Examples" },
+    { key: "show_testimonials", label: "Testimonials" },
+    { key: "show_comparison", label: "Problem vs Solution" },
+    { key: "show_pricing", label: "Pricing / Custom" },
+    { key: "show_cta_banner", label: "CTA Banner" },
+    { key: "show_form", label: "Request Form" },
+    { key: "show_contact", label: "Final CTA" },
+  ];
+
+  const sectionVisibility = template.personalization_config || {};
+  const handleSectionVisibilityChange = (key: string, visible: boolean) => {
+    updateField("personalization_config", { ...sectionVisibility, [key]: visible });
+  };
+  const isSectionVisible = (key: string) => sectionVisibility[key] !== false;
+
   if (template.slug === "wine-video") {
     return (
       <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-[#f0f4f8]">
@@ -198,6 +216,9 @@ const TemplateEditor = () => {
             onInsertToken={handleInsertToken}
             accentColor={template.accent_color}
             onAccentColorChange={(color) => updateField("accent_color", color)}
+            sectionToggles={WINE_SECTION_TOGGLES}
+            sectionVisibility={sectionVisibility}
+            onSectionVisibilityChange={handleSectionVisibilityChange}
           />
         )}
 
@@ -230,7 +251,7 @@ const TemplateEditor = () => {
                 ) : (
                   <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors text-sm text-muted-foreground">
                     <Upload className="w-4 h-4" />
-                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                    {uploadingLogo ? "Uploading..." : "Upload Logo (optional)"}
                     <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
                   </label>
                 )}
@@ -320,6 +341,7 @@ const TemplateEditor = () => {
           </section>
 
           {/* Simple Video Production Section */}
+          {isSectionVisible("show_features") && (
           <section className="py-16 px-6">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -388,8 +410,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Process Section */}
+          {isSectionVisible("show_process") && (
           <section className="py-16 px-6 bg-white">
             <div className="max-w-5xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
@@ -460,8 +484,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Other Examples / Portfolio Section */}
+          {isSectionVisible("show_portfolio") && (
           <section className="py-16 px-6">
             <div className="max-w-6xl mx-auto">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -535,8 +561,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Testimonials Section */}
+          {isSectionVisible("show_testimonials") && (
           <section className="py-16 px-6 bg-white">
             <div className="max-w-5xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-10 text-center">
@@ -585,8 +613,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Comparison Section - Problem vs Solution */}
+          {isSectionVisible("show_comparison") && (
           <section className="py-16 px-6 bg-muted/30">
             <div className="max-w-6xl mx-auto">
               <div className="grid md:grid-cols-2 gap-8">
@@ -669,8 +699,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Pricing Section */}
+          {isSectionVisible("show_pricing") && (
           <section className="py-16 px-6">
             <div className="max-w-5xl mx-auto">
               <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -739,8 +771,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* CTA Banner Section */}
+          {isSectionVisible("show_cta_banner") && (
           <section className="py-16 px-6" style={{ background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))` }}>
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">
@@ -766,8 +800,10 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Sample Request Form Section */}
+          {isSectionVisible("show_form") && (
           <EditableSampleRequestForm
             formTitle={template.form_section_title ?? "Request a Sample Video"}
             formSubtitle={template.form_section_subtitle ?? "See what Kicker can do with your content. We'll generate a sample video from your existing page—no creative brief required."}
@@ -776,8 +812,10 @@ const TemplateEditor = () => {
             formSteps={template.form_steps}
             onStepsChange={(steps) => updateField("form_steps", steps)}
           />
+          )}
 
           {/* Final CTA Section */}
+          {isSectionVisible("show_contact") && (
           <section className="py-16 px-6 bg-white">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -809,6 +847,7 @@ const TemplateEditor = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Footer */}
           <footer className="py-8 px-6 bg-gray-50 border-t">
@@ -1358,7 +1397,7 @@ const TemplateEditor = () => {
                 ) : (
                   <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors text-sm text-muted-foreground">
                     <Upload className="w-4 h-4" />
-                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                    {uploadingLogo ? "Uploading..." : "Upload Logo (optional)"}
                     <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
                   </label>
                 )}

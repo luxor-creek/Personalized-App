@@ -1,12 +1,18 @@
-import { Save, X, Eye, Tag, Type, Image, Video, Info, ArrowLeft, Palette, Menu } from "lucide-react";
+import { Save, X, Eye, Tag, Type, Image, Video, Info, ArrowLeft, Palette, Menu, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+interface SectionToggle {
+  key: string;
+  label: string;
+}
 
 interface EditorSidebarProps {
   templateName: string;
@@ -18,6 +24,9 @@ interface EditorSidebarProps {
   onInsertToken?: (token: string) => void;
   accentColor?: string | null;
   onAccentColorChange?: (color: string) => void;
+  sectionToggles?: SectionToggle[];
+  sectionVisibility?: Record<string, boolean>;
+  onSectionVisibilityChange?: (key: string, visible: boolean) => void;
 }
 
 const PERSONALIZATION_TOKENS = [
@@ -66,6 +75,9 @@ const SidebarContent = ({
   onInsertToken,
   accentColor,
   onAccentColorChange,
+  sectionToggles,
+  sectionVisibility,
+  onSectionVisibilityChange,
 }: EditorSidebarProps) => {
   const copyToClipboard = (token: string) => {
     navigator.clipboard.writeText(token);
@@ -159,6 +171,33 @@ const SidebarContent = ({
                 <span className="text-xs text-gray-400">Custom color</span>
               </div>
             </div>
+          )}
+
+          {/* Section Visibility Toggles */}
+          {sectionToggles && sectionToggles.length > 0 && onSectionVisibilityChange && (
+            <>
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                  <LayoutList className="w-4 h-4" />
+                  Section Visibility
+                </h3>
+                <p className="text-xs text-gray-400">
+                  Toggle sections on or off. Hidden sections won't appear on the live page.
+                </p>
+                <div className="space-y-3">
+                  {sectionToggles.map((toggle) => (
+                    <div key={toggle.key} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-300">{toggle.label}</span>
+                      <Switch
+                        checked={sectionVisibility?.[toggle.key] !== false}
+                        onCheckedChange={(checked) => onSectionVisibilityChange(toggle.key, checked)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator className="bg-gray-700" />
+            </>
           )}
 
           <Separator className="bg-gray-700" />
