@@ -249,11 +249,13 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user) {
       fetchCampaigns();
       fetchTemplates();
-      fetchInfoRequests();
-      fetchLiveTemplateIds();
+      if (isAdmin) {
+        fetchInfoRequests();
+        fetchLiveTemplateIds();
+      }
     }
   }, [user, isAdmin]);
 
@@ -1197,30 +1199,8 @@ const Admin = () => {
     );
   }
 
-  // Not admin - show access denied
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-destructive" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
-          <p className="text-muted-foreground mb-6">
-            You don't have admin privileges to access this page.
-          </p>
-          <div className="space-x-4">
-            <Button variant="outline" onClick={handleLogout}>
-              Sign Out
-            </Button>
-            <Button onClick={() => navigate("/")}>
-              Go to Home
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Non-admin users get the same dashboard but without admin-only features
+  // RLS ensures they only see their own data
 
   return (
     <div className="min-h-screen bg-background">
@@ -1261,14 +1241,18 @@ const Admin = () => {
               Landing Pages
             </TabsTrigger>
             <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Campaigns</TabsTrigger>
-            <TabsTrigger value="beta-questions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <HelpCircle className="w-4 h-4 mr-2" />
-              Beta Questions {infoRequestCount > 0 && <span className="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">{infoRequestCount}</span>}
-            </TabsTrigger>
-            <TabsTrigger value="form-submissions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <FileText className="w-4 h-4 mr-2" />
-              Form Submissions
-            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="beta-questions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Beta Questions {infoRequestCount > 0 && <span className="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">{infoRequestCount}</span>}
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger value="form-submissions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <FileText className="w-4 h-4 mr-2" />
+                Form Submissions
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Landing Pages Tab */}
