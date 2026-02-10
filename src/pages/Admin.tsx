@@ -178,6 +178,7 @@ const Admin = () => {
   const [liveWarningDialogOpen, setLiveWarningDialogOpen] = useState(false);
   const [liveWarningTemplateName, setLiveWarningTemplateName] = useState("");
   const [liveWarningCampaignNames, setLiveWarningCampaignNames] = useState<string[]>([]);
+  const [previewTemplateSlug, setPreviewTemplateSlug] = useState<string | null>(null);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -1344,6 +1345,17 @@ const Admin = () => {
                         )}
                         <p className="text-xs text-muted-foreground mb-4 font-mono">{t.slug}</p>
                         <div className="flex gap-2">
+                          {liveTemplateIds.has(t.id) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setPreviewTemplateSlug(t.slug)}
+                              title="View template (read-only)"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                          )}
                           <Link to={t.is_builder_template ? `/builder/${t.slug}` : `/template-editor/${t.slug}`} className="flex-1">
                             <Button size="sm" className="w-full">
                               <Pencil className="w-4 h-4 mr-2" />
@@ -2556,6 +2568,28 @@ const Admin = () => {
             <Button variant="outline" onClick={() => setLiveWarningDialogOpen(false)}>
               Got it
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Preview Dialog (read-only) */}
+      <Dialog open={!!previewTemplateSlug} onOpenChange={(open) => { if (!open) setPreviewTemplateSlug(null); }}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0">
+          <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              <DialogTitle>Template Preview (Read-Only)</DialogTitle>
+            </div>
+            <DialogDescription className="sr-only">Preview of the template in read-only mode</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden" style={{ height: 'calc(90vh - 60px)' }}>
+            {previewTemplateSlug && (
+              <iframe
+                src={`/template-editor/${previewTemplateSlug}`}
+                className="w-full h-full border-0 pointer-events-none"
+                title="Template preview"
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
