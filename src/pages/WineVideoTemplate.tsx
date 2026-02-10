@@ -1,4 +1,5 @@
 import { useTemplateContent } from "@/hooks/useTemplateContent";
+import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import WineVideoPage from "@/pages/wine/WineVideoPage";
 
 const WineVideoTemplate = () => {
@@ -10,7 +11,9 @@ const WineVideoTemplate = () => {
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     ) : (
-      <WineVideoPage template={template} />
+      <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen">
+        <WineVideoPage template={template} />
+      </TemplateAccentProvider>
     )
   );
 };

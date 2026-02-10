@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import VideoPlayer from "@/components/VideoPlayer";
 import SampleRequestForm from "@/components/SampleRequestForm";
+import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import clientLogos from "@/assets/client-logos.png";
 import { 
   Play, 
@@ -131,7 +132,7 @@ const B2BDemo = () => {
   const isSectionVisible = (key: string) => vis[key] !== false;
 
   return (
-    <div className="min-h-screen bg-white">
+    <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-white">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -421,7 +422,7 @@ const B2BDemo = () => {
           </div>
         </footer>
       )}
-    </div>
+    </TemplateAccentProvider>
   );
 };
 
