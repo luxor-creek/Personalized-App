@@ -49,6 +49,68 @@ export type Database = {
           },
         ]
       }
+      form_submissions: {
+        Row: {
+          address: string | null
+          city: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          extra_fields: Json | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          primary_goal: string | null
+          product_url: string | null
+          state: string | null
+          template_id: string
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          extra_fields?: Json | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          primary_goal?: string | null
+          product_url?: string | null
+          state?: string | null
+          template_id: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          extra_fields?: Json | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          primary_goal?: string | null
+          product_url?: string | null
+          state?: string | null
+          template_id?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       info_requests: {
         Row: {
           created_at: string

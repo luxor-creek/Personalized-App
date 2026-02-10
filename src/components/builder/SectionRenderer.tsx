@@ -1,5 +1,6 @@
 import { BuilderSection } from "@/types/builder";
 import { useState, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface SectionRendererProps {
   section: BuilderSection;
@@ -643,6 +644,25 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        );
+
+      case 'qrCode':
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: '600px', textAlign: 'center' }}>
+              {content.qrCodeLabel && <p className="text-sm font-medium mb-4" style={{ color: style.textColor }}>{applyPersonalization(content.qrCodeLabel, personalization)}</p>}
+              <div className="inline-block p-4 bg-white rounded-xl">
+                <QRCodeSVG
+                  value={applyPersonalization(content.qrCodeUrl, personalization) || 'https://example.com'}
+                  size={content.qrCodeSize || 200}
+                  level="M"
+                />
+              </div>
+              {!isPreview && !content.qrCodeUrl && (
+                <p className="text-xs text-muted-foreground mt-3">Set a URL in properties to generate the QR code</p>
+              )}
             </div>
           </div>
         );

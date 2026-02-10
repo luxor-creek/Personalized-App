@@ -22,6 +22,7 @@ type SampleRequestFormProps = {
   title?: string;
   subtitle?: string;
   steps?: FormStep[];
+  templateId?: string;
 };
 
 const DEFAULT_STEPS: FormStep[] = [
@@ -30,7 +31,7 @@ const DEFAULT_STEPS: FormStep[] = [
   { number: 3, title: "Get your video", description: "Receive a professional video tailored to your needs." },
 ];
 
-const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) => {
+const SampleRequestForm = ({ title, subtitle, steps, templateId }: SampleRequestFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -82,7 +83,7 @@ const SampleRequestForm = ({ title, subtitle, steps }: SampleRequestFormProps) =
     
     try {
       const { data, error } = await supabase.functions.invoke("send-sample-request", {
-        body: formData,
+        body: { ...formData, templateId },
       });
 
       if (error) throw error;

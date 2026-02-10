@@ -412,7 +412,7 @@ const B2BDemo = () => {
 
       {/* Contact Section with Sample Request Form */}
       {isSectionVisible("show_form") && (
-      <SampleRequestForm />
+      <SampleRequestForm templateId={template?.id} />
       )}
 
       {/* Footer */}

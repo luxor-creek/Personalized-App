@@ -30,7 +30,8 @@ export type SectionType =
   | 'countdown'
   | 'socialProof'
   | 'benefits'
-  | 'cards';
+  | 'cards'
+  | 'qrCode';
 
 export interface SectionStyle {
   backgroundColor?: string;
@@ -215,6 +216,10 @@ export interface SectionContent {
   hideSecondaryButton?: boolean;
   // Form delivery
   formRecipientEmail?: string;
+  // QR Code
+  qrCodeUrl?: string;
+  qrCodeSize?: number;
+  qrCodeLabel?: string;
 }
 
 export interface BuilderSection {
@@ -461,6 +466,13 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     category: 'People',
     content: { teamTitle: 'Meet the Team', teamSubtitle: 'The people behind the product', teamMembers: [{ name: 'Alex Johnson', role: 'CEO & Founder', imageUrl: '' }, { name: 'Maria Garcia', role: 'CTO', imageUrl: '' }, { name: 'Sam Williams', role: 'Head of Design', imageUrl: '' }] },
     style: { backgroundColor: '#ffffff', textColor: '#1a1a1a', paddingY: '64px', maxWidth: '1000px' },
+  },
+  qrCode: {
+    label: 'QR Code',
+    icon: 'QrCode',
+    category: 'Conversion',
+    content: { qrCodeUrl: 'https://example.com', qrCodeSize: 200, qrCodeLabel: 'Scan to visit' },
+    style: { backgroundColor: '#ffffff', textColor: '#1a1a1a', paddingY: '48px', textAlign: 'center' },
   },
 };
 

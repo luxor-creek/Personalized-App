@@ -711,13 +711,37 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           </>
         );
 
+      case 'qrCode':
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>QR Code URL</Label>
+              <Input value={section.content.qrCodeUrl || ''} onChange={(e) => updateContent({ qrCodeUrl: e.target.value })} placeholder="https://example.com" />
+              <p className="text-xs text-muted-foreground">The URL the QR code links to</p>
+            </div>
+            <div className="space-y-2">
+              <VarLabel label="Label" value={section.content.qrCodeLabel || ''} onChange={(v) => updateContent({ qrCodeLabel: v })} />
+              <Input value={section.content.qrCodeLabel || ''} onChange={(e) => updateContent({ qrCodeLabel: e.target.value })} placeholder="Scan to visit" />
+            </div>
+            <div className="space-y-2">
+              <Label>Size (px)</Label>
+              <Select value={String(section.content.qrCodeSize || 200)} onValueChange={(v) => updateContent({ qrCodeSize: parseInt(v) })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['100', '150', '200', '250', '300', '400'].map((s) => <SelectItem key={s} value={s}>{s}px</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        );
+
       default:
         return null;
     }
   };
 
   // Sections that already have their own button controls
-  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing', 'spacer', 'divider', 'logo', 'footer'];
+  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing', 'spacer', 'divider', 'logo', 'footer', 'qrCode'];
 
   const renderOptionalButtonFields = () => {
     if (sectionsWithOwnButtons.includes(section.type)) return null;

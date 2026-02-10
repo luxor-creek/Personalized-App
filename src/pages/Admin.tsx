@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
+import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
 import { Textarea } from "@/components/ui/textarea";
 import type { User, Session } from "@supabase/supabase-js";
 import {
@@ -1217,6 +1218,10 @@ const Admin = () => {
               <HelpCircle className="w-4 h-4 mr-2" />
               Beta Questions {infoRequestCount > 0 && <span className="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">{infoRequestCount}</span>}
             </TabsTrigger>
+            <TabsTrigger value="form-submissions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <FileText className="w-4 h-4 mr-2" />
+              Form Submissions
+            </TabsTrigger>
           </TabsList>
 
           {/* Landing Pages Tab */}
@@ -2259,6 +2264,17 @@ const Admin = () => {
                 </Table>
               </div>
             )}
+          </TabsContent>
+
+          {/* Form Submissions Tab */}
+          <TabsContent value="form-submissions" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Form Submissions</h2>
+              <p className="text-muted-foreground mb-6">
+                View all form submissions from your landing pages in one place.
+              </p>
+            </div>
+            <FormSubmissionsPanel />
           </TabsContent>
         </Tabs>
       </div>

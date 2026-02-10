@@ -3,7 +3,7 @@ import {
   Type, AlignLeft, Play, Image, RectangleHorizontal, MousePointerClick, FileText, Sparkles, Minus, FileDown,
   Rocket, Grid3x3, MessageSquareQuote, CreditCard, HelpCircle, BarChart3, Users, Building2, Mail,
   Columns2, ListOrdered, LayoutGrid, PanelBottom, SeparatorHorizontal, Quote, Timer, ThumbsUp,
-  CheckSquare, SquareStack
+  CheckSquare, SquareStack, QrCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,6 +38,7 @@ const ICONS: Record<string, React.ReactNode> = {
   ThumbsUp: <ThumbsUp className="w-4 h-4" />,
   CheckSquare: <CheckSquare className="w-4 h-4" />,
   SquareStack: <SquareStack className="w-4 h-4" />,
+  QrCode: <QrCode className="w-4 h-4" />,
 };
 
 interface SectionPaletteProps {

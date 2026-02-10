@@ -436,6 +436,7 @@ export default function WineVideoPage({ template }: { template: TemplateContent 
       <SampleRequestForm
         title={template?.form_section_title || undefined}
         subtitle={template?.form_section_subtitle || undefined}
+        templateId={template?.id}
       />
       )}
 
