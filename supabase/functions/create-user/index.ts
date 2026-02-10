@@ -52,19 +52,26 @@ serve(async (req: Request) => {
     if (roleData?.role !== "admin") throw new Error("Admin access required");
 
     // Parse request
-    const { email, full_name, plan } = await req.json();
+    const { email, full_name, plan, password, send_email = true } = await req.json();
     if (!email || !full_name || !plan) throw new Error("Missing required fields: email, full_name, plan");
     if (!PLAN_LIMITS[plan]) throw new Error("Invalid plan");
 
     // Create user with admin API (service role)
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Create user — email_confirm: true so they don't need to verify
-    const { data: newUserData, error: createError } = await adminClient.auth.admin.createUser({
+    // Build create-user options
+    const createUserOptions: Record<string, unknown> = {
       email,
       email_confirm: true,
       user_metadata: { full_name },
-    });
+    };
+    if (password && password.length >= 6) {
+      createUserOptions.password = password;
+    }
+
+    const { data: newUserData, error: createError } = await adminClient.auth.admin.createUser(
+      createUserOptions as any,
+    );
 
     if (createError) throw new Error(`Failed to create user: ${createError.message}`);
     const newUser = newUserData.user;
@@ -98,6 +105,15 @@ serve(async (req: Request) => {
         redirectTo: `${req.headers.get("origin") || "https://recruitmentvideoproduction.lovable.app"}/auth`,
       },
     });
+
+    // Optionally send welcome email
+    if (!send_email) {
+      console.log("[create-user] send_email=false, skipping invite email");
+      return new Response(
+        JSON.stringify({ success: true, user_id: newUser.id }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Send welcome email with password setup link via Resend
     const resendKey = Deno.env.get("RESEND_API_KEY");

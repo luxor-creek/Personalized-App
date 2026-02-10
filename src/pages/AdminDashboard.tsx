@@ -116,6 +116,8 @@ const AdminDashboard = () => {
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserSendEmail, setNewUserSendEmail] = useState(true);
   const [newUserPlan, setNewUserPlan] = useState("trial");
   const [creatingUser, setCreatingUser] = useState(false);
 
@@ -270,18 +272,28 @@ const AdminDashboard = () => {
     setCreatingUser(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-user", {
-        body: { email: newUserEmail.trim(), full_name: newUserName.trim(), plan: newUserPlan },
+        body: {
+          email: newUserEmail.trim(),
+          full_name: newUserName.trim(),
+          plan: newUserPlan,
+          password: newUserPassword.trim() || undefined,
+          send_email: newUserSendEmail,
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.email_error) {
         toast({ title: "User created, but invite email failed", description: data.email_error, variant: "destructive" });
-      } else {
+      } else if (newUserSendEmail) {
         toast({ title: "User created", description: `Welcome email sent to ${newUserEmail}` });
+      } else {
+        toast({ title: "User created", description: `Account ready for ${newUserEmail}` });
       }
       setCreateUserOpen(false);
       setNewUserName("");
       setNewUserEmail("");
+      setNewUserPassword("");
+      setNewUserSendEmail(true);
       setNewUserPlan("trial");
       fetchUsers();
     } catch (err: any) {
@@ -948,13 +960,12 @@ const AdminDashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Create User Dialog */}
       <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New User</DialogTitle>
             <DialogDescription>
-              The user will receive a welcome email with a link to set their password.
+              Create an account and optionally send a welcome email.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -976,6 +987,18 @@ const AdminDashboard = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label>Password <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input
+                type="password"
+                value={newUserPassword}
+                onChange={(e) => setNewUserPassword(e.target.value)}
+                placeholder="Min 6 characters — or leave blank for email setup"
+              />
+              {newUserPassword.length > 0 && newUserPassword.length < 6 && (
+                <p className="text-xs text-destructive">Password must be at least 6 characters</p>
+              )}
+            </div>
+            <div className="space-y-2">
               <Label>Plan</Label>
               <Select value={newUserPlan} onValueChange={setNewUserPlan}>
                 <SelectTrigger>
@@ -989,17 +1012,35 @@ const AdminDashboard = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="send-email"
+                checked={newUserSendEmail}
+                onCheckedChange={(checked) => setNewUserSendEmail(!!checked)}
+              />
+              <Label htmlFor="send-email" className="cursor-pointer">Send invite / welcome email</Label>
+            </div>
             <div className="bg-muted rounded-lg p-3 text-sm">
               <p className="font-medium text-foreground mb-1">What happens:</p>
               <ul className="text-muted-foreground space-y-1 text-xs list-disc list-inside">
                 <li>Account created with the selected plan</li>
-                <li>Welcome email sent with a link to set password</li>
+                {newUserPassword.length >= 6
+                  ? <li>User can log in immediately with the password you set</li>
+                  : newUserSendEmail
+                    ? <li>Welcome email sent with a link to set password</li>
+                    : <li>No password set — you'll need to share credentials separately</li>
+                }
+                {newUserSendEmail && <li>Invite email sent to the user</li>}
                 {newUserPlan === "trial" && <li>14-day trial starts immediately</li>}
                 {newUserPlan !== "trial" && <li>Full {newUserPlan} plan access granted immediately</li>}
               </ul>
             </div>
-            <Button onClick={handleCreateUser} className="w-full" disabled={creatingUser}>
-              {creatingUser ? "Creating..." : "Create User & Send Welcome Email"}
+            <Button
+              onClick={handleCreateUser}
+              className="w-full"
+              disabled={creatingUser || (newUserPassword.length > 0 && newUserPassword.length < 6)}
+            >
+              {creatingUser ? "Creating..." : newUserSendEmail ? "Create User & Send Email" : "Create User"}
             </Button>
           </div>
         </DialogContent>
