@@ -160,6 +160,10 @@ const Admin = () => {
   const [gsheetUrl, setGsheetUrl] = useState("");
   const [importingGsheet, setImportingGsheet] = useState(false);
 
+  // Inline template name editing
+  const [editingTemplateName, setEditingTemplateName] = useState<string | null>(null);
+  const [templateNameDraft, setTemplateNameDraft] = useState("");
+
   // Snov.io stats state
   const [snovStatsDialogOpen, setSnovStatsDialogOpen] = useState(false);
   const [snovCampaigns, setSnovCampaigns] = useState<Array<{ id: number; name: string; listId: number; status: string; createdAt: string | null; startedAt: string | null }>>([]);
@@ -1050,6 +1054,24 @@ const Admin = () => {
     }
   };
 
+  const saveTemplateName = async (templateId: string) => {
+    const trimmed = templateNameDraft.trim();
+    if (!trimmed) { setEditingTemplateName(null); return; }
+    try {
+      const { error } = await supabase
+        .from("landing_page_templates")
+        .update({ name: trimmed })
+        .eq("id", templateId);
+      if (error) throw error;
+      toast({ title: "Template renamed" });
+      fetchTemplates();
+    } catch (err: any) {
+      toast({ title: "Error renaming", description: err.message, variant: "destructive" });
+    } finally {
+      setEditingTemplateName(null);
+    }
+  };
+
   const deleteTemplate = async (templateSlug: string, templateName: string) => {
     if (!confirm(`Delete "${templateName}"? This cannot be undone.`)) return;
     try {
@@ -1224,7 +1246,24 @@ const Admin = () => {
                         </div>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-foreground mb-1">{t.name}</h3>
+                        {editingTemplateName === t.id ? (
+                          <Input
+                            autoFocus
+                            value={templateNameDraft}
+                            onChange={(e) => setTemplateNameDraft(e.target.value)}
+                            onBlur={() => saveTemplateName(t.id)}
+                            onKeyDown={(e) => { if (e.key === "Enter") saveTemplateName(t.id); if (e.key === "Escape") setEditingTemplateName(null); }}
+                            className="h-8 text-sm font-semibold mb-1"
+                          />
+                        ) : (
+                          <h3
+                            className="font-semibold text-foreground mb-1 cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => { setEditingTemplateName(t.id); setTemplateNameDraft(t.name); }}
+                            title="Click to rename"
+                          >
+                            {t.name} <Pencil className="inline w-3 h-3 text-muted-foreground ml-1" />
+                          </h3>
+                        )}
                         <p className="text-xs text-muted-foreground mb-4 font-mono">{t.slug}</p>
                         <div className="flex gap-2">
                           <Link to={t.is_builder_template ? `/builder/${t.slug}` : `/template-editor/${t.slug}`} className="flex-1">
