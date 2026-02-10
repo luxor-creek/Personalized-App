@@ -526,6 +526,7 @@ const PersonalizedLanding = () => {
       />
       <LogoCarousel 
         imageUrl={template?.client_logos_url || undefined}
+        title={template?.cta_banner_subtitle ? applyPersonalization(template.cta_banner_subtitle, personalizationData) : undefined}
       />
       <AboutSection 
         title={template?.features_title ? applyPersonalization(template.features_title, personalizationData) : undefined}

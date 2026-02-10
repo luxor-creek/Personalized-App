@@ -32,6 +32,7 @@ const Index = () => {
       />
       <LogoCarousel 
         imageUrl={template?.client_logos_url || undefined}
+        title={template?.cta_banner_subtitle || undefined}
       />
       <AboutSection 
         title={template?.features_title || undefined}

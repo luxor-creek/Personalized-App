@@ -1430,8 +1430,8 @@ const TemplateEditor = () => {
           <div className="container mx-auto px-4">
             <p className="text-center text-sm text-muted-foreground uppercase tracking-wider mb-8">
               <EditableText
-                value={template.about_content || "Trusted by public organizations nationwide"}
-                onChange={(value) => updateField("about_content", value)}
+                value={template.cta_banner_subtitle || "Trusted by public organizations nationwide"}
+                onChange={(value) => updateField("cta_banner_subtitle", value)}
                 fieldName="Trust Section Text"
               />
             </p>
