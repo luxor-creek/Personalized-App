@@ -179,6 +179,8 @@ const Admin = () => {
   const [liveWarningTemplateName, setLiveWarningTemplateName] = useState("");
   const [liveWarningCampaignNames, setLiveWarningCampaignNames] = useState<string[]>([]);
   const [previewTemplateSlug, setPreviewTemplateSlug] = useState<string | null>(null);
+  const [liveWarningEditSlug, setLiveWarningEditSlug] = useState<string | null>(null);
+  const [liveWarningIsBuilder, setLiveWarningIsBuilder] = useState(false);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -1356,12 +1358,29 @@ const Admin = () => {
                               View
                             </Button>
                           )}
-                          <Link to={t.is_builder_template ? `/builder/${t.slug}` : `/template-editor/${t.slug}`} className="flex-1">
-                            <Button size="sm" className="w-full">
+                          {liveTemplateIds.has(t.id) ? (
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => {
+                                setLiveWarningTemplateName(t.name);
+                                setLiveWarningCampaignNames(liveTemplateCampaigns[t.id] || []);
+                                setLiveWarningEditSlug(t.slug);
+                                setLiveWarningIsBuilder(!!t.is_builder_template);
+                                setLiveWarningDialogOpen(true);
+                              }}
+                            >
                               <Pencil className="w-4 h-4 mr-2" />
                               Edit
                             </Button>
-                          </Link>
+                          ) : (
+                            <Link to={t.is_builder_template ? `/builder/${t.slug}` : `/template-editor/${t.slug}`} className="flex-1">
+                              <Button size="sm" className="w-full">
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Edit
+                              </Button>
+                            </Link>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -2566,9 +2585,21 @@ const Admin = () => {
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setLiveWarningDialogOpen(false)}>
-              Got it
+              Cancel
             </Button>
-          </div>
+            {liveWarningEditSlug && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setLiveWarningDialogOpen(false);
+                  navigate(liveWarningIsBuilder ? `/builder/${liveWarningEditSlug}` : `/template-editor/${liveWarningEditSlug}`);
+                }}
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Edit Anyway
+              </Button>
+            )}
+            </div>
         </DialogContent>
       </Dialog>
 
