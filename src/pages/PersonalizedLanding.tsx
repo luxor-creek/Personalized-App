@@ -483,7 +483,7 @@ const PersonalizedLanding = () => {
         <section className="py-16 px-6 bg-gradient-to-br from-primary to-primary/80">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-              Let's work together, <span className="text-primary/50">{firstName}</span>
+              Let's work together, <span className="text-primary-foreground">{firstName}</span>
             </h2>
             <p className="text-lg text-primary-foreground/90 mb-8">
               We're excited to show {companyName} what's possible. Get started in minutes.
