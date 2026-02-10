@@ -1253,7 +1253,7 @@ const TemplateEditor = () => {
         {/* Main content - with right margin for sidebar */}
         <div className={isPreviewOnly ? "" : "mr-80"}>
         {/* Hero Section */}
-        <section className="min-h-screen hero-gradient relative overflow-hidden">
+        <section className={`${isPreviewOnly ? "min-h-0" : "min-h-screen"} hero-gradient relative overflow-hidden`}>
           {/* Subtle background pattern */}
           <div className="absolute inset-0 opacity-5">
             <div 
