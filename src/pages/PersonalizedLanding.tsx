@@ -422,13 +422,13 @@ const PersonalizedLanding = () => {
                 </p>
 
                 <ul className="space-y-4 mb-8">
-                  {[
+                  {(template?.comparison_solution_items || [
                     "Transparent estimates before kickoff",
                     "21-city crew network, minimal travel costs",
                     "Live action, animation, or hybrid",
-                  ].map((item, index) => (
+                  ]).map((item, index) => (
                     <li key={index} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
                       <span className="text-foreground">{item}</span>
                     </li>
                   ))}
