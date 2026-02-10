@@ -27,7 +27,7 @@ const PersonalizedLanding = () => {
   const [pageData, setPageData] = useState<PersonalizedPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [templateSlug, setTemplateSlug] = useState<string | null>(null);
+  
   
   // Fetch template by ID once we have pageData
   const { template, loading: templateLoading } = useTemplateContentById(pageData?.template_id || null);
@@ -77,12 +77,6 @@ const PersonalizedLanding = () => {
     fetchPageData();
   }, [token]);
 
-  // Set template slug once template is loaded
-  useEffect(() => {
-    if (template?.slug) {
-      setTemplateSlug(template.slug);
-    }
-  }, [template]);
 
   if (loading || templateLoading) {
     return (
@@ -126,7 +120,7 @@ const PersonalizedLanding = () => {
     );
   }
 
-  if (templateSlug?.startsWith("wine-video")) {
+  if (template?.slug?.startsWith("wine-video")) {
     return (
       <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen">
         <WineVideoPage template={template} personalization={personalizationData} />
