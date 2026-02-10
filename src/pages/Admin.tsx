@@ -779,7 +779,7 @@ const Admin = () => {
     if (!selectedCampaign || pages.length === 0) return;
     
     // CSV header
-    const headers = ["First Name", "Last Name", "Company", "Email", "Personalized Page Link"];
+    const headers = ["First Name", "Last Name", "Company", "Email", "Personalized Page"];
     
     // Build CSV rows
     const rows = pages.map((page) => {
