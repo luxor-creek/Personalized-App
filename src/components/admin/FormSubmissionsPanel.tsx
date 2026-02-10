@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Download, RefreshCw } from "lucide-react";
+import { Trash2, Download, RefreshCw, ClipboardCopy } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -117,6 +117,29 @@ const FormSubmissionsPanel = () => {
     URL.revokeObjectURL(url);
   };
 
+  const copyForGoogleSheets = () => {
+    if (submissions.length === 0) return;
+    const headers = ["First Name", "Last Name", "Email", "Company", "Phone", "Address", "City", "State/Prov", "Zip/Postal", "Primary Goal", "Product URL", "Date"];
+    const rows = submissions.map((s) => [
+      s.first_name || "",
+      s.last_name || "",
+      s.email || "",
+      s.company || "",
+      s.phone || "",
+      s.address || "",
+      s.city || "",
+      s.state || "",
+      s.zip || "",
+      s.primary_goal || "",
+      s.product_url || "",
+      new Date(s.created_at).toLocaleDateString(),
+    ]);
+    const tsv = [headers, ...rows].map((r) => r.join("\t")).join("\n");
+    navigator.clipboard.writeText(tsv).then(() => {
+      toast({ title: "Copied!", description: "Paste into Google Sheets (Ctrl+V / ⌘+V)" });
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
@@ -137,10 +160,16 @@ const FormSubmissionsPanel = () => {
               Refresh
             </Button>
             {submissions.length > 0 && (
-              <Button variant="outline" size="sm" onClick={exportCsv}>
-                <Download className="w-4 h-4 mr-1" />
-                Export CSV
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={exportCsv}>
+                  <Download className="w-4 h-4 mr-1" />
+                  Export CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={copyForGoogleSheets}>
+                  <ClipboardCopy className="w-4 h-4 mr-1" />
+                  Copy for Google Sheets
+                </Button>
+              </>
             )}
             <span className="text-sm text-muted-foreground ml-auto">{submissions.length} submissions</span>
           </>
