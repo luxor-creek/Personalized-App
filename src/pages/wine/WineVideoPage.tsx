@@ -141,7 +141,7 @@ export default function WineVideoPage({ template, personalization: externalPerso
               <>
                 {template?.logo_url && <span className="text-muted-foreground">×</span>}
                 <div className="flex items-center gap-1">
-                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <Sparkles className="w-5 h-5 text-primary" />
                   <span className="font-semibold text-foreground">{companyName}</span>
                 </div>
               </>
@@ -159,8 +159,8 @@ export default function WineVideoPage({ template, personalization: externalPerso
       <section className="py-12 px-6">
         <div className="max-w-6xl mx-auto">
           <Card className="p-8 md:p-12 bg-white rounded-3xl shadow-sm">
-            <div className="flex items-center gap-2 text-amber-600 mb-6">
-              <Sparkles className="w-4 h-4" />
+            <div className="flex items-center gap-2 text-primary mb-6">
+              <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium uppercase tracking-wide">
                 {renderPersonalizedFormattedText(template?.hero_badge || "Personalized for {{company}}", personalizationData, "hero-badge-")}
               </span>
@@ -268,7 +268,7 @@ export default function WineVideoPage({ template, personalization: externalPerso
             ].map((step) => (
               <div key={step.number} className="text-center">
                 <div className="relative mb-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-500 text-white text-xl font-bold flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground text-xl font-bold flex items-center justify-center mx-auto">
                     {step.number}
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export default function WineVideoPage({ template, personalization: externalPerso
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.slice(0, 3).map((t, index) => (
               <Card key={index} className="p-6 bg-gray-50 border-0">
-                <Quote className="w-6 h-6 text-amber-500 mb-4" />
+                <Quote className="w-6 h-6 text-primary mb-4" />
                 <p className="text-foreground leading-relaxed">"{getTestimonialQuote(t)}"</p>
               </Card>
             ))}
