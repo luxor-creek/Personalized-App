@@ -18,11 +18,13 @@ const TemplateAccentProvider = ({ accentColor, children, className }: TemplateAc
     const root = document.documentElement;
     const prev = {
       primary: root.style.getPropertyValue("--primary"),
+      primaryForeground: root.style.getPropertyValue("--primary-foreground"),
       accent: root.style.getPropertyValue("--accent"),
       ring: root.style.getPropertyValue("--ring"),
     };
 
     root.style.setProperty("--primary", accentColor);
+    root.style.setProperty("--primary-foreground", "0 0% 100%");
     root.style.setProperty("--accent", accentColor);
     root.style.setProperty("--ring", accentColor);
 
@@ -30,6 +32,8 @@ const TemplateAccentProvider = ({ accentColor, children, className }: TemplateAc
       // Restore originals on unmount
       if (prev.primary) root.style.setProperty("--primary", prev.primary);
       else root.style.removeProperty("--primary");
+      if (prev.primaryForeground) root.style.setProperty("--primary-foreground", prev.primaryForeground);
+      else root.style.removeProperty("--primary-foreground");
       if (prev.accent) root.style.setProperty("--accent", prev.accent);
       else root.style.removeProperty("--accent");
       if (prev.ring) root.style.setProperty("--ring", prev.ring);
