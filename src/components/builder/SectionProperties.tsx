@@ -878,7 +878,7 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                     <Input value={section.style.backgroundColor || '#ffffff'} onChange={(e) => updateStyle({ backgroundColor: e.target.value })} className="flex-1 font-mono text-xs" />
                   </div>
                 </div>
-                {['headline', 'body', 'banner', 'cta', 'form', 'hero', 'heroVideo', 'heroImage', 'heroForm', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'comparison', 'benefits', 'cards', 'socialProof', 'newsletter', 'quote', 'footer', 'document', 'countdown'].includes(section.type) && (
+                {['headline', 'body', 'banner', 'cta', 'form', 'hero', 'heroBg', 'heroVideo', 'heroImage', 'heroForm', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'comparison', 'benefits', 'cards', 'socialProof', 'newsletter', 'quote', 'footer', 'document', 'countdown', 'logo'].includes(section.type) && (
                   <div className="space-y-1"><Label className="text-xs">Text Color</Label>
                     <div className="flex gap-2 items-center">
                       <input type="color" value={section.style.textColor || '#1a1a1a'} onChange={(e) => updateStyle({ textColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
