@@ -74,7 +74,7 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
   } ${isSelected ? 'outline outline-2 outline-primary ring-2 ring-primary/20' : ''}`;
 
   // Sections that already have their own button logic
-  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing'];
+  const sectionsWithOwnButtons = ['hero', 'heroBg', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing'];
 
   const renderOptionalButton = () => {
     if (sectionsWithOwnButtons.includes(type)) return null;
@@ -248,6 +248,27 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
                 {content.secondaryButtonText && !content.hideSecondaryButton && <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ borderColor: style.secondaryButtonTextColor, color: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>}
               </div>
               {content.heroImageUrl && <img src={content.heroImageUrl} alt="" className="mt-12 mx-auto rounded-xl shadow-2xl max-w-full" />}
+            </div>
+          </div>
+        );
+
+      case 'heroBg':
+        return (
+          <div style={{ ...containerStyle, position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', alignItems: 'center' }}>
+            {content.imageUrl && (
+              <>
+                <img src={content.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0" style={{ backgroundColor: style.overlayColor || '#6d54df', opacity: style.overlayOpacity ?? 0.6 }} />
+              </>
+            )}
+            <div style={{ ...innerStyle, maxWidth: '1100px', textAlign: style.textAlign as any || 'center', position: 'relative', zIndex: 1, width: '100%' }}>
+              {content.heroBadge && <span className="inline-block rounded-full px-4 py-1 text-xs font-semibold mb-6" style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: style.textColor || '#ffffff' }}>{content.heroBadge}</span>}
+              <h1 style={{ ...textStyle, lineHeight: 1.1, marginBottom: '24px' }}>{applyPersonalization(content.text, personalization)}</h1>
+              {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.85, fontSize: '20px', maxWidth: '700px', margin: '0 auto 40px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
+              <div className="flex gap-4 justify-center flex-wrap">
+                {content.buttonText && !content.hideButton && <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>}
+                {content.secondaryButtonText && !content.hideSecondaryButton && <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ borderColor: style.secondaryButtonTextColor, color: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>}
+              </div>
             </div>
           </div>
         );

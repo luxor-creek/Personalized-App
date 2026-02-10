@@ -346,6 +346,42 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           </>
         );
 
+      case 'heroBg':
+        return (
+          <>
+            <div className="space-y-2"><VarLabel label="Badge" value={section.content.heroBadge || ''} onChange={(v) => updateContent({ heroBadge: v })} /><Input value={section.content.heroBadge || ''} onChange={(e) => updateContent({ heroBadge: e.target.value })} placeholder="e.g. New, Beta" /></div>
+            <div className="space-y-2"><VarLabel label="Headline" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} /><Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={2} className="resize-none" /></div>
+            <div className="space-y-2"><VarLabel label="Subheadline" value={section.content.heroSubheadline || ''} onChange={(v) => updateContent({ heroSubheadline: v })} /><Textarea value={section.content.heroSubheadline || ''} onChange={(e) => updateContent({ heroSubheadline: e.target.value })} rows={2} className="resize-none" /></div>
+            <Separator />
+            <div className="space-y-2"><Label>Background Image</Label><Input value={section.content.imageUrl || ''} onChange={(e) => updateContent({ imageUrl: e.target.value })} placeholder="Paste image URL" /><UploadButton label="Upload Background" field="imageUrl" /></div>
+            <div className="space-y-2">
+              <Label>Overlay Color</Label>
+              <input type="color" value={section.style.overlayColor || '#6d54df'} onChange={(e) => updateStyle({ overlayColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" />
+            </div>
+            <div className="space-y-2">
+              <Label>Overlay Opacity</Label>
+              <input type="range" min="0" max="100" value={Math.round((section.style.overlayOpacity ?? 0.6) * 100)} onChange={(e) => updateStyle({ overlayOpacity: parseInt(e.target.value) / 100 })} className="w-full" />
+              <span className="text-xs text-muted-foreground">{Math.round((section.style.overlayOpacity ?? 0.6) * 100)}%</span>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Primary Button</Label><Switch checked={!section.content.hideButton} onCheckedChange={(v) => updateContent({ hideButton: !v })} /></div>
+            {!section.content.hideButton && (
+              <>
+                <div className="space-y-2"><Label>Primary Button</Label><Input value={section.content.buttonText || ''} onChange={(e) => updateContent({ buttonText: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Primary Link</Label><Input value={section.content.buttonLink || ''} onChange={(e) => updateContent({ buttonLink: e.target.value })} /></div>
+              </>
+            )}
+            <div className="flex items-center justify-between"><Label className="text-xs">Show Secondary Button</Label><Switch checked={!section.content.hideSecondaryButton} onCheckedChange={(v) => updateContent({ hideSecondaryButton: !v })} /></div>
+            {!section.content.hideSecondaryButton && (
+              <div className="space-y-2"><Label>Secondary Button</Label><Input value={section.content.secondaryButtonText || ''} onChange={(e) => updateContent({ secondaryButtonText: e.target.value })} /></div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1"><Label className="text-xs">Btn Color</Label><input type="color" value={section.style.buttonColor || '#6d54df'} onChange={(e) => updateStyle({ buttonColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+              <div className="space-y-1"><Label className="text-xs">Btn Text</Label><input type="color" value={section.style.buttonTextColor || '#ffffff'} onChange={(e) => updateStyle({ buttonTextColor: e.target.value })} className="w-8 h-8 rounded border cursor-pointer" /></div>
+            </div>
+          </>
+        );
+
       case 'heroVideo':
         return (
           <>

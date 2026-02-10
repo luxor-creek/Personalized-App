@@ -57,7 +57,7 @@ const SectionPalette = ({ onAddSection }: SectionPaletteProps) => {
     <div className="w-64 max-md:w-full bg-card border-r border-border max-md:border-r-0 flex flex-col h-full">
       <div className="p-4 border-b border-border max-md:hidden">
         <h3 className="font-semibold text-foreground text-sm">Add Sections</h3>
-        <p className="text-xs text-muted-foreground mt-1">32 sections available</p>
+        <p className="text-xs text-muted-foreground mt-1">33 sections available</p>
       </div>
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-4">
