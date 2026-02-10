@@ -39,6 +39,11 @@ function getPersonalizationFromUrl(): PersonalizationData {
   };
 }
 
+type WineVideoPageProps = {
+  template: TemplateContent | null;
+  personalization?: PersonalizationData;
+};
+
 const DEFAULT_PORTFOLIO_VIDEOS = [
   { title: "Product overview", videoId: "1084786498" },
   { title: "Brand story", videoId: "1084786498" },
@@ -80,8 +85,8 @@ const DEFAULT_COMPARISON_SOLUTION_ITEMS = [
   "White-label delivery",
 ];
 
-export default function WineVideoPage({ template }: { template: TemplateContent | null }) {
-  const personalization = getPersonalizationFromUrl();
+export default function WineVideoPage({ template, personalization: externalPersonalization }: WineVideoPageProps) {
+  const personalization = externalPersonalization || getPersonalizationFromUrl();
   const personalizationData = {
     first_name: personalization.first_name || "",
     last_name: personalization.last_name || "",
