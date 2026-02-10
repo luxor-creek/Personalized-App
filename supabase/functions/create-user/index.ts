@@ -151,9 +151,9 @@ serve(async (req: Request) => {
           </div>
         `;
 
-      console.log("[create-user] Sending invite email to:", email, "from: Personalized Pages <noreply@personalizedpages.io>");
+      console.log("[create-user] Sending invite email to:", email, "from: Personalized Pages <noreply@personalized.pages>");
       const emailResult = await resend.emails.send({
-        from: "Personalized Pages <noreply@personalizedpages.io>",
+        from: "Personalized Pages <noreply@personalized.pages>",
         to: [email],
         subject: isPaid
           ? `Welcome to Personalized Pages — Your ${planLabel} account is ready`
