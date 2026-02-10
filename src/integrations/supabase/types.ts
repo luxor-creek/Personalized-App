@@ -611,6 +611,55 @@ export type Database = {
           token: string
         }[]
       }
+      get_template_for_public_page: {
+        Args: { template_uuid: string }
+        Returns: {
+          about_content: string
+          accent_color: string
+          client_logos_url: string
+          comparison_problem_items: Json
+          comparison_problem_title: string
+          comparison_solution_description: string
+          comparison_solution_items: Json
+          comparison_solution_title: string
+          contact_email: string
+          contact_phone: string
+          contact_subtitle: string
+          contact_title: string
+          cta_banner_subtitle: string
+          cta_banner_title: string
+          custom_section_image_url: string
+          feature_cards: Json
+          features_list: Json
+          features_subtitle: string
+          features_title: string
+          form_section_subtitle: string
+          form_section_title: string
+          hero_badge: string
+          hero_cta_primary_text: string
+          hero_cta_secondary_text: string
+          hero_headline: string
+          hero_subheadline: string
+          hero_video_id: string
+          hero_video_thumbnail_url: string
+          id: string
+          is_builder_template: boolean
+          logo_url: string
+          name: string
+          personalization_config: Json
+          portfolio_strip_url: string
+          portfolio_videos: Json
+          pricing_subtitle: string
+          pricing_tiers: Json
+          pricing_title: string
+          sections: Json
+          slug: string
+          testimonials: Json
+          testimonials_subtitle: string
+          testimonials_title: string
+          thumbnail_url: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

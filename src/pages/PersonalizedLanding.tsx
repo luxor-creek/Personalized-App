@@ -11,7 +11,7 @@ import PortfolioStrip from "@/components/PortfolioStrip";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
-import { useTemplateContentById, applyPersonalization } from "@/hooks/useTemplateContent";
+import { applyPersonalization, type TemplateContent } from "@/hooks/useTemplateContent";
 
 interface PersonalizedPageData {
   id: string;
@@ -25,15 +25,12 @@ interface PersonalizedPageData {
 const PersonalizedLanding = () => {
   const { token } = useParams<{ token: string }>();
   const [pageData, setPageData] = useState<PersonalizedPageData | null>(null);
+  const [template, setTemplate] = useState<TemplateContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  
-  // Fetch template by ID once we have pageData
-  const { template, loading: templateLoading } = useTemplateContentById(pageData?.template_id || null);
 
   useEffect(() => {
-    const fetchPageData = async () => {
+    const fetchPageAndTemplate = async () => {
       if (!token) {
         setError("Invalid page link");
         setLoading(false);
@@ -41,7 +38,7 @@ const PersonalizedLanding = () => {
       }
 
       try {
-        // Fetch the personalized page data using security definer function
+        // Step 1: Fetch personalized page data (SECURITY DEFINER — works for anon)
         const { data, error: fetchError } = await supabase
           .rpc("get_personalized_page_by_token", { lookup_token: token });
 
@@ -52,14 +49,63 @@ const PersonalizedLanding = () => {
         }
 
         const pageRecord = data[0];
+        const resolvedTemplateId = pageRecord.template_id;
+
         setPageData({
           id: pageRecord.id,
           first_name: pageRecord.first_name,
           last_name: pageRecord.last_name,
           company: pageRecord.company,
           custom_message: pageRecord.custom_message,
-          template_id: pageRecord.template_id,
+          template_id: resolvedTemplateId,
         });
+
+        // Step 2: Fetch template via SECURITY DEFINER function (bypasses RLS for anon visitors)
+        if (resolvedTemplateId) {
+          const { data: templateRows, error: templateError } = await supabase
+            .rpc("get_template_for_public_page", { template_uuid: resolvedTemplateId });
+
+          if (templateError) {
+            console.error("Template fetch error:", templateError);
+          } else if (templateRows && templateRows.length > 0) {
+            const t = templateRows[0];
+            // Runtime assertion: log template resolution for debugging
+            console.log(`[Template Resolution] Page ${pageRecord.id} → template ${t.id} (slug: ${t.slug})`);
+
+            setTemplate({
+              ...t,
+              portfolio_videos: Array.isArray(t.portfolio_videos)
+                ? t.portfolio_videos as TemplateContent["portfolio_videos"]
+                : null,
+              features_list: Array.isArray(t.features_list)
+                ? t.features_list as TemplateContent["features_list"]
+                : null,
+              feature_cards: Array.isArray(t.feature_cards)
+                ? t.feature_cards as TemplateContent["feature_cards"]
+                : null,
+              testimonials: Array.isArray(t.testimonials)
+                ? t.testimonials as TemplateContent["testimonials"]
+                : null,
+              pricing_tiers: Array.isArray(t.pricing_tiers)
+                ? t.pricing_tiers as TemplateContent["pricing_tiers"]
+                : null,
+              comparison_problem_items: Array.isArray(t.comparison_problem_items)
+                ? t.comparison_problem_items as string[]
+                : null,
+              comparison_solution_items: Array.isArray(t.comparison_solution_items)
+                ? t.comparison_solution_items as string[]
+                : null,
+              sections: Array.isArray(t.sections) ? t.sections : null,
+              personalization_config: typeof t.personalization_config === 'object'
+                && t.personalization_config !== null
+                && !Array.isArray(t.personalization_config)
+                ? t.personalization_config as Record<string, boolean>
+                : null,
+            } as TemplateContent);
+          } else {
+            console.warn(`[Template Resolution] No template found for ID ${resolvedTemplateId} — template may not be published`);
+          }
+        }
 
         // Record the page view
         await supabase.from("page_views").insert({
@@ -74,11 +120,10 @@ const PersonalizedLanding = () => {
       }
     };
 
-    fetchPageData();
+    fetchPageAndTemplate();
   }, [token]);
 
-
-  if (loading || templateLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -86,12 +131,16 @@ const PersonalizedLanding = () => {
     );
   }
 
-  if (error) {
+  if (error || !template) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Page Not Found</h1>
-          <p className="text-muted-foreground">{error}</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {error ? "Page Not Found" : "Template Not Published"}
+          </h1>
+          <p className="text-muted-foreground">
+            {error || "This page's template is not currently available."}
+          </p>
         </div>
       </div>
     );
@@ -105,9 +154,9 @@ const PersonalizedLanding = () => {
   };
 
   // Render builder template if applicable
-  if (template?.is_builder_template && Array.isArray(template.sections) && template.sections.length > 0) {
+  if (template.is_builder_template && Array.isArray(template.sections) && template.sections.length > 0) {
     return (
-      <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-white">
+      <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-white">
         {template.sections.map((section: any) => (
           <SectionRenderer
             key={section.id}
@@ -120,63 +169,63 @@ const PersonalizedLanding = () => {
     );
   }
 
-  if (template?.slug?.startsWith("wine-video")) {
+  if (template.slug?.startsWith("wine-video")) {
     return (
-      <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen">
+      <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen">
         <WineVideoPage template={template} personalization={personalizationData} />
       </TemplateAccentProvider>
     );
   }
 
-  // Default: Police Recruitment Template (or B2B Demo - they use similar components)
-  const policeVis = template?.personalization_config || {};
+  // Default: Police Recruitment Template
+  const policeVis = template.personalization_config || {};
   const isPoliceVisible = (key: string) => policeVis[key] !== false;
 
   return (
-    <TemplateAccentProvider accentColor={template?.accent_color} className="min-h-screen bg-background">
+    <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-background">
       <PersonalizedHeroSection 
-        thumbnailUrl={template?.hero_video_thumbnail_url || heroThumbnail}
+        thumbnailUrl={template.hero_video_thumbnail_url || heroThumbnail}
         firstName={pageData?.first_name}
         lastName={pageData?.last_name || undefined}
         company={pageData?.company || undefined}
         customMessage={pageData?.custom_message || undefined}
-        logoUrl={template?.logo_url}
-        badge={template?.hero_badge || undefined}
-        headline={template?.hero_headline || undefined}
-        subheadline={template?.hero_subheadline || undefined}
-        ctaPrimaryText={template?.hero_cta_primary_text || undefined}
-        ctaSecondaryText={template?.hero_cta_secondary_text || undefined}
-        videoId={template?.hero_video_id || undefined}
+        logoUrl={template.logo_url}
+        badge={template.hero_badge || undefined}
+        headline={template.hero_headline || undefined}
+        subheadline={template.hero_subheadline || undefined}
+        ctaPrimaryText={template.hero_cta_primary_text || undefined}
+        ctaSecondaryText={template.hero_cta_secondary_text || undefined}
+        videoId={template.hero_video_id || undefined}
         showHeaderCta={isPoliceVisible("show_header_cta")}
         showCtaSecondary={isPoliceVisible("show_hero_cta_secondary")}
       />
       {isPoliceVisible("show_trust") && (
         <LogoCarousel 
-          imageUrl={template?.client_logos_url || undefined}
-          title={template?.cta_banner_subtitle ? applyPersonalization(template.cta_banner_subtitle, personalizationData) : undefined}
+          imageUrl={template.client_logos_url || undefined}
+          title={template.cta_banner_subtitle ? applyPersonalization(template.cta_banner_subtitle, personalizationData) : undefined}
         />
       )}
       {isPoliceVisible("show_about") && (
         <AboutSection 
-          title={template?.features_title ? applyPersonalization(template.features_title, personalizationData) : undefined}
-          content={template?.about_content ? applyPersonalization(template.about_content, personalizationData) : undefined}
+          title={template.features_title ? applyPersonalization(template.features_title, personalizationData) : undefined}
+          content={template.about_content ? applyPersonalization(template.about_content, personalizationData) : undefined}
         />
       )}
       {isPoliceVisible("show_portfolio_strip") && (
         <PortfolioStrip 
-          imageUrl={template?.portfolio_strip_url || undefined}
+          imageUrl={template.portfolio_strip_url || undefined}
         />
       )}
       {isPoliceVisible("show_contact") && (
         <CTASection 
-          title={template?.contact_title ? applyPersonalization(template.contact_title, personalizationData) : undefined}
-          subtitle={template?.contact_subtitle ? applyPersonalization(template.contact_subtitle, personalizationData) : undefined}
-          contactEmail={template?.contact_email || undefined}
+          title={template.contact_title ? applyPersonalization(template.contact_title, personalizationData) : undefined}
+          subtitle={template.contact_subtitle ? applyPersonalization(template.contact_subtitle, personalizationData) : undefined}
+          contactEmail={template.contact_email || undefined}
           showPrimaryButton={isPoliceVisible("show_contact_cta_primary")}
           showSecondaryButton={isPoliceVisible("show_contact_cta_secondary")}
         />
       )}
-      <Footer logoUrl={template?.logo_url} />
+      <Footer logoUrl={template.logo_url} />
     </TemplateAccentProvider>
   );
 };
