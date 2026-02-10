@@ -1165,6 +1165,11 @@ const Admin = () => {
         .eq("slug", templateSlug)
         .maybeSingle();
       if (tmpl) {
+        // Unlink any personalized pages referencing this template
+        await supabase
+          .from("personalized_pages")
+          .update({ template_id: null })
+          .eq("template_id", tmpl.id);
         // Unlink any campaigns referencing this template
         await supabase
           .from("campaigns")
