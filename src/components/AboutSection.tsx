@@ -58,7 +58,7 @@ const AboutSection = ({
         </>
       );
     }
-    return title;
+    return renderFormattedText(title);
   };
 
   return (
