@@ -69,7 +69,7 @@ const ColorPickerPopover = ({ onSelectColor, onSelectCustomColor }: { onSelectCo
 
   return (
     <Popover>
-      <PopoverTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3">
+      <PopoverTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 h-8 px-3">
         <Palette className="w-4 h-4 mr-1" />
         Color
         <ChevronDown className="w-3 h-3 ml-1" />
@@ -358,35 +358,31 @@ const RichTextEditor = ({
     return (
       <div className={cn("relative", className)}>
         <div className="absolute -inset-2 bg-primary/10 rounded-lg border-2 border-primary border-dashed z-10" />
-        <div className="relative z-20 bg-white rounded-lg shadow-lg p-4">
+        <div className="relative z-20 bg-white text-gray-900 rounded-lg shadow-lg p-4" style={{ color: '#111' }}>
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 mb-3 pb-3 border-b">
-            <Button
+          <div className="flex flex-wrap items-center gap-2 mb-3 pb-3 border-b border-gray-200">
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 px-2"
+              className="inline-flex items-center justify-center h-8 px-2 rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               onClick={() => wrapSelection('**', '**')}
               title="Bold"
             >
               <Bold className="w-4 h-4" />
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 px-2"
+              className="inline-flex items-center justify-center h-8 px-2 rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               onClick={() => wrapSelection('*', '*')}
               title="Italic"
             >
               <Italic className="w-4 h-4" />
-            </Button>
+            </button>
             
-            <div className="w-px h-6 bg-border mx-1" />
+            <div className="w-px h-6 bg-gray-200 mx-1" />
 
             {/* Font Size Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3">
+              <DropdownMenuTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 h-8 px-3">
                 <Type className="w-4 h-4 mr-1" />
                 Size
                 <ChevronDown className="w-3 h-3 ml-1" />
@@ -410,11 +406,11 @@ const RichTextEditor = ({
               onSelectCustomColor={(hex) => applyCustomColor(hex)}
             />
             
-            <div className="w-px h-6 bg-border mx-1" />
+            <div className="w-px h-6 bg-gray-200 mx-1" />
             
             {supportsPersonalization && (
               <Popover>
-                <PopoverTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3">
+                <PopoverTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 h-8 px-3">
                   <Type className="w-4 h-4 mr-1" />
                   Variable
                 </PopoverTrigger>
@@ -444,33 +440,32 @@ const RichTextEditor = ({
             value={editValue}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
-            className="w-full min-h-[200px] p-3 text-base border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full min-h-[200px] p-3 text-base border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             placeholder={placeholder}
           />
           
-          <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            <div className="text-xs text-muted-foreground">
-              Editing: {fieldName} | <kbd className="bg-muted px-1 rounded">Ctrl+Enter</kbd> to save
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+            <div className="text-xs text-gray-500">
+              Editing: {fieldName} | <kbd className="bg-gray-100 text-gray-700 px-1 rounded">Ctrl+Enter</kbd> to save
             </div>
             
             <div className="flex items-center gap-2">
-              <Button
+              <button
                 type="button"
-                size="sm"
-                variant="outline"
+                className="inline-flex items-center h-8 px-3 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                 onClick={handleCancel}
               >
                 <X className="w-4 h-4 mr-1" />
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                size="sm"
+                className="inline-flex items-center h-8 px-3 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"
                 onClick={handleSave}
               >
                 <Check className="w-4 h-4 mr-1" />
                 Save
-              </Button>
+              </button>
             </div>
           </div>
         </div>
