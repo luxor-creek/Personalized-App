@@ -12,6 +12,9 @@ import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
 import { Textarea } from "@/components/ui/textarea";
 import type { User, Session } from "@supabase/supabase-js";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
+import UsageLimitBanner from "@/components/UsageLimitBanner";
+import UpgradeDialog from "@/components/UpgradeDialog";
 import {
   Dialog,
   DialogContent,
@@ -182,6 +185,11 @@ const Admin = () => {
   const [previewTemplateSlug, setPreviewTemplateSlug] = useState<string | null>(null);
   const [liveWarningEditSlug, setLiveWarningEditSlug] = useState<string | null>(null);
   const [liveWarningIsBuilder, setLiveWarningIsBuilder] = useState(false);
+
+  // Usage limits & upgrade dialog
+  const usageLimits = useUsageLimits(user?.id);
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [upgradeResourceType, setUpgradeResourceType] = useState<"page" | "campaign">("campaign");
 
   // Check authentication and admin role
   useEffect(() => {
@@ -431,6 +439,12 @@ const Admin = () => {
   const createCampaign = async () => {
     if (!newCampaignName.trim() || !user || !selectedTemplateId) return;
 
+    // Client-side limit check
+    if (!usageLimits.canCreateCampaign) {
+      setUpgradeResourceType("campaign");
+      setUpgradeDialogOpen(true);
+      return;
+    }
     try {
       // If the selected template is a library template (user_id IS NULL),
       // check if the user has a personal clone and use that instead.
@@ -457,6 +471,7 @@ const Admin = () => {
       setNewCampaignName("");
       setCreateDialogOpen(false);
       fetchCampaigns();
+      usageLimits.refetchLimits();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -526,6 +541,12 @@ const Admin = () => {
 
   const handleCsvUpload = async () => {
     if (!csvFile || !selectedCampaign) return;
+
+    if (!usageLimits.canCreatePage) {
+      setUpgradeResourceType("page");
+      setUpgradeDialogOpen(true);
+      return;
+    }
 
     // Validate file size
     if (csvFile.size > MAX_CSV_SIZE) {
@@ -608,6 +629,7 @@ const Admin = () => {
       setUploadDialogOpen(false);
       fetchPages(selectedCampaign.id);
       fetchCampaigns();
+      usageLimits.refetchLimits();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -621,6 +643,11 @@ const Admin = () => {
 
   const handleGsheetImport = async () => {
     if (!gsheetUrl.trim() || !selectedCampaign) return;
+    if (!usageLimits.canCreatePage) {
+      setUpgradeResourceType("page");
+      setUpgradeDialogOpen(true);
+      return;
+    }
     setImportingGsheet(true);
     try {
       // Extract Google Sheet ID from various URL formats
@@ -692,6 +719,7 @@ const Admin = () => {
       setGsheetDialogOpen(false);
       fetchPages(selectedCampaign.id);
       fetchCampaigns();
+      usageLimits.refetchLimits();
     } catch (error: any) {
       toast({ title: "Import failed", description: error.message, variant: "destructive" });
     } finally {
@@ -733,6 +761,7 @@ const Admin = () => {
       setAddPersonDialogOpen(false);
       fetchPages(selectedCampaign.id);
       fetchCampaigns();
+      usageLimits.refetchLimits();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1216,7 +1245,10 @@ const Admin = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        {/* Usage limit banner */}
+        <UsageLimitBanner {...usageLimits} />
+
         <Tabs defaultValue="landing-pages" className="space-y-6">
           <TabsList>
             <TabsTrigger value="landing-pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -2651,6 +2683,14 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Upgrade Dialog */}
+      <UpgradeDialog
+        open={upgradeDialogOpen}
+        onOpenChange={setUpgradeDialogOpen}
+        resourceType={upgradeResourceType}
+        currentPlan={usageLimits.plan}
+        trialExpired={usageLimits.trialExpired}
+      />
     </div>
   );
 };

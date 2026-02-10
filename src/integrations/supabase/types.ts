@@ -442,9 +442,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          max_campaigns: number | null
+          max_live_pages: number | null
+          max_pages: number | null
+          plan: Database["public"]["Enums"]["subscription_plan"] | null
+          trial_ends_at: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          max_campaigns?: number | null
+          max_live_pages?: number | null
+          max_pages?: number | null
+          plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          max_campaigns?: number | null
+          max_live_pages?: number | null
+          max_pages?: number | null
+          plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      check_usage_limit: {
+        Args: { _resource_type: string; _user_id: string }
+        Returns: boolean
+      }
       get_personalized_page_by_token: {
         Args: { lookup_token: string }
         Returns: {
