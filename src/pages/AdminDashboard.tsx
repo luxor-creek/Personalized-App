@@ -109,6 +109,13 @@ const AdminDashboard = () => {
   const [addingToCampaign, setAddingToCampaign] = useState(false);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
 
+  // Create user
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPlan, setNewUserPlan] = useState("trial");
+  const [creatingUser, setCreatingUser] = useState(false);
+
   // Beta questions
   const [infoRequests, setInfoRequests] = useState<InfoRequest[]>([]);
   const [infoRequestCount, setInfoRequestCount] = useState(0);
@@ -250,6 +257,31 @@ const AdminDashboard = () => {
   const isTrialExpired = (profile: UserProfile) => {
     if (profile.plan !== "trial" || !profile.trial_ends_at) return false;
     return new Date(profile.trial_ends_at) <= new Date();
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUserName.trim() || !newUserEmail.trim()) {
+      toast({ title: "Name and email are required", variant: "destructive" });
+      return;
+    }
+    setCreatingUser(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: { email: newUserEmail.trim(), full_name: newUserName.trim(), plan: newUserPlan },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "User created", description: `Welcome email sent to ${newUserEmail}` });
+      setCreateUserOpen(false);
+      setNewUserName("");
+      setNewUserEmail("");
+      setNewUserPlan("trial");
+      fetchUsers();
+    } catch (err: any) {
+      toast({ title: "Error creating user", description: err.message, variant: "destructive" });
+    } finally {
+      setCreatingUser(false);
+    }
   };
 
   // Internal user number is based on creation order (ascending)
@@ -669,6 +701,9 @@ const AdminDashboard = () => {
                 <h2 className="text-2xl font-bold text-foreground">Users</h2>
                 <p className="text-muted-foreground">Manage users, plans, and trials. Select users to add to a campaign.</p>
               </div>
+              <Button onClick={() => setCreateUserOpen(true)}>
+                <UserPlus className="w-4 h-4 mr-2" />Create User
+              </Button>
             </div>
 
             {loadingUsers ? (
@@ -861,6 +896,63 @@ const AdminDashboard = () => {
 
             <Button onClick={addSelectedToCampaign} className="w-full" disabled={addingToCampaign || !selectedCampaignId}>
               {addingToCampaign ? "Adding..." : `Add ${selectedUserIds.size} User(s)`}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>
+              The user will receive a welcome email with a link to set their password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+                placeholder="Jane Smith"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+                placeholder="jane@company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Plan</Label>
+              <Select value={newUserPlan} onValueChange={setNewUserPlan}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="trial">Trial (14-day free trial)</SelectItem>
+                  <SelectItem value="starter">Starter ($29/mo)</SelectItem>
+                  <SelectItem value="pro">Pro ($59/mo)</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="bg-muted rounded-lg p-3 text-sm">
+              <p className="font-medium text-foreground mb-1">What happens:</p>
+              <ul className="text-muted-foreground space-y-1 text-xs list-disc list-inside">
+                <li>Account created with the selected plan</li>
+                <li>Welcome email sent with a link to set password</li>
+                {newUserPlan === "trial" && <li>14-day trial starts immediately</li>}
+                {newUserPlan !== "trial" && <li>Full {newUserPlan} plan access granted immediately</li>}
+              </ul>
+            </div>
+            <Button onClick={handleCreateUser} className="w-full" disabled={creatingUser}>
+              {creatingUser ? "Creating..." : "Create User & Send Welcome Email"}
             </Button>
           </div>
         </DialogContent>
