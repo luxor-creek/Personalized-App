@@ -135,6 +135,7 @@ const RichTextEditor = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value || "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const savedSelectionRef = useRef<{ start: number; end: number } | null>(null);
 
   // Sync editValue when value prop changes (from database load or external update)
   useEffect(() => {
@@ -202,37 +203,46 @@ const RichTextEditor = ({
     }
   };
 
-  const applyFormatMarker = (marker: string) => {
+  // Save selection whenever textarea selection changes (before popover steals focus)
+  const saveSelection = () => {
     const textarea = textareaRef.current;
     if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = editValue.substring(start, end);
-      if (selectedText) {
-        const closeMarker = marker.replace("[[", "[[/");
-        const newValue = editValue.substring(0, start) + marker + selectedText + closeMarker + editValue.substring(end);
-        setEditValue(newValue);
-      }
-      setTimeout(() => {
-        textarea.focus();
-      }, 0);
+      savedSelectionRef.current = { start: textarea.selectionStart, end: textarea.selectionEnd };
     }
   };
 
-  const applyCustomColor = (hex: string) => {
+  const getSelection = () => {
     const textarea = textareaRef.current;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = editValue.substring(start, end);
-      if (selectedText) {
-        const newValue = editValue.substring(0, start) + `[[color:${hex}]]` + selectedText + `[[/color:${hex}]]` + editValue.substring(end);
-        setEditValue(newValue);
-      }
-      setTimeout(() => {
-        textarea.focus();
-      }, 0);
+    // If textarea still has focus, use live selection; otherwise use saved
+    if (textarea && document.activeElement === textarea) {
+      return { start: textarea.selectionStart, end: textarea.selectionEnd };
     }
+    return savedSelectionRef.current || { start: 0, end: 0 };
+  };
+
+  const applyFormatMarker = (marker: string) => {
+    const { start, end } = getSelection();
+    const selectedText = editValue.substring(start, end);
+    if (selectedText) {
+      const closeMarker = marker.replace("[[", "[[/");
+      const newValue = editValue.substring(0, start) + marker + selectedText + closeMarker + editValue.substring(end);
+      setEditValue(newValue);
+    }
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
+  };
+
+  const applyCustomColor = (hex: string) => {
+    const { start, end } = getSelection();
+    const selectedText = editValue.substring(start, end);
+    if (selectedText) {
+      const newValue = editValue.substring(0, start) + `[[color:${hex}]]` + selectedText + `[[/color:${hex}]]` + editValue.substring(end);
+      setEditValue(newValue);
+    }
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -447,6 +457,8 @@ const RichTextEditor = ({
             value={editValue}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
+            onSelect={saveSelection}
+            onBlur={saveSelection}
             className="w-full min-h-[200px] p-3 text-base border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             placeholder={placeholder}
           />
