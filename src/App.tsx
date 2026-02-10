@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import PersonalizedLanding from "./pages/PersonalizedLanding";
-import B2BDemo from "./pages/B2BDemo";
+
 import TemplateEditor from "./pages/TemplateEditor";
 import WineVideoTemplate from "./pages/WineVideoTemplate";
 import BuilderPage from "./pages/BuilderPage";
@@ -35,7 +35,7 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/admin/edit/:slug" element={<TemplateEditor />} />
-          <Route path="/b2b-demo" element={<B2BDemo />} />
+          
           <Route path="/wine-video" element={<WineVideoTemplate />} />
           <Route path="/view/:token" element={<PersonalizedLanding />} />
           <Route path="/template-editor/:slug" element={<TemplateEditor />} />
