@@ -2522,7 +2522,7 @@ const Admin = () => {
                 <strong>"{liveWarningTemplateName}"</strong> is currently being used by an active campaign with live personalized links.
               </p>
               <p>
-                Any edits you make to this template will <strong>immediately update all live links</strong> sent to your contacts.
+                Any edits you make to this template could <strong>break the live Personalized Page links</strong> that have already been sent to your contacts.
               </p>
               <p className="text-amber-700 font-medium">
                 To edit safely, clone this template first and edit the clone instead. Then use the clone for future campaigns.

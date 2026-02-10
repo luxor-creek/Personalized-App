@@ -196,7 +196,7 @@ const TemplateEditor = () => {
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800">
               <p>
-                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
+                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live Personalized Page links. Any changes you save could break those live links.
               </p>
               <p className="mt-1 text-amber-700">
                 To edit safely, go back and clone this template first — then edit the clone instead.
@@ -805,7 +805,7 @@ const TemplateEditor = () => {
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800">
               <p>
-                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
+                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live Personalized Page links. Any changes you save could break those live links.
               </p>
               <p className="mt-1 text-amber-700">
                 To edit safely, go back and clone this template first — then edit the clone instead.
@@ -1228,7 +1228,7 @@ const TemplateEditor = () => {
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800">
               <p>
-                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live personalized links. Any changes you save will immediately update those links.
+                <strong>Heads up:</strong> This template is used by {activeCampaignCount} active campaign{activeCampaignCount > 1 ? 's' : ''} with live Personalized Page links. Any changes you save could break those live links.
               </p>
               <p className="mt-1 text-amber-700">
                 To edit safely, go back and clone this template first — then edit the clone instead.
