@@ -1342,9 +1342,10 @@ const Admin = () => {
                             size="sm"
                             onClick={() => forceDuplicateTemplate(t.slug)}
                             disabled={duplicating === t.slug}
-                            title="Duplicate"
+                            title="Copy as New"
                           >
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-4 h-4 mr-1" />
+                            {duplicating === t.slug ? "Copying..." : "Copy as New"}
                           </Button>
                           <Button
                             variant="outline"
