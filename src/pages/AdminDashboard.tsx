@@ -280,8 +280,9 @@ const AdminDashboard = () => {
           send_email: newUserSendEmail,
         },
       });
-      if (error) throw error;
+      // data?.error contains the real message even on non-2xx responses
       if (data?.error) throw new Error(data.error);
+      if (error) throw new Error(error.message || "Failed to create user");
       if (data?.email_error) {
         toast({ title: "User created, but invite email failed", description: data.email_error, variant: "destructive" });
       } else if (newUserSendEmail) {
