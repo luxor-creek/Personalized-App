@@ -25,6 +25,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -187,6 +197,10 @@ const Admin = () => {
   const [showCampaignAnalytics, setShowCampaignAnalytics] = useState(false);
   const [liveWarningEditSlug, setLiveWarningEditSlug] = useState<string | null>(null);
   const [liveWarningIsBuilder, setLiveWarningIsBuilder] = useState(false);
+
+  // Delete campaign confirmation
+  const [deleteCampaignDialogOpen, setDeleteCampaignDialogOpen] = useState(false);
+  const [deleteCampaignId, setDeleteCampaignId] = useState<string | null>(null);
 
   // Usage limits & upgrade dialog
   const usageLimits = useUsageLimits(user?.id);
@@ -486,11 +500,12 @@ const Admin = () => {
     }
   };
 
-  const deleteCampaign = async (campaignId: string) => {
-    if (!confirm("Are you sure? This will delete all personalized pages in this campaign.")) {
-      return;
-    }
+  const confirmDeleteCampaign = (campaignId: string) => {
+    setDeleteCampaignId(campaignId);
+    setDeleteCampaignDialogOpen(true);
+  };
 
+  const deleteCampaign = async (campaignId: string) => {
     try {
       const { error } = await supabase
         .from("campaigns")
@@ -1671,9 +1686,9 @@ const Admin = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={(e) => {
+                            onClick={(e) => {
                             e.stopPropagation();
-                            deleteCampaign(campaign.id);
+                            confirmDeleteCampaign(campaign.id);
                           }}
                         >
                           <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
@@ -2695,6 +2710,29 @@ const Admin = () => {
         currentPlan={usageLimits.plan}
         trialExpired={usageLimits.trialExpired}
       />
+      {/* Delete Campaign Confirmation */}
+      <AlertDialog open={deleteCampaignDialogOpen} onOpenChange={setDeleteCampaignDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this campaign?</AlertDialogTitle>
+            <AlertDialogDescription>
+              There is no recovery after you delete.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteCampaignDialogOpen(false)}>No</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteCampaignId) deleteCampaign(deleteCampaignId);
+                setDeleteCampaignDialogOpen(false);
+              }}
+            >
+              Delete Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
