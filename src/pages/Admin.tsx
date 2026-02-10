@@ -1233,7 +1233,7 @@ const Admin = () => {
                 Templates you've cloned and customized for your campaigns.
               </p>
 
-              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Build from scratch card */}
                 <Link to="/builder" className="group bg-card rounded-xl border border-dashed border-primary/30 overflow-hidden hover:border-primary transition-all hover:shadow-lg">
                   <div className="aspect-video bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
