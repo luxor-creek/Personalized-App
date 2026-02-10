@@ -74,7 +74,7 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
   } ${isSelected ? 'outline outline-2 outline-primary ring-2 ring-primary/20' : ''}`;
 
   // Sections that already have their own button logic
-  const sectionsWithOwnButtons = ['hero', 'heroBg', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing'];
+  const sectionsWithOwnButtons = ['hero', 'heroBg', 'heroVideoBg', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing'];
 
   const renderOptionalButton = () => {
     if (sectionsWithOwnButtons.includes(type)) return null;
@@ -272,6 +272,41 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
             </div>
           </div>
         );
+
+      case 'heroVideoBg': {
+        const bgVideoUrl = content.videoUrl || '';
+        const isDirectVideo = bgVideoUrl && (bgVideoUrl.endsWith('.mp4') || bgVideoUrl.endsWith('.webm') || bgVideoUrl.endsWith('.ogg') || bgVideoUrl.includes('.mp4') || bgVideoUrl.includes('.webm'));
+        return (
+          <div style={{ ...containerStyle, position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', alignItems: 'center' }}>
+            {bgVideoUrl && isDirectVideo && (
+              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover">
+                <source src={bgVideoUrl} />
+              </video>
+            )}
+            {bgVideoUrl && !isDirectVideo && (() => {
+              const vimeoMatch = bgVideoUrl.match(/(?:vimeo\.com\/)(\d+)/);
+              const vimeoId = vimeoMatch ? vimeoMatch[1] : (/^\d+$/.test(bgVideoUrl) ? bgVideoUrl : null);
+              const ytMatch = bgVideoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+              if (vimeoId) return <iframe src={`https://player.vimeo.com/video/${vimeoId}?background=1&autoplay=1&loop=1&byline=0&title=0&muted=1`} className="absolute inset-0 w-full h-full border-0" style={{ transform: 'scale(1.2)' }} allow="autoplay; fullscreen" />;
+              if (ytMatch) return <iframe src={`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0&showinfo=0&rel=0&modestbranding=1`} className="absolute inset-0 w-full h-full border-0" style={{ transform: 'scale(1.2)' }} allow="autoplay; fullscreen" />;
+              return null;
+            })()}
+            {!bgVideoUrl && (
+              <div className="absolute inset-0 bg-muted flex items-center justify-center text-muted-foreground text-sm">Paste a video URL in properties</div>
+            )}
+            <div className="absolute inset-0" style={{ backgroundColor: style.overlayColor || '#000000', opacity: style.overlayOpacity ?? 0.5 }} />
+            <div style={{ ...innerStyle, maxWidth: '1100px', textAlign: style.textAlign as any || 'center', position: 'relative', zIndex: 1, width: '100%' }}>
+              {content.heroBadge && <span className="inline-block rounded-full px-4 py-1 text-xs font-semibold mb-6" style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: style.textColor || '#ffffff' }}>{content.heroBadge}</span>}
+              <h1 style={{ ...textStyle, lineHeight: 1.1, marginBottom: '24px' }}>{applyPersonalization(content.text, personalization)}</h1>
+              {content.heroSubheadline && <p style={{ color: style.textColor, opacity: 0.85, fontSize: '20px', maxWidth: '700px', margin: '0 auto 40px', lineHeight: 1.6 }}>{applyPersonalization(content.heroSubheadline, personalization)}</p>}
+              <div className="flex gap-4 justify-center flex-wrap">
+                {content.buttonText && !content.hideButton && <a href={content.buttonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold transition-all hover:opacity-90" style={{ backgroundColor: style.buttonColor, color: style.buttonTextColor }}>{content.buttonText}</a>}
+                {content.secondaryButtonText && !content.hideSecondaryButton && <a href={content.secondaryButtonLink || '#'} className="inline-flex items-center justify-center rounded-lg px-8 py-3 font-semibold border-2 transition-all hover:opacity-90" style={{ borderColor: style.secondaryButtonTextColor, color: style.secondaryButtonTextColor }}>{content.secondaryButtonText}</a>}
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       case 'heroVideo': {
         const embedUrl = parseVideoUrl(content.videoUrl || content.videoId || '');

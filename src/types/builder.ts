@@ -14,6 +14,7 @@ export type SectionType =
   | 'heroImage'
   | 'heroForm'
   | 'heroBg'
+  | 'heroVideoBg'
   | 'features'
   | 'testimonials'
   | 'pricing'
@@ -252,6 +253,13 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     category: 'Layout',
     content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New', imageUrl: '' },
     style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '96px', textAlign: 'center', fontSize: '56px', fontWeight: 'bold', buttonColor: '#6d54df', buttonTextColor: '#ffffff', secondaryButtonColor: 'transparent', secondaryButtonTextColor: '#ffffff', overlayColor: '#6d54df', overlayOpacity: 0.6 },
+  },
+  heroVideoBg: {
+    label: 'Hero: Video BG + Headline',
+    icon: 'Play',
+    category: 'Layout',
+    content: { text: 'Build Something Amazing', heroSubheadline: 'The all-in-one platform to launch your next big idea.', videoUrl: '', buttonText: 'Get Started', buttonLink: '#', secondaryButtonText: 'Learn More', secondaryButtonLink: '#', heroBadge: 'New' },
+    style: { backgroundColor: '#0f172a', textColor: '#ffffff', paddingY: '96px', textAlign: 'center', fontSize: '56px', fontWeight: 'bold', buttonColor: '#6d54df', buttonTextColor: '#ffffff', secondaryButtonColor: 'transparent', secondaryButtonTextColor: '#ffffff', overlayColor: '#000000', overlayOpacity: 0.5 },
   },
   heroVideo: {
     label: 'Hero: Text + Video',
