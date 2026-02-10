@@ -1,0 +1,1 @@
+ALTER TABLE public.landing_page_templates ADD COLUMN IF NOT EXISTS form_steps jsonb DEFAULT NULL;

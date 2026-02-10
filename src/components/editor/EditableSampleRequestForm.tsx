@@ -2,12 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import RichTextEditor from "./RichTextEditor";
+import EditableText from "./EditableText";
+
+interface FormStep {
+  title: string;
+  description: string;
+}
+
+const DEFAULT_STEPS: FormStep[] = [
+  { title: "Submit your request", description: "Tell us about your project and timeline." },
+  { title: "We reach out", description: "Our team will contact you to discuss details." },
+  { title: "Get your video", description: "Receive a professional video tailored to your needs." },
+];
 
 interface EditableSampleRequestFormProps {
   formTitle: string;
   formSubtitle: string;
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
+  formSteps?: FormStep[];
+  onStepsChange?: (steps: FormStep[]) => void;
 }
 
 const EditableSampleRequestForm = ({
@@ -15,7 +29,17 @@ const EditableSampleRequestForm = ({
   formSubtitle,
   onTitleChange,
   onSubtitleChange,
+  formSteps,
+  onStepsChange,
 }: EditableSampleRequestFormProps) => {
+  const steps = formSteps && formSteps.length > 0 ? formSteps : DEFAULT_STEPS;
+
+  const updateStep = (index: number, field: keyof FormStep, value: string) => {
+    if (!onStepsChange) return;
+    const current = formSteps && formSteps.length > 0 ? [...formSteps] : [...DEFAULT_STEPS];
+    current[index] = { ...current[index], [field]: value };
+    onStepsChange(current);
+  };
   return (
     <section id="contact-form" className="py-20 px-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
@@ -42,30 +66,26 @@ const EditableSampleRequestForm = ({
             </div>
 
             <div className="space-y-8">
-              {[
-                { 
-                  number: 1, 
-                  title: "Submit your request", 
-                  description: "Tell us about your project and timeline." 
-                },
-                { 
-                  number: 2, 
-                  title: "We reach out", 
-                  description: "Our team will contact you to discuss details." 
-                },
-                { 
-                  number: 3, 
-                  title: "Get your video", 
-                  description: "Receive a professional video tailored to your needs." 
-                },
-              ].map((step) => (
-                <div key={step.number} className="flex items-start gap-4">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center flex-shrink-0">
-                    {step.number}
+                    {index + 1}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-1">{step.title}</h3>
-                    <p className="text-muted-foreground text-sm">{step.description}</p>
+                    <h3 className="font-semibold text-foreground mb-1">
+                      <EditableText
+                        value={step.title}
+                        onChange={(value) => updateStep(index, "title", value)}
+                        fieldName={`Step ${index + 1} Title`}
+                      />
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      <EditableText
+                        value={step.description}
+                        onChange={(value) => updateStep(index, "description", value)}
+                        fieldName={`Step ${index + 1} Description`}
+                      />
+                    </p>
                   </div>
                 </div>
               ))}

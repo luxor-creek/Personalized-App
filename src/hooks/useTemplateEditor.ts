@@ -50,6 +50,7 @@ export interface TemplateData {
   logo_url: string | null;
   user_id: string | null;
   accent_color: string | null;
+  form_steps: { title: string; description: string }[];
 }
 
 export function useTemplateEditor(slug: string | undefined) {
@@ -129,6 +130,7 @@ export function useTemplateEditor(slug: string | undefined) {
           logo_url: (data as any).logo_url ?? null,
           user_id: (data as any).user_id ?? null,
           accent_color: (data as any).accent_color ?? null,
+          form_steps: Array.isArray((data as any).form_steps) ? (data as any).form_steps : [],
         };
 
         setTemplate(templateData);
@@ -210,6 +212,7 @@ export function useTemplateEditor(slug: string | undefined) {
           form_section_subtitle: template.form_section_subtitle,
           logo_url: template.logo_url,
           accent_color: template.accent_color,
+          form_steps: template.form_steps,
         } as any)
         .eq("id", template.id)
         .select();

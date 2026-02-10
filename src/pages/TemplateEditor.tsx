@@ -773,6 +773,8 @@ const TemplateEditor = () => {
             formSubtitle={template.form_section_subtitle ?? "See what Kicker can do with your content. We'll generate a sample video from your existing page—no creative brief required."}
             onTitleChange={(value) => updateField("form_section_title", value)}
             onSubtitleChange={(value) => updateField("form_section_subtitle", value)}
+            formSteps={template.form_steps}
+            onStepsChange={(steps) => updateField("form_steps", steps)}
           />
 
           {/* Final CTA Section */}
@@ -1279,6 +1281,8 @@ const TemplateEditor = () => {
             formSubtitle={template.form_section_subtitle || "See what Kicker can do with your content. We'll generate a sample video from your existing page—no creative brief required."}
             onTitleChange={(value) => updateField("form_section_title", value)}
             onSubtitleChange={(value) => updateField("form_section_subtitle", value)}
+            formSteps={template.form_steps}
+            onStepsChange={(steps) => updateField("form_steps", steps)}
           />
 
           {/* Footer */}

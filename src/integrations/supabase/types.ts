@@ -94,6 +94,7 @@ export type Database = {
           features_title: string | null
           form_section_subtitle: string | null
           form_section_title: string | null
+          form_steps: Json | null
           hero_badge: string | null
           hero_cta_primary_text: string | null
           hero_cta_secondary_text: string | null
@@ -143,6 +144,7 @@ export type Database = {
           features_title?: string | null
           form_section_subtitle?: string | null
           form_section_title?: string | null
+          form_steps?: Json | null
           hero_badge?: string | null
           hero_cta_primary_text?: string | null
           hero_cta_secondary_text?: string | null
@@ -192,6 +194,7 @@ export type Database = {
           features_title?: string | null
           form_section_subtitle?: string | null
           form_section_title?: string | null
+          form_steps?: Json | null
           hero_badge?: string | null
           hero_cta_primary_text?: string | null
           hero_cta_secondary_text?: string | null
