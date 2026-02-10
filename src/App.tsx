@@ -14,6 +14,8 @@ import TemplateEditor from "./pages/TemplateEditor";
 import WineVideoTemplate from "./pages/WineVideoTemplate";
 import BuilderPage from "./pages/BuilderPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import Pricing from "./pages/Pricing";
+import Billing from "./pages/Billing";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/billing" element={<Billing />} />
           <Route path="/admin/edit/:slug" element={<TemplateEditor />} />
           <Route path="/b2b-demo" element={<B2BDemo />} />
           <Route path="/wine-video" element={<WineVideoTemplate />} />
