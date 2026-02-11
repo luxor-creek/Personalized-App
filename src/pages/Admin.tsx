@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
@@ -14,6 +14,7 @@ import TemplateMiniPreview from "@/components/admin/TemplateMiniPreview";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
 import AICsvMapper from "@/components/admin/AICsvMapper";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import type { User, Session } from "@supabase/supabase-js";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
 import UsageLimitBanner from "@/components/UsageLimitBanner";
@@ -65,6 +66,7 @@ interface Campaign {
   created_at: string;
   page_count?: number;
   view_count?: number;
+  alert_on_view?: boolean;
 }
 
 interface LandingPageTemplate {
@@ -209,6 +211,11 @@ const Admin = () => {
   const usageLimits = useUsageLimits(user?.id);
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeResourceType, setUpgradeResourceType] = useState<"page" | "campaign">("campaign");
+
+  // Email alert toggle
+  const [alertConfirmDialogOpen, setAlertConfirmDialogOpen] = useState(false);
+  const [alertConfirmCampaign, setAlertConfirmCampaign] = useState<Campaign | null>(null);
+  const [ownerEmail, setOwnerEmail] = useState<string>("");
 
   // Check authentication and admin role
   useEffect(() => {
@@ -861,6 +868,37 @@ const Admin = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  const handleAlertToggle = (campaign: Campaign) => {
+    if (campaign.alert_on_view) {
+      // Turning off — no confirmation needed
+      toggleAlertOnView(campaign, false);
+    } else {
+      // Turning on — show confirmation dialog
+      setAlertConfirmCampaign(campaign);
+      setOwnerEmail(user?.email || "");
+      setAlertConfirmDialogOpen(true);
+    }
+  };
+
+  const toggleAlertOnView = async (campaign: Campaign, newValue: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("campaigns")
+        .update({ alert_on_view: newValue })
+        .eq("id", campaign.id);
+      if (error) throw error;
+
+      // Update local state
+      setCampaigns(prev => prev.map(c => c.id === campaign.id ? { ...c, alert_on_view: newValue } : c));
+      if (selectedCampaign?.id === campaign.id) {
+        setSelectedCampaign(prev => prev ? { ...prev, alert_on_view: newValue } : prev);
+      }
+      toast({ title: newValue ? "Email alerts enabled" : "Email alerts disabled" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
@@ -1627,9 +1665,21 @@ const Admin = () => {
                     <div className="space-y-6">
                     {/* Campaign Header */}
                     <div className="bg-card rounded-lg border border-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {selectedCampaign.name}
-                      </h3>
+                      <div className="flex items-center gap-4">
+                        <h3 className="text-xl font-semibold text-foreground">
+                          {selectedCampaign.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!!selectedCampaign.alert_on_view}
+                            onCheckedChange={() => handleAlertToggle(selectedCampaign)}
+                          />
+                          <Label className="text-sm text-muted-foreground flex items-center gap-1 cursor-pointer" onClick={() => handleAlertToggle(selectedCampaign)}>
+                            <Bell className="w-3.5 h-3.5" />
+                            Email Alerts
+                          </Label>
+                        </div>
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {pages.length > 0 && (
                           <>
@@ -2653,6 +2703,41 @@ const Admin = () => {
               }}
             >
               Delete Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Email Alert Confirmation Dialog */}
+      <AlertDialog open={alertConfirmDialogOpen} onOpenChange={setAlertConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" />
+              Enable Email Alerts
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3 pt-2">
+              <p>
+                You will receive an email when someone clicks on a link in{" "}
+                <span className="font-semibold text-foreground">{alertConfirmCampaign?.name}</span>{" "}
+                (with prospect name, company, email, and campaign name).
+              </p>
+              <p>
+                Alerts will be sent to:{" "}
+                <span className="font-semibold text-foreground">{ownerEmail}</span>
+              </p>
+              <p>Proceed?</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (alertConfirmCampaign) toggleAlertOnView(alertConfirmCampaign, true);
+                setAlertConfirmDialogOpen(false);
+              }}
+            >
+              Yes
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
