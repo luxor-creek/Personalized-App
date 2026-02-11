@@ -212,16 +212,12 @@ const BuilderPage = () => {
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">{sections.length} sections</span>
-          <AIPageGenerator onGenerate={(newSections) => {
-            setSections(newSections);
-            setSelectedSectionId(null);
-          }} />
           {isMobile && (
             <Button variant="outline" size="sm" onClick={() => setPaletteOpen(true)}>
               <Plus className="w-4 h-4" />
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={saveTemplate} disabled={saving}>
+          <Button size="sm" onClick={saveTemplate} disabled={saving}>
             <Save className="w-4 h-4 sm:mr-1" />
             <span className="hidden sm:inline">{saving ? "Saving..." : "Save"}</span>
           </Button>
