@@ -22,6 +22,7 @@ const BuilderPage = () => {
   const [templateName, setTemplateName] = useState("Untitled Page");
   const [templateSlug, setTemplateSlug] = useState("");
   const [sections, setSections] = useState<BuilderSection[]>([]);
+  const [manualModeActive, setManualModeActive] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!slug);
@@ -229,8 +230,8 @@ const BuilderPage = () => {
 
       {/* Main area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Section Palette - hidden on mobile, shown via sheet */}
-        {!isMobile && <SectionPalette onAddSection={addSection} />}
+        {/* Left: Section Palette - hidden on mobile and when chooser is shown */}
+        {!isMobile && (manualModeActive || sections.length > 0) && <SectionPalette onAddSection={addSection} />}
 
         {/* Center: Canvas */}
         <BuilderCanvas
@@ -240,6 +241,12 @@ const BuilderPage = () => {
           onMoveSection={moveSection}
           onDeleteSection={deleteSection}
           onDuplicateSection={duplicateSection}
+          onAIGenerate={(newSections) => {
+            setSections(newSections);
+            setSelectedSectionId(null);
+          }}
+          manualModeActive={manualModeActive}
+          onStartManual={() => setManualModeActive(true)}
         />
 
         {/* Right: Properties Panel - inline on desktop, sheet on mobile */}

@@ -41,7 +41,13 @@ Each section has:
 - content: object with the fields above
 - style: object with backgroundColor (hex), textColor (hex), paddingY (e.g. "64px"), fontSize, fontWeight, textAlign, buttonColor, buttonTextColor, maxWidth, accentColor
 
-Generate 5-8 sections that create a compelling landing page. Use colors that fit the brand/industry. Make copy specific to the business described, not generic. Use personalization tokens like {{first_name}} and {{company}} in the headline and subheadline where it makes sense for outreach.
+Generate 5-8 sections that create a compelling landing page. Make copy specific to the business described, not generic. Use personalization tokens like {{first_name}} and {{company}} in the headline and subheadline where it makes sense for outreach.
+
+IMPORTANT COLOR RULES:
+- NEVER use black, dark gray, or any dark colors (e.g. #000000, #111111, #1a1a1a, #222222, #333333) as backgroundColor for ANY section.
+- Use light, bright, or medium-tone backgrounds only (whites, light grays, pastels, soft brand colors).
+- Ensure all text colors have strong contrast against the background.
+- Button colors should be vibrant and clearly visible against the section background.
 
 Return ONLY a valid JSON array, no markdown, no explanation.`;
 
