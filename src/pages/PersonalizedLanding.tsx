@@ -112,6 +112,11 @@ const PersonalizedLanding = () => {
           personalized_page_id: pageRecord.id,
           user_agent: navigator.userAgent,
         });
+
+        // Send real-time email alert to campaign owner (fire-and-forget)
+        supabase.functions.invoke("notify-page-view", {
+          body: { personalized_page_id: pageRecord.id },
+        }).catch((err) => console.error("Alert notification failed:", err));
       } catch (err) {
         console.error("Error fetching page:", err);
         setError("Something went wrong");

@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.ai-map-csv]
 verify_jwt = false
+
+[functions.notify-page-view]
+verify_jwt = false
