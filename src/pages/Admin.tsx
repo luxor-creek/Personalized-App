@@ -12,6 +12,7 @@ import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
 import TemplateMiniPreview from "@/components/admin/TemplateMiniPreview";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
+import AICsvMapper from "@/components/admin/AICsvMapper";
 import { Textarea } from "@/components/ui/textarea";
 import type { User, Session } from "@supabase/supabase-js";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
@@ -1965,27 +1966,35 @@ const Admin = () => {
                                     Upload CSV
                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent>
+                                <DialogContent className="sm:max-w-lg">
                                   <DialogHeader>
                                     <DialogTitle>Upload CSV</DialogTitle>
                                     <DialogDescription>
-                                      Upload a CSV file with columns: first_name (required), last_name, company, email, custom_message
+                                      Upload any CSV file — AI will auto-detect and map your columns.
                                     </DialogDescription>
                                   </DialogHeader>
-                                  <div className="space-y-4 pt-4">
-                                    <Input
-                                      type="file"
-                                      accept=".csv"
-                                      onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-                                    />
-                                    <Button
-                                      onClick={handleCsvUpload}
-                                      disabled={!csvFile || uploading}
-                                      className="w-full"
-                                    >
-                                      {uploading ? "Uploading..." : "Upload & Create Pages"}
-                                    </Button>
-                                  </div>
+                                  <AICsvMapper
+                                    onMappedUpload={async (rows) => {
+                                      if (!selectedCampaign) return;
+                                      const pagesToCreate = rows.map((r) => ({
+                                        campaign_id: selectedCampaign.id,
+                                        template_id: selectedCampaign.template_id,
+                                        ...r,
+                                      }));
+                                      const { error } = await supabase
+                                        .from("personalized_pages")
+                                        .insert(pagesToCreate);
+                                      if (error) throw error;
+                                      toast({
+                                        title: "Success!",
+                                        description: `Created ${pagesToCreate.length} personalized pages`,
+                                      });
+                                      setUploadDialogOpen(false);
+                                      fetchPages(selectedCampaign.id);
+                                      fetchCampaigns();
+                                      usageLimits.refetchLimits();
+                                    }}
+                                  />
                                 </DialogContent>
                               </Dialog>
 

@@ -26,3 +26,12 @@ verify_jwt = false
 
 [functions.send-trial-reminders]
 verify_jwt = false
+
+[functions.ai-generate-page]
+verify_jwt = false
+
+[functions.ai-rewrite-copy]
+verify_jwt = false
+
+[functions.ai-map-csv]
+verify_jwt = false

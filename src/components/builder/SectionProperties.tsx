@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import VariableInsert from "./VariableInsert";
+import AICopywriterButton from "./AICopywriterButton";
 
 // Track the last focused input/textarea and cursor position
 let lastFocusedInput: HTMLInputElement | HTMLTextAreaElement | null = null;
@@ -152,7 +153,14 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
       case 'body':
         return (
           <div className="space-y-2">
-            <VarLabel label="Text" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} />
+            <div className="flex items-center justify-between">
+              <VarLabel label="Text" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} />
+              <AICopywriterButton
+                text={section.content.text || ''}
+                sectionType={section.type}
+                onRewrite={(newText) => updateContent({ text: newText })}
+              />
+            </div>
             <Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={section.type === 'body' ? 6 : 2} className="resize-none" />
             <div className="space-y-1">
               <Label className="text-xs">Text Size</Label>

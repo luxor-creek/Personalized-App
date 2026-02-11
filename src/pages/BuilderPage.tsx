@@ -6,6 +6,7 @@ import { BuilderSection, SECTION_DEFAULTS, SectionType } from "@/types/builder";
 import SectionPalette from "@/components/builder/SectionPalette";
 import SectionProperties from "@/components/builder/SectionProperties";
 import BuilderCanvas from "@/components/builder/BuilderCanvas";
+import AIPageGenerator from "@/components/builder/AIPageGenerator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Save, Pencil, Plus, Settings2 } from "lucide-react";
@@ -210,6 +211,10 @@ const BuilderPage = () => {
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">{sections.length} sections</span>
+          <AIPageGenerator onGenerate={(newSections) => {
+            setSections(newSections);
+            setSelectedSectionId(null);
+          }} />
           {isMobile && (
             <Button variant="outline" size="sm" onClick={() => setPaletteOpen(true)}>
               <Plus className="w-4 h-4" />
