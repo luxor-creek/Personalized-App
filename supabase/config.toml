@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.notify-page-view]
 verify_jwt = false
+
+[functions.snov-enrich-linkedin]
+verify_jwt = false
