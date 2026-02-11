@@ -10,6 +10,7 @@ import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pen
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
+import TemplateMiniPreview from "@/components/admin/TemplateMiniPreview";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
 import { Textarea } from "@/components/ui/textarea";
 import type { User, Session } from "@supabase/supabase-js";
@@ -1311,53 +1312,7 @@ const Admin = () => {
                         {t.thumbnail_url ? (
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full relative overflow-hidden">
-                            {/* Scaled-down full-page preview */}
-                            <div className="absolute inset-0 origin-top-left" style={{ transform: 'scale(0.35)', width: '286%', height: '286%' }}>
-                              {/* Hero */}
-                              <div className="relative h-[45%] bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-6 flex flex-col">
-                                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-                                <div className="relative z-10 flex items-center justify-between mb-4">
-                                  {t.logo_url ? <img src={t.logo_url} alt="" className="h-6 object-contain opacity-80" /> : <div className="h-5 w-20 rounded bg-white/10" />}
-                                  <div className="h-7 px-4 rounded-full bg-primary flex items-center"><span className="text-[10px] text-white font-semibold">Get in Touch</span></div>
-                                </div>
-                                <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center gap-2">
-                                  {t.hero_badge && <span className="text-[9px] text-primary font-semibold uppercase tracking-widest">{t.hero_badge.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</span>}
-                                  <h4 className="text-[16px] font-bold text-white leading-snug max-w-[90%] line-clamp-2">{(t.hero_headline || t.name).replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</h4>
-                                  {t.hero_subheadline && <p className="text-[10px] text-white/50 max-w-[80%] line-clamp-2">{t.hero_subheadline.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</p>}
-                                </div>
-                                <div className="relative z-10 mx-auto w-[70%] h-[80px] rounded-lg bg-black/40 border border-white/10 flex items-center justify-center mt-2 overflow-hidden">
-                                  {t.hero_video_thumbnail_url ? <img src={t.hero_video_thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center"><div className="w-0 h-0 border-l-[8px] border-l-white/40 border-y-[5px] border-y-transparent ml-1" /></div>}
-                                </div>
-                              </div>
-                              {/* Logo strip */}
-                              <div className="h-[10%] bg-[#f8f8fa] flex items-center justify-center gap-6 px-6">
-                                {[...Array(5)].map((_, i) => <div key={i} className="h-4 rounded bg-gray-300/50" style={{ width: `${40 + (i % 3) * 12}px` }} />)}
-                              </div>
-                              {/* Feature cards */}
-                              <div className="h-[28%] bg-white p-6">
-                                <div className="h-3 w-24 bg-primary/20 rounded mx-auto mb-1" />
-                                <div className="h-4 w-40 bg-gray-200 rounded mx-auto mb-4" />
-                                <div className="grid grid-cols-3 gap-3">
-                                  {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-3 flex flex-col gap-2">
-                                      <div className="w-6 h-6 rounded-full bg-primary/15" />
-                                      <div className="h-3 w-full bg-gray-200 rounded" />
-                                      <div className="h-2 w-[80%] bg-gray-100 rounded" />
-                                      <div className="h-2 w-[60%] bg-gray-100 rounded" />
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                              {/* CTA banner */}
-                              <div className="h-[17%] bg-gradient-to-r from-primary/90 to-primary flex items-center justify-center">
-                                <div className="text-center">
-                                  <div className="h-4 w-36 bg-white/20 rounded mx-auto mb-2" />
-                                  <div className="h-6 w-20 bg-white rounded-full mx-auto" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-3 left-3 flex items-center gap-2">
@@ -1492,48 +1447,7 @@ const Admin = () => {
                         {t.thumbnail_url ? (
                           <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full relative overflow-hidden">
-                            <div className="absolute inset-0 origin-top-left" style={{ transform: 'scale(0.35)', width: '286%', height: '286%' }}>
-                              <div className="relative h-[45%] bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-6 flex flex-col">
-                                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-                                <div className="relative z-10 flex items-center justify-between mb-4">
-                                  {t.logo_url ? <img src={t.logo_url} alt="" className="h-6 object-contain opacity-80" /> : <div className="h-5 w-20 rounded bg-white/10" />}
-                                  <div className="h-7 px-4 rounded-full bg-primary flex items-center"><span className="text-[10px] text-white font-semibold">Get in Touch</span></div>
-                                </div>
-                                <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center gap-2">
-                                  {t.hero_badge && <span className="text-[9px] text-primary font-semibold uppercase tracking-widest">{t.hero_badge.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</span>}
-                                  <h4 className="text-[16px] font-bold text-white leading-snug max-w-[90%] line-clamp-2">{(t.hero_headline || t.name).replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</h4>
-                                  {t.hero_subheadline && <p className="text-[10px] text-white/50 max-w-[80%] line-clamp-2">{t.hero_subheadline.replace(/\{\{[^}]+\}\}/g, '•••').replace(/\[\[[^\]]*\]\]/g, '')}</p>}
-                                </div>
-                                <div className="relative z-10 mx-auto w-[70%] h-[80px] rounded-lg bg-black/40 border border-white/10 flex items-center justify-center mt-2 overflow-hidden">
-                                  {t.hero_video_thumbnail_url ? <img src={t.hero_video_thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center"><div className="w-0 h-0 border-l-[8px] border-l-white/40 border-y-[5px] border-y-transparent ml-1" /></div>}
-                                </div>
-                              </div>
-                              <div className="h-[10%] bg-[#f8f8fa] flex items-center justify-center gap-6 px-6">
-                                {[...Array(5)].map((_, i) => <div key={i} className="h-4 rounded bg-gray-300/50" style={{ width: `${40 + (i % 3) * 12}px` }} />)}
-                              </div>
-                              <div className="h-[28%] bg-white p-6">
-                                <div className="h-3 w-24 bg-primary/20 rounded mx-auto mb-1" />
-                                <div className="h-4 w-40 bg-gray-200 rounded mx-auto mb-4" />
-                                <div className="grid grid-cols-3 gap-3">
-                                  {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-3 flex flex-col gap-2">
-                                      <div className="w-6 h-6 rounded-full bg-primary/15" />
-                                      <div className="h-3 w-full bg-gray-200 rounded" />
-                                      <div className="h-2 w-[80%] bg-gray-100 rounded" />
-                                      <div className="h-2 w-[60%] bg-gray-100 rounded" />
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="h-[17%] bg-gradient-to-r from-primary/90 to-primary flex items-center justify-center">
-                                <div className="text-center">
-                                  <div className="h-4 w-36 bg-white/20 rounded mx-auto mb-2" />
-                                  <div className="h-6 w-20 bg-white rounded-full mx-auto" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-3 left-3">
