@@ -99,11 +99,11 @@ const AIPageGenerator = ({ onGenerate, inline }: AIPageGeneratorProps) => {
       if (data?.error) throw new Error(data.error);
       if (!data?.sections || !Array.isArray(data.sections)) throw new Error("Invalid response from AI");
       onGenerate(data.sections);
-      toast({ title: "Page cloned!", description: `${data.sections.length} sections created from URL` });
+      toast({ title: "Page generated!", description: `${data.sections.length} sections created from URL` });
       setOpen(false);
       resetState();
     } catch (err: any) {
-      toast({ title: "Clone failed", description: err.message, variant: "destructive" });
+      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
     } finally {
       setGenerating(false);
     }
@@ -189,7 +189,7 @@ const AIPageGenerator = ({ onGenerate, inline }: AIPageGeneratorProps) => {
             </TabsTrigger>
             <TabsTrigger value="url" className="gap-1.5 text-xs sm:text-sm">
               <Globe className="w-3.5 h-3.5" />
-              Clone URL
+              From URL
             </TabsTrigger>
           </TabsList>
 
@@ -242,7 +242,7 @@ const AIPageGenerator = ({ onGenerate, inline }: AIPageGeneratorProps) => {
               type="url"
             />
             <p className="text-xs text-muted-foreground">
-              Paste any landing page URL and AI will scrape the content, analyze the layout, and recreate it as an editable page.
+              Paste a URL to use an existing page as inspiration. AI will analyze the content and generate a similar structure using your available sections.
             </p>
           </TabsContent>
         </Tabs>
@@ -252,7 +252,7 @@ const AIPageGenerator = ({ onGenerate, inline }: AIPageGeneratorProps) => {
           <Button onClick={handleGenerate} disabled={isDisabled} className="gap-2">
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {generating ? "Generating..." :
-              activeTab === "url" ? "Clone Page" :
+              activeTab === "url" ? "Generate from URL" :
               activeTab === "file" ? "Generate from File" :
               "Generate Page"
             }
