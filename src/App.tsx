@@ -13,6 +13,7 @@ import PersonalizedLanding from "./pages/PersonalizedLanding";
 import TemplateEditor from "./pages/TemplateEditor";
 import WineVideoTemplate from "./pages/WineVideoTemplate";
 import BuilderPage from "./pages/BuilderPage";
+import BuilderPreview from "./pages/BuilderPreview";
 import AdminDashboard from "./pages/AdminDashboard";
 import Pricing from "./pages/Pricing";
 import Billing from "./pages/Billing";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/template-editor/:slug" element={<TemplateEditor />} />
           <Route path="/builder" element={<BuilderPage />} />
           <Route path="/builder/:slug" element={<BuilderPage />} />
+          <Route path="/builder-preview/:slug" element={<BuilderPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

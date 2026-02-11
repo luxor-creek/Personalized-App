@@ -194,6 +194,7 @@ const Admin = () => {
   const [liveWarningTemplateName, setLiveWarningTemplateName] = useState("");
   const [liveWarningCampaignNames, setLiveWarningCampaignNames] = useState<string[]>([]);
   const [previewTemplateSlug, setPreviewTemplateSlug] = useState<string | null>(null);
+  const [previewIsBuilder, setPreviewIsBuilder] = useState(false);
   const [showCampaignAnalytics, setShowCampaignAnalytics] = useState(false);
   const [liveWarningEditSlug, setLiveWarningEditSlug] = useState<string | null>(null);
   const [liveWarningIsBuilder, setLiveWarningIsBuilder] = useState(false);
@@ -1404,7 +1405,7 @@ const Admin = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setPreviewTemplateSlug(t.slug)}
+                            onClick={() => { setPreviewTemplateSlug(t.slug); setPreviewIsBuilder(!!t.is_builder_template); }}
                             title="View template (read-only)"
                           >
                             <Eye className="w-4 h-4 mr-1" />
@@ -2693,7 +2694,7 @@ const Admin = () => {
           <div className="flex-1 overflow-auto" style={{ height: 'calc(90vh - 60px)' }}>
             {previewTemplateSlug && (
               <iframe
-                src={`/template-editor/${previewTemplateSlug}?preview=true`}
+                src={previewIsBuilder ? `/builder-preview/${previewTemplateSlug}` : `/template-editor/${previewTemplateSlug}?preview=true`}
                 className="w-full border-0 pointer-events-none"
                 style={{ height: '300vh' }}
                 title="Template preview"
