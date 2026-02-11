@@ -150,6 +150,39 @@ export type Database = {
           },
         ]
       }
+      chat_cache: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string
+          hit_count: number
+          id: string
+          question: string
+          question_normalized: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string
+          hit_count?: number
+          id?: string
+          question: string
+          question_normalized: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string
+          hit_count?: number
+          id?: string
+          question?: string
+          question_normalized?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       form_submissions: {
         Row: {
           address: string | null

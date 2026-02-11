@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.snov-enrich-linkedin]
 verify_jwt = false
+
+[functions.ai-assistant-chat]
+verify_jwt = false
