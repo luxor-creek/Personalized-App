@@ -172,8 +172,8 @@ const AIPageGenerator = ({ onGenerate, inline }: AIPageGeneratorProps) => {
             <Sparkles className="w-5 h-5 text-primary" />
             Generate Page with AI
           </DialogTitle>
-          <DialogDescription>
-            Describe your page, upload an image/document, or paste a URL to clone.
+         <DialogDescription>
+            Describe your page. Or select another option here.
           </DialogDescription>
         </DialogHeader>
 
