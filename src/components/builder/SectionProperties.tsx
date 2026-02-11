@@ -1,4 +1,4 @@
-import { BuilderSection, FONT_SIZES, FONT_WEIGHTS, TEXT_ALIGNS, PADDING_OPTIONS, SectionContent, SectionStyle, FeatureItem, TestimonialItem, PricingTier, FaqItem, StatItem, TeamMember, ComparisonRow, StepItem, FooterColumn, SocialProofItem, CardItem } from "@/types/builder";
+import { BuilderSection, FONT_SIZES, FONT_WEIGHTS, TEXT_ALIGNS, PADDING_OPTIONS, SectionContent, SectionStyle, SectionType, SECTION_DEFAULTS, FeatureItem, TestimonialItem, PricingTier, FaqItem, StatItem, TeamMember, ComparisonRow, StepItem, FooterColumn, SocialProofItem, CardItem } from "@/types/builder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -811,13 +811,180 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           </>
         );
 
+      case 'columns2':
+      case 'columns3': {
+        const colCount = section.type === 'columns2' ? 2 : 3;
+        const children = section.content.columnChildren || Array.from({ length: colCount }, () => []);
+        // Nestable section types (simple content types only)
+        const nestableTypes: SectionType[] = ['headline', 'body', 'image', 'video', 'cta', 'quote', 'spacer', 'divider', 'form', 'document', 'qrCode'];
+
+        const addChildSection = (colIdx: number, childType: SectionType) => {
+          const defaults = SECTION_DEFAULTS[childType];
+          const newChild: BuilderSection = {
+            id: Math.random().toString(36).substring(2, 10),
+            type: childType,
+            content: { ...defaults.content },
+            style: { ...defaults.style },
+          };
+          const updated = children.map((col, i) =>
+            i === colIdx ? [...(col as BuilderSection[]), newChild] : col
+          );
+          updateContent({ columnChildren: updated });
+        };
+
+        const removeChildSection = (colIdx: number, childId: string) => {
+          const updated = children.map((col, i) =>
+            i === colIdx ? (col as BuilderSection[]).filter((s) => s.id !== childId) : col
+          );
+          updateContent({ columnChildren: updated });
+        };
+
+        const moveChildSection = (colIdx: number, childIdx: number, dir: 'up' | 'down') => {
+          const col = [...(children[colIdx] as BuilderSection[])];
+          const newIdx = dir === 'up' ? childIdx - 1 : childIdx + 1;
+          if (newIdx < 0 || newIdx >= col.length) return;
+          [col[childIdx], col[newIdx]] = [col[newIdx], col[childIdx]];
+          const updated = children.map((c, i) => (i === colIdx ? col : c));
+          updateContent({ columnChildren: updated });
+        };
+
+        return (
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">{colCount}-column layout. Add content to each column below.</p>
+            {Array.from({ length: colCount }).map((_, colIdx) => {
+              const colSections = (children[colIdx] || []) as BuilderSection[];
+              return (
+                <div key={colIdx} className="space-y-2">
+                  <Separator />
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Column {colIdx + 1}</h4>
+                  {colSections.map((child, childIdx) => (
+                    <div key={child.id} className="border rounded-lg p-2 space-y-1 relative bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium">{SECTION_DEFAULTS[child.type]?.label || child.type}</span>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => moveChildSection(colIdx, childIdx, 'up')} disabled={childIdx === 0}>
+                            <span className="text-xs">↑</span>
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => moveChildSection(colIdx, childIdx, 'down')} disabled={childIdx === colSections.length - 1}>
+                            <span className="text-xs">↓</span>
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => removeChildSection(colIdx, child.id)}>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      {/* Inline mini-editor for simple text content */}
+                      {(child.type === 'headline' || child.type === 'body') && (
+                        <Textarea
+                          value={child.content.text || ''}
+                          onChange={(e) => {
+                            const updated = children.map((col, i) =>
+                              i === colIdx
+                                ? (col as BuilderSection[]).map((s) =>
+                                    s.id === child.id ? { ...s, content: { ...s.content, text: e.target.value } } : s
+                                  )
+                                : col
+                            );
+                            updateContent({ columnChildren: updated });
+                          }}
+                          rows={child.type === 'body' ? 3 : 1}
+                          className="resize-none text-xs"
+                        />
+                      )}
+                      {child.type === 'image' && (
+                        <Input
+                          value={child.content.imageUrl || ''}
+                          onChange={(e) => {
+                            const updated = children.map((col, i) =>
+                              i === colIdx
+                                ? (col as BuilderSection[]).map((s) =>
+                                    s.id === child.id ? { ...s, content: { ...s.content, imageUrl: e.target.value } } : s
+                                  )
+                                : col
+                            );
+                            updateContent({ columnChildren: updated });
+                          }}
+                          placeholder="Paste image URL"
+                          className="text-xs"
+                        />
+                      )}
+                      {child.type === 'video' && (
+                        <Input
+                          value={child.content.videoUrl || ''}
+                          onChange={(e) => {
+                            const updated = children.map((col, i) =>
+                              i === colIdx
+                                ? (col as BuilderSection[]).map((s) =>
+                                    s.id === child.id ? { ...s, content: { ...s.content, videoUrl: e.target.value } } : s
+                                  )
+                                : col
+                            );
+                            updateContent({ columnChildren: updated });
+                          }}
+                          placeholder="Paste video URL"
+                          className="text-xs"
+                        />
+                      )}
+                      {child.type === 'cta' && (
+                        <div className="space-y-1">
+                          <Input
+                            value={child.content.text || ''}
+                            onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, text: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}
+                            placeholder="CTA heading"
+                            className="text-xs"
+                          />
+                          <Input
+                            value={child.content.buttonText || ''}
+                            onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, buttonText: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}
+                            placeholder="Button text"
+                            className="text-xs"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <Select onValueChange={(v) => addChildSection(colIdx, v as SectionType)}>
+                    <SelectTrigger className="text-xs h-8">
+                      <SelectValue placeholder="+ Add content..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {nestableTypes.map((t) => (
+                        <SelectItem key={t} value={t}>{SECTION_DEFAULTS[t]?.label || t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+
       default:
         return null;
     }
   };
 
   // Sections that already have their own button controls
-  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing', 'spacer', 'divider', 'logo', 'footer', 'qrCode'];
+  const sectionsWithOwnButtons = ['hero', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing', 'spacer', 'divider', 'logo', 'footer', 'qrCode', 'columns2', 'columns3'];
 
   const renderOptionalButtonFields = () => {
     if (sectionsWithOwnButtons.includes(section.type)) return null;
@@ -849,7 +1016,7 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
   // Determine which sections show typography controls
   const textSections = ['headline', 'body', 'banner', 'cta', 'hero', 'heroVideo', 'heroImage', 'heroForm', 'quote'];
   const colorSections = section.type !== 'spacer';
-  const maxWidthSections = ['headline', 'body', 'video', 'image', 'form', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'gallery', 'comparison', 'cards', 'benefits', 'socialProof', 'newsletter', 'document', 'quote', 'footer', 'heroVideo', 'heroImage', 'heroForm'];
+  const maxWidthSections = ['headline', 'body', 'video', 'image', 'form', 'features', 'testimonials', 'pricing', 'faq', 'stats', 'team', 'steps', 'gallery', 'comparison', 'cards', 'benefits', 'socialProof', 'newsletter', 'document', 'quote', 'footer', 'heroVideo', 'heroImage', 'heroForm', 'columns2', 'columns3'];
 
   const handleCursorCapture = (e: React.SyntheticEvent) => {
     const el = e.target as HTMLElement;

@@ -74,7 +74,7 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
   } ${isSelected ? 'outline outline-2 outline-primary ring-2 ring-primary/20' : ''}`;
 
   // Sections that already have their own button logic
-  const sectionsWithOwnButtons = ['hero', 'heroBg', 'heroVideoBg', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing'];
+  const sectionsWithOwnButtons = ['hero', 'heroBg', 'heroVideoBg', 'cta', 'document', 'newsletter', 'heroForm', 'form', 'pricing', 'columns2', 'columns3'];
 
   const renderOptionalButton = () => {
     if (sectionsWithOwnButtons.includes(type)) return null;
@@ -722,6 +722,48 @@ const SectionRenderer = ({ section, isSelected, onClick, isPreview, personalizat
             </div>
           </div>
         );
+
+      case 'columns2':
+      case 'columns3': {
+        const colCount = type === 'columns2' ? 2 : 3;
+        const children = content.columnChildren || Array.from({ length: colCount }, () => []);
+        return (
+          <div style={containerStyle}>
+            <div style={{ ...innerStyle, maxWidth: style.maxWidth || '1100px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)`, gap: '24px' }}>
+                {Array.from({ length: colCount }).map((_, colIdx) => {
+                  const colSections = (children[colIdx] || []) as BuilderSection[];
+                  return (
+                    <div
+                      key={colIdx}
+                      className="min-h-[60px] rounded-lg"
+                      style={{
+                        border: !isPreview && colSections.length === 0 ? '2px dashed #d1d5db' : 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      {colSections.length === 0 && !isPreview && (
+                        <div className="flex items-center justify-center h-full text-xs text-muted-foreground p-4">
+                          Column {colIdx + 1} — add content in properties
+                        </div>
+                      )}
+                      {colSections.map((childSection) => (
+                        <SectionRenderer
+                          key={childSection.id}
+                          section={childSection}
+                          isPreview={isPreview}
+                          personalization={personalization}
+                        />
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       default:
         return null;

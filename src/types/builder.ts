@@ -33,7 +33,9 @@ export type SectionType =
   | 'socialProof'
   | 'benefits'
   | 'cards'
-  | 'qrCode';
+  | 'qrCode'
+  | 'columns2'
+  | 'columns3';
 
 export interface SectionStyle {
   backgroundColor?: string;
@@ -222,6 +224,8 @@ export interface SectionContent {
   qrCodeUrl?: string;
   qrCodeSize?: number;
   qrCodeLabel?: string;
+  // Column Layouts
+  columnChildren?: BuilderSection[][];
 }
 
 export interface BuilderSection {
@@ -489,6 +493,22 @@ export const SECTION_DEFAULTS: Record<SectionType, { content: SectionContent; st
     category: 'Conversion',
     content: { qrCodeUrl: 'https://example.com', qrCodeSize: 200, qrCodeLabel: 'Scan to visit' },
     style: { backgroundColor: '#ffffff', textColor: '#1a1a1a', paddingY: '48px', textAlign: 'center' },
+  },
+
+  // --- Columns ---
+  columns2: {
+    label: '2 Columns',
+    icon: 'Columns2',
+    category: 'Layout',
+    content: { columnChildren: [[], []] },
+    style: { backgroundColor: '#ffffff', paddingY: '48px', paddingX: '24px', maxWidth: '1100px' },
+  },
+  columns3: {
+    label: '3 Columns',
+    icon: 'Grid3x3',
+    category: 'Layout',
+    content: { columnChildren: [[], [], []] },
+    style: { backgroundColor: '#ffffff', paddingY: '48px', paddingX: '24px', maxWidth: '1100px' },
   },
 };
 
