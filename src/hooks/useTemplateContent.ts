@@ -76,6 +76,7 @@ export function applyPersonalization(
   result = result.replace(/\{\{first_name\}\}/gi, data.first_name || "");
   result = result.replace(/\{\{last_name\}\}/gi, data.last_name || "");
   result = result.replace(/\{\{company\}\}/gi, data.company || "");
+  result = result.replace(/\{\{company_name\}\}/gi, data.company || "");
   result = result.replace(/\{\{full_name\}\}/gi, data.full_name || `${data.first_name || ""} ${data.last_name || ""}`.trim());
   
   // Clean up any remaining tokens (but preserve whitespace/newlines)
