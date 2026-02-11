@@ -144,10 +144,11 @@ export function applyPersonalization(
   if (!text) return text;
   
   return text
-    .replace(/{{first_name}}/g, data.first_name || "")
-    .replace(/{{last_name}}/g, data.last_name || "")
-    .replace(/{{company}}/g, data.company || "")
-    .replace(/{{full_name}}/g, data.full_name || "");
+    .replace(/{{first_name}}/gi, data.first_name || "")
+    .replace(/{{last_name}}/gi, data.last_name || "")
+    .replace(/{{company}}/gi, data.company || "")
+    .replace(/{{company_name}}/gi, data.company || "")
+    .replace(/{{full_name}}/gi, data.full_name || `${data.first_name || ""} ${data.last_name || ""}`.trim());
 }
 
 /**
