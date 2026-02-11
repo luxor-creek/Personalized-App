@@ -875,38 +875,90 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                       </div>
                       {/* Inline mini-editor for simple text content */}
                       {(child.type === 'headline' || child.type === 'body') && (
-                        <Textarea
-                          value={child.content.text || ''}
-                          onChange={(e) => {
-                            const updated = children.map((col, i) =>
-                              i === colIdx
-                                ? (col as BuilderSection[]).map((s) =>
-                                    s.id === child.id ? { ...s, content: { ...s.content, text: e.target.value } } : s
-                                  )
-                                : col
-                            );
-                            updateContent({ columnChildren: updated });
-                          }}
-                          rows={child.type === 'body' ? 3 : 1}
-                          className="resize-none text-xs"
-                        />
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs">Text</Label>
+                            <VariableInsert onInsert={(token) => {
+                              const newText = insertAtCursor(child.content.text || '', token);
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, text: newText } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }} />
+                          </div>
+                          <Textarea
+                            value={child.content.text || ''}
+                            onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, text: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}
+                            onFocus={(e) => { lastFocusedInput = e.target; lastCursorPos = e.target.selectionStart; }}
+                            onClick={(e) => { lastCursorPos = (e.target as HTMLTextAreaElement).selectionStart; }}
+                            onKeyUp={(e) => { lastCursorPos = (e.target as HTMLTextAreaElement).selectionStart; }}
+                            rows={child.type === 'body' ? 3 : 1}
+                            className="resize-none text-xs"
+                          />
+                        </div>
                       )}
                       {child.type === 'image' && (
-                        <Input
-                          value={child.content.imageUrl || ''}
-                          onChange={(e) => {
-                            const updated = children.map((col, i) =>
-                              i === colIdx
-                                ? (col as BuilderSection[]).map((s) =>
-                                    s.id === child.id ? { ...s, content: { ...s.content, imageUrl: e.target.value } } : s
-                                  )
-                                : col
-                            );
-                            updateContent({ columnChildren: updated });
-                          }}
-                          placeholder="Paste image URL"
-                          className="text-xs"
-                        />
+                        <div className="space-y-1">
+                          <Input
+                            value={child.content.imageUrl || ''}
+                            onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, imageUrl: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}
+                            placeholder="Paste image URL"
+                            className="text-xs"
+                          />
+                          <div className="relative">
+                            <Button variant="outline" size="sm" className="w-full" disabled={uploading}>
+                              <Upload className="w-4 h-4 mr-2" />
+                              {uploading ? "Uploading..." : "Upload Image"}
+                            </Button>
+                            <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setUploading(true);
+                              try {
+                                const ext = file.name.split('.').pop();
+                                const path = `builder/${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from('template-logos').upload(path, file);
+                                if (error) throw error;
+                                const { data: { publicUrl } } = supabase.storage.from('template-logos').getPublicUrl(path);
+                                const updated = children.map((col, i) =>
+                                  i === colIdx
+                                    ? (col as BuilderSection[]).map((s) =>
+                                        s.id === child.id ? { ...s, content: { ...s.content, imageUrl: publicUrl } } : s
+                                      )
+                                    : col
+                                );
+                                updateContent({ columnChildren: updated });
+                                toast({ title: "Uploaded!" });
+                              } catch (err: any) {
+                                toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+                              } finally {
+                                setUploading(false);
+                              }
+                            }} />
+                          </div>
+                        </div>
                       )}
                       {child.type === 'video' && (
                         <Input
