@@ -114,6 +114,7 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          alert_on_view: boolean
           created_at: string
           id: string
           name: string
@@ -122,6 +123,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          alert_on_view?: boolean
           created_at?: string
           id?: string
           name: string
@@ -130,6 +132,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          alert_on_view?: boolean
           created_at?: string
           id?: string
           name?: string

@@ -53,7 +53,7 @@ serve(async (req) => {
     // Get campaign and owner
     const { data: campaign, error: campError } = await supabase
       .from("campaigns")
-      .select("id, name, user_id")
+      .select("id, name, user_id, alert_on_view")
       .eq("id", page.campaign_id)
       .single();
 
@@ -61,6 +61,15 @@ serve(async (req) => {
       console.error("Campaign not found:", campError);
       return new Response(JSON.stringify({ error: "Campaign not found" }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Skip email if alerts are disabled for this campaign
+    if (!campaign.alert_on_view) {
+      console.log("Alert disabled for campaign", campaign.id);
+      return new Response(JSON.stringify({ success: true, skipped: true }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

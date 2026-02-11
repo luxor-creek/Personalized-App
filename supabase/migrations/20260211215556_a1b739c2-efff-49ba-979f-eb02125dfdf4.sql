@@ -1,0 +1,1 @@
+ALTER TABLE public.campaigns ADD COLUMN alert_on_view boolean NOT NULL DEFAULT false;
