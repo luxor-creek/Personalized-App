@@ -12,6 +12,7 @@ import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
 import TemplateMiniPreview from "@/components/admin/TemplateMiniPreview";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
+import LinkedInEnrichDialog from "@/components/admin/LinkedInEnrichDialog";
 import AICsvMapper from "@/components/admin/AICsvMapper";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -2008,7 +2009,12 @@ const Admin = () => {
                             <p className="text-sm text-muted-foreground">
                               Upload a CSV or add contacts one-by-one. We'll generate personalized landing pages you can download and use with any email tool.
                             </p>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
+                              <LinkedInEnrichDialog
+                                campaignId={selectedCampaign.id}
+                                templateId={selectedCampaign.template_id}
+                                onContactAdded={() => { fetchPages(selectedCampaign.id); fetchCampaigns(); usageLimits.refetchLimits(); }}
+                              />
                               <Dialog open={uploadDialogOpen} onOpenChange={(open) => { setUploadDialogOpen(open); if (open) setWorkflowCardsExpanded(false); }}>
                                 <DialogTrigger asChild>
                                   <Button variant="outline" className="flex-1">
