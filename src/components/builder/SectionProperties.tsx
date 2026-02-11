@@ -952,6 +952,19 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                               updateContent({ columnChildren: updated });
                             }} className="w-8 h-8 rounded border cursor-pointer" />
                           </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Background Color</Label>
+                            <input type="color" value={child.style.backgroundColor || '#ffffff'} onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, style: { ...s.style, backgroundColor: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }} className="w-8 h-8 rounded border cursor-pointer" />
+                          </div>
                         </div>
                       )}
                       {child.type === 'image' && (
@@ -1105,6 +1118,22 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                               {[100, 150, 200, 256, 300].map((s) => <SelectItem key={s} value={String(s)}>{s}px</SelectItem>)}
                             </SelectContent>
                           </Select>
+                        </div>
+                      )}
+                      {/* Universal background color for all child types except headline/body (which have it above) */}
+                      {child.type !== 'headline' && child.type !== 'body' && (
+                        <div className="space-y-1 mt-2">
+                          <Label className="text-xs">Background Color</Label>
+                          <input type="color" value={child.style.backgroundColor || '#ffffff'} onChange={(e) => {
+                            const updated = children.map((col, i) =>
+                              i === colIdx
+                                ? (col as BuilderSection[]).map((s) =>
+                                    s.id === child.id ? { ...s, style: { ...s.style, backgroundColor: e.target.value } } : s
+                                  )
+                                : col
+                            );
+                            updateContent({ columnChildren: updated });
+                          }} className="w-8 h-8 rounded border cursor-pointer" />
                         </div>
                       )}
                     </div>
