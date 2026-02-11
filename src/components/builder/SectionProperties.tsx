@@ -931,6 +931,19 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                               <SelectContent>{FONT_SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                           </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Text Color</Label>
+                            <input type="color" value={child.style.textColor || '#000000'} onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, style: { ...s.style, textColor: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }} className="w-8 h-8 rounded border cursor-pointer" />
+                          </div>
                         </div>
                       )}
                       {child.type === 'image' && (
@@ -1032,6 +1045,58 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                             placeholder="Button text"
                             className="text-xs"
                           />
+                        </div>
+                      )}
+                      {child.type === 'qrCode' && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">QR Code URL</Label>
+                          <Input
+                            value={child.content.qrCodeUrl || ''}
+                            onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, qrCodeUrl: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}
+                            placeholder="https://example.com"
+                            className="text-xs"
+                          />
+                          <Label className="text-xs">Label</Label>
+                          <Input
+                            value={child.content.qrCodeLabel || ''}
+                            onChange={(e) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, content: { ...s.content, qrCodeLabel: e.target.value } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}
+                            placeholder="Scan to visit"
+                            className="text-xs"
+                          />
+                          <Label className="text-xs">Size</Label>
+                          <Select value={String(child.content.qrCodeSize || 200)} onValueChange={(v) => {
+                            const updated = children.map((col, i) =>
+                              i === colIdx
+                                ? (col as BuilderSection[]).map((s) =>
+                                    s.id === child.id ? { ...s, content: { ...s.content, qrCodeSize: parseInt(v) } } : s
+                                  )
+                                : col
+                            );
+                            updateContent({ columnChildren: updated });
+                          }}>
+                            <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {[100, 150, 200, 256, 300].map((s) => <SelectItem key={s} value={String(s)}>{s}px</SelectItem>)}
+                            </SelectContent>
+                          </Select>
                         </div>
                       )}
                     </div>
