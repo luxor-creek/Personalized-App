@@ -139,6 +139,8 @@ export function applyPersonalization(
     last_name?: string;
     company?: string;
     full_name?: string;
+    landing_page?: string;
+    custom_field?: string;
   }
 ): string {
   if (!text) return text;
@@ -148,7 +150,9 @@ export function applyPersonalization(
     .replace(/{{last_name}}/gi, data.last_name || "")
     .replace(/{{company}}/gi, data.company || "")
     .replace(/{{company_name}}/gi, data.company || "")
-    .replace(/{{full_name}}/gi, data.full_name || `${data.first_name || ""} ${data.last_name || ""}`.trim());
+    .replace(/{{full_name}}/gi, data.full_name || `${data.first_name || ""} ${data.last_name || ""}`.trim())
+    .replace(/{{landing_page}}/gi, data.landing_page || "")
+    .replace(/{{custom_field}}/gi, data.custom_field || "");
 }
 
 /**
@@ -161,6 +165,8 @@ export function renderPersonalizedFormattedText(
     last_name?: string;
     company?: string;
     full_name?: string;
+    landing_page?: string;
+    custom_field?: string;
   },
   keyPrefix = ""
 ): React.ReactNode {

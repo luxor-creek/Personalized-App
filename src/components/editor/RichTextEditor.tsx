@@ -29,7 +29,10 @@ const PERSONALIZATION_TOKENS = [
   { token: "{{first_name}}", label: "First Name" },
   { token: "{{last_name}}", label: "Last Name" },
   { token: "{{company}}", label: "Company" },
+  { token: "{{company_name}}", label: "Company Name" },
   { token: "{{full_name}}", label: "Full Name" },
+  { token: "{{landing_page}}", label: "Landing Page URL" },
+  { token: "{{custom_field}}", label: "Custom Field" },
 ];
 
 const FONT_SIZES = [

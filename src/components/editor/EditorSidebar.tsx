@@ -34,7 +34,10 @@ const PERSONALIZATION_TOKENS = [
   { token: "{{first_name}}", label: "First Name", description: "Recipient's first name" },
   { token: "{{last_name}}", label: "Last Name", description: "Recipient's last name" },
   { token: "{{company}}", label: "Company", description: "Recipient's company name" },
+  { token: "{{company_name}}", label: "Company Name", description: "Alias for company" },
   { token: "{{full_name}}", label: "Full Name", description: "First + Last name combined" },
+  { token: "{{landing_page}}", label: "Landing Page URL", description: "Unique page URL" },
+  { token: "{{custom_field}}", label: "Custom Field", description: "Custom data field" },
 ];
 
 const PRESET_COLORS = [
