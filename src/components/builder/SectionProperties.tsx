@@ -154,6 +154,13 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
           <div className="space-y-2">
             <VarLabel label="Text" value={section.content.text || ''} onChange={(v) => updateContent({ text: v })} />
             <Textarea value={section.content.text || ''} onChange={(e) => updateContent({ text: e.target.value })} rows={section.type === 'body' ? 6 : 2} className="resize-none" />
+            <div className="space-y-1">
+              <Label className="text-xs">Text Size</Label>
+              <Select value={section.style.fontSize || (section.type === 'headline' ? '48px' : '18px')} onValueChange={(v) => updateStyle({ fontSize: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{FONT_SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
           </div>
         );
 
@@ -908,6 +915,22 @@ const SectionProperties = ({ section, onUpdate, onClose }: SectionPropertiesProp
                             rows={child.type === 'body' ? 3 : 1}
                             className="resize-none text-xs"
                           />
+                          <div className="space-y-1">
+                            <Label className="text-xs">Text Size</Label>
+                            <Select value={child.style.fontSize || (child.type === 'headline' ? '48px' : '18px')} onValueChange={(v) => {
+                              const updated = children.map((col, i) =>
+                                i === colIdx
+                                  ? (col as BuilderSection[]).map((s) =>
+                                      s.id === child.id ? { ...s, style: { ...s.style, fontSize: v } } : s
+                                    )
+                                  : col
+                              );
+                              updateContent({ columnChildren: updated });
+                            }}>
+                              <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>{FONT_SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       )}
                       {child.type === 'image' && (
