@@ -1,0 +1,71 @@
+KICKER PLATFORM - COST & REVENUE PROJECTIONS
+Generated: February 2026
+,,,,,,
+
+=== SECTION 1: FIXED MONTHLY COSTS ===
+,,,,,,
+Service,Purpose,Free Tier Limit,Cost at Scale,Notes,,
+Lovable Pro,Development & Hosting,N/A,$20/mo,Required for custom domain + features,,
+Lovable Cloud (DB/Auth/Storage),Database + Auth + Edge Functions + Storage,500MB DB / 1GB Storage / 50K MAUs,$25-$50/mo at scale,Scales with instance size,,
+Resend,Transactional Emails (welcome / sample request / reminders),3000 emails/mo free,$20/mo over 3K emails,Per-email cost ~$0.001 after free tier,,
+Snovio,Campaign Sending & List Management,N/A,$39-$99/mo,Depends on your Snovio plan,,
+,,,,,,
+TOTAL FIXED (Minimum),,,~$59/mo,Early stage with free tiers,,
+TOTAL FIXED (At Scale),,,~$150-$190/mo,With upgraded instances + email volume,,
+
+,,,,,,
+=== SECTION 2: VARIABLE COSTS PER USER ===
+,,,,,,
+Resource,Per-User Usage (25 pages),Unit Cost,Cost/User/Month,,,
+Database Storage,~50 rows (~5KB),~$0.125/GB,$0.001,,,
+Auth (MAU),1 MAU,$0.00325/MAU,$0.003,,,
+Edge Function Calls,~30 invocations/mo,$2/million,$0.00006,,,
+Storage (images/logos),~10MB,$0.021/GB,$0.0002,,,
+AI Page Generation,~2 calls/mo,Included in Lovable AI,$0.00,,,
+Emails Sent,~25 emails/mo,$0.001/email,$0.025,,,
+,,,,,,
+TOTAL VARIABLE COST PER USER,,,$0.03/mo,Approximate,,
+
+,,,,,,
+=== SECTION 3: YOUR SUBSCRIPTION TIERS ===
+,,,,,,
+Plan,Monthly Price,Trial Duration,Max Pages,Max Live Pages,Max Campaigns,
+Free Trial,$0,14 days,3,1,1,
+Starter,$29/mo,N/A,25,10,50,
+Pro,$59/mo,N/A,Unlimited,Unlimited,Unlimited,
+Enterprise,Custom,N/A,Custom,Custom,Custom,
+
+,,,,,,
+=== SECTION 4: REVENUE PROJECTIONS ===
+,,,,,,
+Assumption: User distribution = 40% Trial (free) / 35% Starter ($29) / 20% Pro ($59) / 5% Enterprise ($149 est.)
+,,,,,,
+Total Users,Trial Users (40%),Starter Users (35%),Pro Users (20%),Enterprise Users (5%),Monthly Revenue,
+500,200,175,100,25,"$8,800"
+1000,400,350,200,50,"$17,600"
+5000,2000,1750,1000,250,"$88,000"
+10000,4000,3500,2000,500,"$176,000"
+25000,10000,8750,5000,1250,"$440,000"
+50000,20000,17500,10000,2500,"$880,000"
+
+,,,,,,
+=== SECTION 5: INFRASTRUCTURE COSTS AT EACH USER LEVEL ===
+,,,,,,
+Total Users,Cloud Instance,Cloud Cost/mo,Resend Cost/mo,Snovio Cost/mo,Lovable Cost/mo,Total Infra Cost/mo
+500,Small (Free),$0,$0 (under 3K),$39,$20,$59
+1000,Small,$25,$20,$39,$20,$104
+5000,Medium,$50,$50,$99,$20,$219
+10000,Medium-Large,$75,$100,$99,$20,$294
+25000,Large,$150,$250,$99,$20,$519
+50000,Large+,$300,$500,$99,$20,$919
+
+,,,,,,
+=== SECTION 6: PROFIT PROJECTIONS ===
+,,,,,,
+Total Users,Monthly Revenue,Monthly Infra Cost,Monthly Profit,Profit Margin,Cost Per User,Revenue Per User
+500,"$8,800",$59,"$8,741",99.3%,$0.12,$17.60
+1000,"$17,600",$104,"$17,496",99.4%,$0.10,$17.60
+5000,"$88,000",$219,"$87,781",99.8%,$0.04,$17.60
+10000,"$176,000",$294,"$175,706",99.8%,$0.03,$17.60
+25000,"$440,000",$519,"$439,481",99.9%,$0.02,$17.60
+50000,"$880,000",$919,"$879,081",99.9%,$0.02,$17.60
