@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import TemplateAccentProvider from "@/components/TemplateAccentProvider";
 import SectionRenderer from "@/components/builder/SectionRenderer";
@@ -7,10 +7,28 @@ import { BuilderSection } from "@/types/builder";
 
 const BuilderPreview = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const [sections, setSections] = useState<BuilderSection[]>([]);
   const [accentColor, setAccentColor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Extract personalization from query params (p_first_name, p_last_name, etc.)
+  const personalization: Record<string, string> | undefined = (() => {
+    const p: Record<string, string> = {};
+    for (const [key, value] of searchParams.entries()) {
+      if (key.startsWith("p_") && value) {
+        p[key.slice(2)] = value;
+      }
+    }
+    if (p.first_name || p.last_name || p.company) {
+      if (p.first_name && p.last_name) {
+        p.full_name = `${p.first_name} ${p.last_name}`.trim();
+      }
+      return p;
+    }
+    return undefined;
+  })();
 
   useEffect(() => {
     if (!slug) return;
@@ -53,7 +71,7 @@ const BuilderPreview = () => {
   return (
     <TemplateAccentProvider accentColor={accentColor} className="min-h-screen bg-white">
       {sections.map((section) => (
-        <SectionRenderer key={section.id} section={section} isPreview />
+        <SectionRenderer key={section.id} section={section} isPreview personalization={personalization} />
       ))}
     </TemplateAccentProvider>
   );
