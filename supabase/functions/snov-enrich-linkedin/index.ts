@@ -115,8 +115,13 @@ serve(async (req) => {
       const resultData = await resultRes.json();
       console.log(`Poll attempt ${i + 1}:`, JSON.stringify(resultData));
 
-      if (resultData.data?.status === "completed" || resultData.data?.results?.length > 0) {
-        const profile = resultData.data.results?.[0];
+      // V2 API returns { status: "completed", data: [{ url, result: {...} }] }
+      const isCompleted = resultData.status === "completed" || resultData.data?.status === "completed";
+      const results = Array.isArray(resultData.data) ? resultData.data : resultData.data?.results;
+
+      if (isCompleted && results?.length > 0) {
+        const entry = results[0];
+        const profile = entry.result || entry;
         if (!profile) {
           return new Response(JSON.stringify({ error: "No contact data found" }), {
             status: 404,
@@ -124,14 +129,19 @@ serve(async (req) => {
           });
         }
 
+        // Extract company from positions array if available
+        const position = profile.positions?.[0];
+        const companyName = position?.name || profile.currentCompany || profile.company || "";
+        const jobTitle = position?.title || profile.currentPosition || profile.position || "";
+
         return new Response(JSON.stringify({
           success: true,
           contact: {
-            first_name: profile.firstName || profile.first_name || "",
-            last_name: profile.lastName || profile.last_name || "",
+            first_name: profile.first_name || profile.firstName || "",
+            last_name: profile.last_name || profile.lastName || "",
             email: profile.emails?.[0]?.email || profile.email || "",
-            company: profile.currentCompany || profile.company || "",
-            job_title: profile.currentPosition || profile.position || "",
+            company: companyName,
+            job_title: jobTitle,
             linkedin_url,
           },
         }), {
@@ -139,7 +149,8 @@ serve(async (req) => {
         });
       }
 
-      if (resultData.data?.status === "failed") {
+      const isFailed = resultData.status === "failed" || resultData.data?.status === "failed";
+      if (isFailed) {
         return new Response(JSON.stringify({ error: "Enrichment failed for this profile" }), {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
