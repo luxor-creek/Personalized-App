@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,15 +14,38 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { question } = await req.json();
-    if (!question || typeof question !== "string") {
-      return new Response(JSON.stringify({ error: "question is required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Authenticate the request
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const jwt = authHeader.replace("Bearer ", "").trim();
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(jwt);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { question } = await req.json();
+    if (!question || typeof question !== "string" || question.length > 2000) {
+      return new Response(JSON.stringify({ error: "question is required (max 2000 chars)" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Use service role for cache operations
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const normalized = normalize(question);
@@ -36,14 +59,13 @@ serve(async (req) => {
       .single();
 
     if (exactMatch) {
-      // Bump hit count
       await supabase.from("chat_cache").update({ hit_count: exactMatch.hit_count + 1 || 1 }).eq("id", exactMatch.id);
       return new Response(JSON.stringify({ answer: exactMatch.answer, cached: true, category: exactMatch.category }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // 2. Check cache — fuzzy match (search for similar questions)
+    // 2. Check cache — fuzzy match
     const words = normalized.split(" ").filter(w => w.length > 3);
     if (words.length >= 2) {
       const searchTerm = words.slice(0, 4).join(" ");
@@ -53,7 +75,6 @@ serve(async (req) => {
         .textSearch("question_normalized", searchTerm.split(" ").join(" & "), { type: "plain" });
 
       if (fuzzyMatches && fuzzyMatches.length > 0) {
-        // Find best match by word overlap
         let bestMatch = fuzzyMatches[0];
         let bestScore = 0;
         for (const m of fuzzyMatches) {
@@ -144,7 +165,7 @@ Rules:
     const answer = data.choices?.[0]?.message?.content?.trim();
     if (!answer) throw new Error("No answer from AI");
 
-    // 4. Cache the answer for future use
+    // 4. Cache the answer
     await supabase.from("chat_cache").insert({
       question: question.trim(),
       question_normalized: normalized,
