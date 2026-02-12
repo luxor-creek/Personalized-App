@@ -30,8 +30,6 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
 import IntegrationsPanel from "@/components/admin/IntegrationsPanel";
-
-
 interface UserProfile {
   id: string;
   user_id: string;
@@ -45,6 +43,7 @@ interface UserProfile {
   max_live_pages: number;
   max_campaigns: number;
   created_at: string;
+  feature_flags?: Record<string, boolean>;
 }
 
 interface InfoRequest {
@@ -98,6 +97,8 @@ const AdminDashboard = () => {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editPlan, setEditPlan] = useState("");
   const [editTrialDays, setEditTrialDays] = useState("");
+  const [editSnovEnabled, setEditSnovEnabled] = useState(false);
+  const [editLemlistEnabled, setEditLemlistEnabled] = useState(false);
   const [savingUser, setSavingUser] = useState(false);
   const [deletingUser, setDeletingUser] = useState(false);
 
@@ -221,6 +222,9 @@ const AdminDashboard = () => {
     setEditingUser(profile);
     setEditPlan(profile.plan);
     setEditTrialDays("");
+    const flags = (profile.feature_flags as Record<string, boolean>) || {};
+    setEditSnovEnabled(!!flags.snov_enabled);
+    setEditLemlistEnabled(!!flags.lemlist_enabled);
     setEditUserOpen(true);
   };
 
@@ -234,6 +238,11 @@ const AdminDashboard = () => {
         max_pages: limits.max_pages,
         max_live_pages: limits.max_live_pages,
         max_campaigns: limits.max_campaigns,
+        feature_flags: {
+          ...(editingUser.feature_flags || {}),
+          snov_enabled: editSnovEnabled,
+          lemlist_enabled: editLemlistEnabled,
+        },
       };
 
       if (editTrialDays && parseInt(editTrialDays) > 0) {
@@ -915,6 +924,28 @@ const AdminDashboard = () => {
                 {PLAN_LIMITS[editPlan]?.max_pages >= 999999 ? "Unlimited" : PLAN_LIMITS[editPlan]?.max_pages} pages,{" "}
                 {PLAN_LIMITS[editPlan]?.max_campaigns >= 999999 ? "Unlimited" : PLAN_LIMITS[editPlan]?.max_campaigns} campaigns
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Integrations</Label>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="edit-snov-enabled"
+                    checked={editSnovEnabled}
+                    onCheckedChange={(checked) => setEditSnovEnabled(!!checked)}
+                  />
+                  <Label htmlFor="edit-snov-enabled" className="cursor-pointer text-sm">Snov.io</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="edit-lemlist-enabled"
+                    checked={editLemlistEnabled}
+                    onCheckedChange={(checked) => setEditLemlistEnabled(!!checked)}
+                  />
+                  <Label htmlFor="edit-lemlist-enabled" className="cursor-pointer text-sm">LemList</Label>
+                </div>
+              </div>
             </div>
 
             <Button onClick={saveUserChanges} className="w-full" disabled={savingUser}>
