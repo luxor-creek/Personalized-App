@@ -183,6 +183,36 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_variables: {
+        Row: {
+          created_at: string
+          fallback_value: string | null
+          id: string
+          name: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fallback_value?: string | null
+          id?: string
+          name: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fallback_value?: string | null
+          id?: string
+          name?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       form_submissions: {
         Row: {
           address: string | null
