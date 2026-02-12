@@ -12,6 +12,7 @@ import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
 import VariablesPanel from "@/components/admin/VariablesPanel";
 import TemplateMiniPreview from "@/components/admin/TemplateMiniPreview";
+import TemplatePageGrid from "@/components/admin/TemplatePageGrid";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
 import LinkedInEnrichDialog from "@/components/admin/LinkedInEnrichDialog";
 import AICsvMapper from "@/components/admin/AICsvMapper";
@@ -1372,216 +1373,36 @@ const Admin = () => {
 
           {/* Landing Pages Tab */}
           <TabsContent value="landing-pages" className="space-y-6">
-            {/* My Templates - user-owned clones */}
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">My Templates</h2>
-              <p className="text-muted-foreground mb-6">
-                Templates you've cloned and customized for your campaigns.
-              </p>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Build from scratch card */}
-                <Link to="/builder" className="group bg-card rounded-xl border border-dashed border-primary/30 overflow-hidden hover:border-primary transition-all hover:shadow-lg">
-                  <div className="aspect-video bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                    <div className="text-center p-4">
-                      <Hammer className="w-12 h-12 text-primary/60 mx-auto mb-2 group-hover:text-primary transition-colors" />
-                      <p className="text-sm font-medium text-primary">Build from Scratch</p>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-foreground mb-1">Page Builder</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Create a custom page with the visual builder.
-                    </p>
-                    <Button size="sm" className="w-full">
-                      <Hammer className="w-4 h-4 mr-2" />
-                      Start Building
-                    </Button>
-                  </div>
-                </Link>
-                {templates
-                  .filter((t) => t.user_id === user?.id)
-                  .map((t) => (
-                    <div key={t.id} className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                      <div className="aspect-video bg-muted relative overflow-hidden">
-                        {t.thumbnail_url ? (
-                          <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        ) : (
-                          <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                          <span className="inline-block px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-medium rounded">
-                            My Template
-                          </span>
-                          {liveTemplateIds.has(t.id) && (
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setLiveWarningTemplateName(t.name);
-                                setLiveWarningCampaignNames(liveTemplateCampaigns[t.id] || []);
-                                setLiveWarningDialogOpen(true);
-                              }}
-                              className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500 text-white text-xs font-semibold rounded animate-pulse hover:bg-emerald-600 transition-colors"
-                            >
-                              <Radio className="w-3 h-3" />
-                              LIVE
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        {editingTemplateName === t.id ? (
-                          <Input
-                            autoFocus
-                            value={templateNameDraft}
-                            onChange={(e) => setTemplateNameDraft(e.target.value)}
-                            onBlur={() => saveTemplateName(t.id)}
-                            onKeyDown={(e) => { if (e.key === "Enter") saveTemplateName(t.id); if (e.key === "Escape") setEditingTemplateName(null); }}
-                            className="h-8 text-sm font-semibold mb-1"
-                          />
-                        ) : (
-                          <h3
-                            className="font-semibold text-foreground mb-1 cursor-pointer hover:text-primary transition-colors"
-                            onClick={() => { setEditingTemplateName(t.id); setTemplateNameDraft(t.name); }}
-                            title="Click to rename"
-                          >
-                            {t.name} <Pencil className="inline w-3 h-3 text-muted-foreground ml-1" />
-                          </h3>
-                        )}
-                        <p className="text-xs text-muted-foreground mb-4 font-mono">{t.slug}</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => { setPreviewTemplateSlug(t.slug); setPreviewIsBuilder(!!t.is_builder_template); }}
-                            title="View template (read-only)"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            View
-                          </Button>
-                          {liveTemplateIds.has(t.id) ? (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setLiveWarningTemplateName(t.name);
-                                setLiveWarningCampaignNames(liveTemplateCampaigns[t.id] || []);
-                                setLiveWarningEditSlug(t.slug);
-                                setLiveWarningIsBuilder(!!t.is_builder_template);
-                                setLiveWarningDialogOpen(true);
-                              }}
-                            >
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                          ) : (
-                            <Link to={t.is_builder_template ? `/builder/${t.slug}` : `/template-editor/${t.slug}`} className="col-span-1">
-                              <Button size="sm" className="w-full">
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Edit
-                              </Button>
-                            </Link>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => forceDuplicateTemplate(t.slug)}
-                            disabled={duplicating === t.slug}
-                            title="Copy as New"
-                          >
-                            <Copy className="w-4 h-4 mr-1" />
-                            {duplicating === t.slug ? "Copying..." : "Copy as New"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteTemplate(t.slug, t.name)}
-                            className="text-destructive hover:text-destructive"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                {templates.filter((t) => t.user_id === user?.id).length === 0 && (
-                  <div className="bg-card rounded-xl border border-dashed border-border overflow-hidden">
-                    <div className="aspect-video bg-muted/30 flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <Copy className="w-12 h-12 text-muted-foreground/40 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">No templates yet</p>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-muted-foreground mb-1">Get Started</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {isAdmin ? "Browse the Template Library below and click \"Use Template\" to clone one." : "Create a new page from scratch using the Builder or start from a blank template."}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Template Library - shared templates (user_id IS NULL) - admin only */}
-            {isAdmin && <div className="mt-12">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Template Library</h2>
-              <p className="text-muted-foreground mb-6">
-                Browse pre-built templates. Click "Use Template" to clone one into your account and customize it.
-              </p>
-
-              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {templates
-                  .filter((t) => !t.user_id)
-                  .map((t) => (
-                    <div key={t.id} className="group bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg">
-                      <div className="aspect-video bg-muted relative overflow-hidden">
-                        {t.thumbnail_url ? (
-                          <img src={t.thumbnail_url} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        ) : (
-                          <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-3 left-3">
-                          <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs font-medium rounded">
-                            Library
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-foreground mb-1">{t.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Pre-built template ready to customize.
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => duplicateTemplate(t.slug)}
-                            disabled={duplicating === t.slug}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            {duplicating === t.slug ? "Cloning..." : "Use Template"}
-                          </Button>
-                          {isAdmin && (
-                            <Link to={`/template-editor/${t.slug}`}>
-                              <Button variant="outline" size="sm" title="Admin: Edit library template">
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                {templates.filter((t) => !t.user_id).length === 0 && (
-                  <p className="text-muted-foreground col-span-3">No library templates available.</p>
-                )}
-              </div>
-            </div>}
+            <TemplatePageGrid
+              templates={templates}
+              userId={user?.id}
+              isAdmin={isAdmin}
+              liveTemplateIds={liveTemplateIds}
+              liveTemplateCampaigns={liveTemplateCampaigns}
+              duplicating={duplicating}
+              editingTemplateName={editingTemplateName}
+              templateNameDraft={templateNameDraft}
+              onSetEditingTemplateName={setEditingTemplateName}
+              onSetTemplateNameDraft={setTemplateNameDraft}
+              onSaveTemplateName={saveTemplateName}
+              onPreview={(slug, isBuilder) => { setPreviewTemplateSlug(slug); setPreviewIsBuilder(isBuilder); }}
+              onEdit={() => {}}
+              onLiveWarning={(name, campaigns) => {
+                setLiveWarningTemplateName(name);
+                setLiveWarningCampaignNames(campaigns);
+                setLiveWarningDialogOpen(true);
+              }}
+              onLiveWarningEdit={(name, campaigns, slug, isBuilder) => {
+                setLiveWarningTemplateName(name);
+                setLiveWarningCampaignNames(campaigns);
+                setLiveWarningEditSlug(slug);
+                setLiveWarningIsBuilder(isBuilder);
+                setLiveWarningDialogOpen(true);
+              }}
+              onDuplicate={duplicateTemplate}
+              onForceDuplicate={forceDuplicateTemplate}
+              onDelete={deleteTemplate}
+            />
           </TabsContent>
 
           {/* Campaigns Tab */}
