@@ -1364,9 +1364,13 @@ const Admin = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <BrandLogo className="h-8" />
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => navigate("/billing")}>
-              <CreditCard className="w-4 h-4 mr-2" />
-              Billing
+            <Button variant="outline" size="sm" onClick={() => {
+              const settingsTab = document.querySelector('[value="settings"]') as HTMLElement;
+              settingsTab?.click();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}>
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
             </Button>
             {isAdmin && (
               <Button variant="outline" size="sm" onClick={() => navigate("/admin-dashboard")}>
@@ -2264,11 +2268,49 @@ const Admin = () => {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
-            <div className="max-w-xl space-y-6">
+            <div className="max-w-2xl space-y-6">
+              {/* Billing & Subscription Section */}
               <div>
+                <h3 className="text-lg font-semibold text-foreground">Billing & Subscription</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Manage your plan, usage, and account details.
+                </p>
+              </div>
+
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground capitalize">{usageLimits.plan || "trial"} Plan</p>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="ml-auto" onClick={() => navigate("/pricing")}>
+                    {usageLimits.plan === "trial" ? "Upgrade" : "Change Plan"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <h4 className="font-semibold text-foreground text-sm">Usage</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Personalized Pages</span>
+                    <span className="font-medium text-foreground">{usageLimits.pageCount} / {usageLimits.maxPages >= 999999 ? "∞" : usageLimits.maxPages}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Campaigns</span>
+                    <span className="font-medium text-foreground">{usageLimits.campaignCount} / {usageLimits.maxCampaigns >= 999999 ? "∞" : usageLimits.maxCampaigns}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Domain Section */}
+              <div className="pt-4 border-t border-border">
                 <h3 className="text-lg font-semibold text-foreground">Custom Domain</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Set a custom domain for your personalized page URLs. Your links will use this domain instead of the default.
+                  Set a custom domain for your personalized page URLs.
                 </p>
               </div>
 
