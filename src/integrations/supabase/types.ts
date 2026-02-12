@@ -615,6 +615,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          custom_domain: string | null
           email: string | null
           feature_flags: Json
           full_name: string | null
@@ -634,6 +635,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_domain?: string | null
           email?: string | null
           feature_flags?: Json
           full_name?: string | null
@@ -653,6 +655,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_domain?: string | null
           email?: string | null
           feature_flags?: Json
           full_name?: string | null

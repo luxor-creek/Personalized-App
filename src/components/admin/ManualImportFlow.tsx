@@ -35,6 +35,7 @@ interface ManualImportFlowProps {
   templateId: string | null;
   templateSlug?: string | null;
   isBuilderTemplate?: boolean;
+  customDomain?: string;
   onGenerationComplete?: () => void;
 }
 
@@ -68,7 +69,7 @@ const parseCsvLine = (line: string): string[] => {
   return result;
 };
 
-const ManualImportFlow = ({ campaignId, templateId, templateSlug, isBuilderTemplate, onGenerationComplete }: ManualImportFlowProps) => {
+const ManualImportFlow = ({ campaignId, templateId, templateSlug, isBuilderTemplate, customDomain, onGenerationComplete }: ManualImportFlowProps) => {
   const { toast } = useToast();
   const [source, setSource] = useState<Source>(null);
   const [step, setStep] = useState<Step>("choose");
@@ -352,7 +353,7 @@ const ManualImportFlow = ({ campaignId, templateId, templateSlug, isBuilderTempl
   // CSV download of enriched data
   const downloadEnrichedCsv = () => {
     if (generatedPages.length === 0) return;
-    const baseUrl = window.location.origin;
+    const baseUrl = customDomain ? `https://${customDomain}` : window.location.origin;
     const csvHeaders = ["first_name", "last_name", "email", "company", "personalized_link"];
     const csvRows = generatedPages.map(p => [
       p.first_name || "",
