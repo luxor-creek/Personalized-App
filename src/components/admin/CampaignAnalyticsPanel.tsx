@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Eye, Play, Trophy, User, RefreshCw, MousePointerClick } from "lucide-react";
+import { ArrowLeft, Eye, Play, Trophy, User, RefreshCw, MousePointerClick, Clock, ArrowDownToLine, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -26,6 +26,9 @@ interface ProspectEngagement {
   videoClicks: number;
   linkClicks: number;
   lastViewed: string | null;
+  avgTimeOnPage: number | null;
+  maxScrollDepth: number | null;
+  returnVisits: number;
 }
 
 const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAnalyticsPanelProps) => {
@@ -54,17 +57,21 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
       const pageIds = pages.map(p => p.id);
 
       const [{ data: views }, { data: clicks }, { data: links }] = await Promise.all([
-        supabase.from("page_views").select("personalized_page_id, viewed_at").in("personalized_page_id", pageIds),
+        supabase.from("page_views").select("personalized_page_id, viewed_at, time_on_page_seconds, max_scroll_depth, is_return_visit").in("personalized_page_id", pageIds),
         supabase.from("video_clicks").select("personalized_page_id").in("personalized_page_id", pageIds),
         supabase.from("link_clicks").select("personalized_page_id").in("personalized_page_id", pageIds),
       ]);
 
-      const viewMap: Record<string, { count: number; lastViewed: string | null }> = {};
-      (views || []).forEach(v => {
-        if (!viewMap[v.personalized_page_id]) viewMap[v.personalized_page_id] = { count: 0, lastViewed: null };
-        viewMap[v.personalized_page_id].count++;
-        const current = viewMap[v.personalized_page_id].lastViewed;
-        if (!current || v.viewed_at > current) viewMap[v.personalized_page_id].lastViewed = v.viewed_at;
+      const viewMap: Record<string, { count: number; lastViewed: string | null; totalTime: number; timeCount: number; maxScroll: number | null; returnVisits: number }> = {};
+      (views || []).forEach((v: any) => {
+        if (!viewMap[v.personalized_page_id]) viewMap[v.personalized_page_id] = { count: 0, lastViewed: null, totalTime: 0, timeCount: 0, maxScroll: null, returnVisits: 0 };
+        const m = viewMap[v.personalized_page_id];
+        m.count++;
+        const current = m.lastViewed;
+        if (!current || v.viewed_at > current) m.lastViewed = v.viewed_at;
+        if (v.time_on_page_seconds != null) { m.totalTime += v.time_on_page_seconds; m.timeCount++; }
+        if (v.max_scroll_depth != null && (m.maxScroll === null || v.max_scroll_depth > m.maxScroll)) m.maxScroll = v.max_scroll_depth;
+        if (v.is_return_visit) m.returnVisits++;
       });
 
       const clickMap: Record<string, number> = {};
@@ -84,6 +91,9 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
         videoClicks: clickMap[p.id] || 0,
         linkClicks: linkMap[p.id] || 0,
         lastViewed: viewMap[p.id]?.lastViewed || null,
+        avgTimeOnPage: viewMap[p.id]?.timeCount ? Math.round(viewMap[p.id].totalTime / viewMap[p.id].timeCount) : null,
+        maxScrollDepth: viewMap[p.id]?.maxScroll ?? null,
+        returnVisits: viewMap[p.id]?.returnVisits || 0,
       }));
 
       setProspects(enriched);
@@ -99,6 +109,11 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
   const totalLinkClicks = useMemo(() => prospects.reduce((sum, p) => sum + p.linkClicks, 0), [prospects]);
   const uniqueViewers = useMemo(() => prospects.filter(p => p.viewCount > 0).length, [prospects]);
   const videoWatchers = useMemo(() => prospects.filter(p => p.videoClicks > 0).length, [prospects]);
+  const totalReturnVisits = useMemo(() => prospects.reduce((sum, p) => sum + p.returnVisits, 0), [prospects]);
+  const avgTime = useMemo(() => {
+    const withTime = prospects.filter(p => p.avgTimeOnPage != null);
+    return withTime.length > 0 ? Math.round(withTime.reduce((s, p) => s + (p.avgTimeOnPage || 0), 0) / withTime.length) : null;
+  }, [prospects]);
 
   const sortedProspects = useMemo(() =>
     [...prospects].sort((a, b) => b.viewCount - a.viewCount || b.videoClicks - a.videoClicks),
@@ -155,7 +170,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
         <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <User className="w-4 h-4" />
@@ -185,6 +200,23 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
             <span className="text-xs sm:text-sm">Link Clicks</span>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-foreground">{totalLinkClicks}</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <Clock className="w-4 h-4" />
+            <span className="text-xs sm:text-sm">Avg. Time</span>
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">
+            {avgTime != null ? `${Math.floor(avgTime / 60)}:${String(avgTime % 60).padStart(2, "0")}` : "—"}
+          </p>
+          <p className="text-xs text-muted-foreground">on page</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <RotateCw className="w-4 h-4" />
+            <span className="text-xs sm:text-sm">Return Visits</span>
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{totalReturnVisits}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -242,13 +274,15 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
       <div className="bg-card rounded-lg border border-border overflow-x-auto">
          <Table>
           <TableHeader>
-            <TableRow>
+             <TableRow>
               <TableHead>Prospect</TableHead>
               <TableHead className="hidden sm:table-cell">Email</TableHead>
               <TableHead className="hidden md:table-cell">Company</TableHead>
               <TableHead className="text-center">Views</TableHead>
               <TableHead className="text-center">Videos</TableHead>
               <TableHead className="text-center">Clicks</TableHead>
+              <TableHead className="text-center hidden lg:table-cell">Avg Time</TableHead>
+              <TableHead className="text-center hidden lg:table-cell">Scroll</TableHead>
               <TableHead className="hidden sm:table-cell">Last Viewed</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
@@ -256,7 +290,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
           <TableBody>
             {sortedProspects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                   No prospects in this campaign yet.
                 </TableCell>
               </TableRow>
@@ -289,6 +323,16 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
                   <TableCell className="text-center">
                     <span className={`font-medium ${p.linkClicks > 0 ? "text-foreground" : "text-muted-foreground"}`}>
                       {p.linkClicks}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center hidden lg:table-cell">
+                    <span className="text-sm text-muted-foreground">
+                      {p.avgTimeOnPage != null ? `${Math.floor(p.avgTimeOnPage / 60)}:${String(p.avgTimeOnPage % 60).padStart(2, "0")}` : "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center hidden lg:table-cell">
+                    <span className="text-sm text-muted-foreground">
+                      {p.maxScrollDepth != null ? `${p.maxScrollDepth}%` : "—"}
                     </span>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
