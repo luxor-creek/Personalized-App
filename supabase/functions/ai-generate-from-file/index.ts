@@ -26,9 +26,9 @@ serve(async (req) => {
     const systemPrompt = `You are an expert page architect. You will be given ${isImage ? "an image/screenshot of a landing page or marketing material" : "the text content extracted from a document (PDF, DOCX, etc.)"}. Your job is to analyze it and create a JSON array of page sections for a drag-and-drop page builder.
 
 Available section types and their content fields:
-- "hero": text (headline), heroSubheadline, buttonText, buttonLink, secondaryButtonText, heroBadge
-- "heroImage": text (headline), heroSubheadline, heroImageUrl (leave empty string)
-- "heroForm": text (headline), heroSubheadline, heroFormFields (array of field names), heroFormButtonText, heroFormTitle, formRecipientEmail (leave empty)
+- "hero": text (headline), heroSubheadline, buttonText, buttonLink, secondaryButtonText, heroBadge — USE when source has a prominent headline with CTA buttons but NO large hero image or photo
+- "heroImage": text (headline), heroSubheadline, heroImageUrl (leave empty string) — USE when source has a large hero/banner image or photo alongside a headline; this is a two-column image+text layout
+- "heroForm": text (headline), heroSubheadline, heroFormFields (array of field names), heroFormButtonText, heroFormTitle, formRecipientEmail (leave empty) — USE when source has a lead-capture form, sign-up form, or contact form prominently in the hero area
 - "headline": text
 - "body": text
 - "socialProof": socialProofTitle, socialProofItems (array of {platform, count, label})
@@ -58,7 +58,7 @@ IMPORTANT COLOR RULES:
 - Use light, bright, or medium-tone backgrounds only.
 - Alternate between white (#ffffff) and light gray (#f8fafc or #f1f5f9) backgrounds for visual rhythm.
 
-${isImage ? "Analyze the visual layout, text, colors, and structure from the image. Recreate the page as closely as possible using the available section types." : "Extract the key information, headlines, descriptions, features, and calls-to-action from the document text. Create a professional landing page layout from this content."}
+${isImage ? "Analyze the visual layout, text, colors, and structure from the image. Pay special attention to the hero area: if there is a large photo or image in the hero, use 'heroImage'. If there is a form/signup in the hero, use 'heroForm'. If the hero is primarily text and buttons with no prominent image, use 'hero'. Recreate the page as closely as possible using the available section types." : "Extract the key information, headlines, descriptions, features, and calls-to-action from the document text. Create a professional landing page layout from this content."}
 
 Generate 6-12 sections. Return ONLY a valid JSON array, no markdown, no explanation.`;
 
