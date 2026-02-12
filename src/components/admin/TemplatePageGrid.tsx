@@ -302,7 +302,7 @@ export default function TemplatePageGrid({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} />
+                    <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} thumbnailUrl={t.thumbnail_url} />
                   )}
                 </div>
                 <div className="p-5">
@@ -394,7 +394,7 @@ function TemplateCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} />
+          <TemplateMiniPreview slug={t.slug} isBuilderTemplate={!!t.is_builder_template} thumbnailUrl={t.thumbnail_url} />
         )}
         {/* Status dot — top left */}
         <div className="absolute top-3 left-3 flex items-center gap-1.5">

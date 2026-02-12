@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { BuilderSection } from "@/types/builder";
 import SectionRenderer from "./SectionRenderer";
 import AIPageGenerator from "./AIPageGenerator";
@@ -17,7 +18,7 @@ interface BuilderCanvasProps {
   onStartManual: () => void;
 }
 
-const BuilderCanvas = ({
+const BuilderCanvas = forwardRef<HTMLDivElement, BuilderCanvasProps>(({
   sections,
   selectedSectionId,
   onSelectSection,
@@ -27,7 +28,7 @@ const BuilderCanvas = ({
   onAIGenerate,
   manualModeActive,
   onStartManual,
-}: BuilderCanvasProps) => {
+}, ref) => {
   const showChooser = sections.length === 0 && !manualModeActive;
 
   return (
@@ -63,7 +64,7 @@ const BuilderCanvas = ({
         ) : (
           <div className="relative">
             {/* Page preview */}
-            <div className="max-w-[1200px] mx-auto bg-white shadow-lg min-h-[600px]">
+            <div ref={ref} className="max-w-[1200px] mx-auto bg-white shadow-lg min-h-[600px]">
               {sections.map((section, index) => (
                 <div key={section.id} className="relative group">
                   <SectionRenderer
@@ -116,6 +117,8 @@ const BuilderCanvas = ({
       </div>
     </ScrollArea>
   );
-};
+});
+
+BuilderCanvas.displayName = "BuilderCanvas";
 
 export default BuilderCanvas;

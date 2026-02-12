@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Save, Pencil, Plus, Settings2, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import html2canvas from "html2canvas";
 
 const BuilderPage = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const BuilderPage = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [hasPreviewedOnce, setHasPreviewedOnce] = useState(false);
   const [hasPublished, setHasPublished] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Get current user
   useEffect(() => {
@@ -118,6 +120,39 @@ const BuilderPage = () => {
     });
   }, []);
 
+  const captureThumbnail = async (id: string) => {
+    const el = canvasRef.current;
+    if (!el) return;
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 0.5,
+        useCORS: true,
+        logging: false,
+        height: Math.min(el.scrollHeight, 900),
+        windowHeight: 900,
+      });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const path = `${id}/thumbnail.webp`;
+        const { error: uploadErr } = await supabase.storage
+          .from("template-images")
+          .upload(path, blob, { contentType: "image/webp", upsert: true });
+        if (uploadErr) { console.error("Thumbnail upload error:", uploadErr); return; }
+        const { data: urlData } = supabase.storage
+          .from("template-images")
+          .getPublicUrl(path);
+        if (urlData?.publicUrl) {
+          await supabase
+            .from("landing_page_templates")
+            .update({ thumbnail_url: `${urlData.publicUrl}?v=${Date.now()}` } as any)
+            .eq("id", id);
+        }
+      }, "image/webp", 0.8);
+    } catch (err) {
+      console.error("Thumbnail capture error:", err);
+    }
+  };
+
   const saveTemplate = async () => {
     if (!userId) return;
     setSaving(true);
@@ -133,6 +168,8 @@ const BuilderPage = () => {
           } as any)
           .eq("id", templateId);
         if (error) throw error;
+        // Capture thumbnail in background
+        captureThumbnail(templateId);
       } else {
         // Create new
         const newSlug = templateName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
@@ -153,6 +190,8 @@ const BuilderPage = () => {
         setTemplateSlug(data.slug);
         // Update URL without reload
         window.history.replaceState(null, '', `/builder/${data.slug}`);
+        // Capture thumbnail in background
+        captureThumbnail(data.id);
       }
       toast({ title: "Saved!" });
       setHasPublished(true);
@@ -248,6 +287,7 @@ const BuilderPage = () => {
 
         {/* Center: Canvas */}
         <BuilderCanvas
+          ref={canvasRef}
           sections={sections}
           selectedSectionId={selectedSectionId}
           onSelectSection={handleSelectSection}
