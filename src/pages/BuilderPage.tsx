@@ -7,9 +7,10 @@ import SectionPalette from "@/components/builder/SectionPalette";
 import SectionProperties from "@/components/builder/SectionProperties";
 import BuilderCanvas from "@/components/builder/BuilderCanvas";
 import AIPageGenerator from "@/components/builder/AIPageGenerator";
+import BuilderChecklist from "@/components/builder/BuilderChecklist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Save, Pencil, Plus, Settings2 } from "lucide-react";
+import { ArrowLeft, Save, Pencil, Plus, Settings2, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
@@ -28,6 +29,8 @@ const BuilderPage = () => {
   const [loading, setLoading] = useState(!!slug);
   const [editingName, setEditingName] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [hasPreviewedOnce, setHasPreviewedOnce] = useState(false);
+  const [hasPublished, setHasPublished] = useState(false);
 
   // Get current user
   useEffect(() => {
@@ -152,6 +155,7 @@ const BuilderPage = () => {
         window.history.replaceState(null, '', `/builder/${data.slug}`);
       }
       toast({ title: "Saved!" });
+      setHasPublished(true);
     } catch (err: any) {
       toast({ title: "Error saving", description: err.message, variant: "destructive" });
     } finally {
@@ -217,6 +221,19 @@ const BuilderPage = () => {
               <Plus className="w-4 h-4" />
             </Button>
           )}
+          {templateSlug && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setHasPreviewedOnce(true);
+                window.open(`/builder-preview/${templateSlug}`, "_blank");
+              }}
+            >
+              <Eye className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Preview</span>
+            </Button>
+          )}
           <Button size="sm" onClick={saveTemplate} disabled={saving}>
             <Save className="w-4 h-4 sm:mr-1" />
             <span className="hidden sm:inline">{saving ? "Saving..." : "Save"}</span>
@@ -251,6 +268,29 @@ const BuilderPage = () => {
             section={selectedSection}
             onUpdate={updateSection}
             onClose={() => setSelectedSectionId(null)}
+          />
+        )}
+
+        {/* Right: Checklist panel for first-time users (only when no properties open) */}
+        {!isMobile && !selectedSection && (
+          <BuilderChecklist
+            sections={sections}
+            hasPreviewedOnce={hasPreviewedOnce}
+            hasPublished={hasPublished}
+            onFocusHeadline={() => {
+              // Select first headline-like section
+              const headlineSection = sections.find((s) =>
+                ["headline", "hero", "heroBg", "heroVideo", "heroImage", "heroForm", "heroVideoBg"].includes(s.type)
+              );
+              if (headlineSection) setSelectedSectionId(headlineSection.id);
+            }}
+            onTriggerPreview={() => {
+              if (templateSlug) {
+                setHasPreviewedOnce(true);
+                window.open(`/builder-preview/${templateSlug}`, "_blank");
+              }
+            }}
+            onTriggerPublish={saveTemplate}
           />
         )}
       </div>
