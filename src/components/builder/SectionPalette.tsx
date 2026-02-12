@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import BuilderVariablesPanel from "./BuilderVariablesPanel";
 
 const ICONS: Record<string, React.ReactNode> = {
   Type: <Type className="w-4 h-4" />,
@@ -59,6 +60,7 @@ const SectionPalette = ({ onAddSection }: SectionPaletteProps) => {
         <h3 className="font-semibold text-foreground text-sm">Add Sections</h3>
         <p className="text-xs text-muted-foreground mt-1">{sectionTypes.length} sections available</p>
       </div>
+      <BuilderVariablesPanel />
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-4">
           {grouped.map(({ category, items }) => (

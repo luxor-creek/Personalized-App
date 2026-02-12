@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X, Search, Pause, Play } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X, Search, Pause, Play, Braces } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
+import VariablesPanel from "@/components/admin/VariablesPanel";
 import TemplateMiniPreview from "@/components/admin/TemplateMiniPreview";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
 import LinkedInEnrichDialog from "@/components/admin/LinkedInEnrichDialog";
@@ -1344,7 +1345,7 @@ const Admin = () => {
         {/* Usage limit banner */}
         <UsageLimitBanner {...usageLimits} />
 
-        <Tabs defaultValue="landing-pages" className="space-y-6">
+        <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") || "landing-pages"} className="space-y-6">
           <TabsList>
             <TabsTrigger value="landing-pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Layout className="w-4 h-4 mr-2" />
@@ -1363,6 +1364,10 @@ const Admin = () => {
                 Form Submissions
               </TabsTrigger>
             )}
+            <TabsTrigger value="variables" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Braces className="w-4 h-4 mr-2" />
+              Variables
+            </TabsTrigger>
           </TabsList>
 
           {/* Landing Pages Tab */}
@@ -2395,6 +2400,11 @@ const Admin = () => {
               </p>
             </div>
             <FormSubmissionsPanel />
+          </TabsContent>
+
+          {/* Variables Tab */}
+          <TabsContent value="variables" className="space-y-6">
+            <VariablesPanel />
           </TabsContent>
         </Tabs>
       </div>
