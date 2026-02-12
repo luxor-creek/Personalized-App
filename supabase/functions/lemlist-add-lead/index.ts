@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
+import { getLemlistApiKey } from "../_shared/get-lemlist-key.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,17 +29,15 @@ serve(async (req: Request) => {
     const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) throw new Error("Unauthorized");
 
-    const lemlistApiKey = Deno.env.get("LEMLIST_API_KEY");
-    if (!lemlistApiKey) throw new Error("LEMLIST_API_KEY is not configured");
+    const userId = claimsData.claims.sub as string;
+    const lemlistApiKey = await getLemlistApiKey(callerClient, userId);
 
     const { campaignId, email, firstName, lastName, company, customFields } = await req.json();
     if (!campaignId || !email) throw new Error("campaignId and email are required");
 
     const basicAuth = btoa(`:${lemlistApiKey}`);
 
-    const leadData: Record<string, unknown> = {
-      email,
-    };
+    const leadData: Record<string, unknown> = { email };
     if (firstName) leadData.firstName = firstName;
     if (lastName) leadData.lastName = lastName;
     if (company) leadData.companyName = company;
@@ -66,9 +65,10 @@ serve(async (req: Request) => {
     });
   } catch (error: any) {
     console.error("lemlist-add-lead error:", error.message);
+    const status = error.message === "LEMLIST_NOT_CONFIGURED" ? 404 : 400;
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      { status, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 });

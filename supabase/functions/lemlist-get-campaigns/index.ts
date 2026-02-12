@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
+import { getLemlistApiKey } from "../_shared/get-lemlist-key.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +16,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Verify caller
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) throw new Error("Missing authorization");
 
@@ -29,16 +29,12 @@ serve(async (req: Request) => {
     const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) throw new Error("Unauthorized");
 
-    const lemlistApiKey = Deno.env.get("LEMLIST_API_KEY");
-    if (!lemlistApiKey) throw new Error("LEMLIST_API_KEY is not configured");
-
-    // LemList uses Basic Auth: empty username, API key as password
+    const userId = claimsData.claims.sub as string;
+    const lemlistApiKey = await getLemlistApiKey(callerClient, userId);
     const basicAuth = btoa(`:${lemlistApiKey}`);
 
     const response = await fetch(`${LEMLIST_API}/campaigns`, {
-      headers: {
-        "Authorization": `Basic ${basicAuth}`,
-      },
+      headers: { "Authorization": `Basic ${basicAuth}` },
     });
 
     if (!response.ok) {
@@ -54,9 +50,10 @@ serve(async (req: Request) => {
     });
   } catch (error: any) {
     console.error("lemlist-get-campaigns error:", error.message);
+    const status = error.message === "LEMLIST_NOT_CONFIGURED" ? 404 : 400;
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      { status, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 });

@@ -14,6 +14,7 @@ import {
   ExternalLink, Settings2, Plus, Pencil, Trash2, Check, Code, X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import LemlistOnboardingDialog from "./LemlistOnboardingDialog";
 
 
 interface IntegrationField {
@@ -109,6 +110,7 @@ export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [lemlistDialogOpen, setLemlistDialogOpen] = useState(false);
 
   // Add custom integration state
   const [addCustomOpen, setAddCustomOpen] = useState(false);
@@ -137,6 +139,10 @@ export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }
   };
 
   const openEdit = (integration: IntegrationConfig) => {
+    if (integration.id === "lemlist") {
+      setLemlistDialogOpen(true);
+      return;
+    }
     setEditingId(integration.id);
     setFormValues(savedConfigs[integration.id] || {});
     setEditDialogOpen(true);
@@ -457,6 +463,11 @@ export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }
           </div>
         </DialogContent>
       </Dialog>
+      {/* LemList Onboarding Dialog */}
+      <LemlistOnboardingDialog
+        open={lemlistDialogOpen}
+        onOpenChange={setLemlistDialogOpen}
+      />
     </div>
   );
 }
