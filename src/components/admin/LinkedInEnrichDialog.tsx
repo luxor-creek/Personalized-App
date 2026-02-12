@@ -20,6 +20,7 @@ interface EnrichedContact {
   email: string;
   company: string;
   job_title: string;
+  photo_url: string;
   linkedin_url: string;
 }
 
@@ -94,7 +95,8 @@ export default function LinkedInEnrichDialog({ campaignId, templateId, onContact
           last_name: contact.last_name || null,
           email: contact.email || null,
           company: contact.company || null,
-        })
+          photo_url: contact.photo_url || null,
+        } as any)
         .select("token")
         .single();
 
@@ -186,9 +188,13 @@ export default function LinkedInEnrichDialog({ campaignId, templateId, onContact
           {contact && !searching && (
             <div className="bg-muted rounded-xl p-5 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
+                {contact.photo_url ? (
+                  <img src={contact.photo_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-6 h-6 text-primary" />
+                  </div>
+                )}
                 <div>
                   <h4 className="font-semibold text-foreground text-lg">
                     {contact.first_name} {contact.last_name}

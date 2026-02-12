@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Eye, Play, Trophy, User, RefreshCw } from "lucide-react";
+import { ArrowLeft, Eye, Play, Trophy, User, RefreshCw, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -21,8 +21,10 @@ interface ProspectEngagement {
   lastName: string | null;
   email: string | null;
   company: string | null;
+  photoUrl: string | null;
   viewCount: number;
   videoClicks: number;
+  linkClicks: number;
   lastViewed: string | null;
 }
 
@@ -40,7 +42,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
     try {
       const { data: pages } = await supabase
         .from("personalized_pages")
-        .select("id, first_name, last_name, email, company")
+        .select("id, first_name, last_name, email, company, photo_url")
         .eq("campaign_id", campaignId);
 
       if (!pages || pages.length === 0) {
@@ -51,9 +53,10 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
 
       const pageIds = pages.map(p => p.id);
 
-      const [{ data: views }, { data: clicks }] = await Promise.all([
+      const [{ data: views }, { data: clicks }, { data: links }] = await Promise.all([
         supabase.from("page_views").select("personalized_page_id, viewed_at").in("personalized_page_id", pageIds),
         supabase.from("video_clicks").select("personalized_page_id").in("personalized_page_id", pageIds),
+        supabase.from("link_clicks").select("personalized_page_id").in("personalized_page_id", pageIds),
       ]);
 
       const viewMap: Record<string, { count: number; lastViewed: string | null }> = {};
@@ -67,14 +70,19 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
       const clickMap: Record<string, number> = {};
       (clicks || []).forEach(c => { clickMap[c.personalized_page_id] = (clickMap[c.personalized_page_id] || 0) + 1; });
 
+      const linkMap: Record<string, number> = {};
+      ((links as any[]) || []).forEach(l => { linkMap[l.personalized_page_id] = (linkMap[l.personalized_page_id] || 0) + 1; });
+
       const enriched: ProspectEngagement[] = pages.map(p => ({
         pageId: p.id,
         firstName: p.first_name,
         lastName: p.last_name,
         email: p.email,
         company: p.company,
+        photoUrl: (p as any).photo_url || null,
         viewCount: viewMap[p.id]?.count || 0,
         videoClicks: clickMap[p.id] || 0,
+        linkClicks: linkMap[p.id] || 0,
         lastViewed: viewMap[p.id]?.lastViewed || null,
       }));
 
@@ -88,6 +96,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
 
   const totalViews = useMemo(() => prospects.reduce((sum, p) => sum + p.viewCount, 0), [prospects]);
   const totalVideoClicks = useMemo(() => prospects.reduce((sum, p) => sum + p.videoClicks, 0), [prospects]);
+  const totalLinkClicks = useMemo(() => prospects.reduce((sum, p) => sum + p.linkClicks, 0), [prospects]);
   const uniqueViewers = useMemo(() => prospects.filter(p => p.viewCount > 0).length, [prospects]);
   const videoWatchers = useMemo(() => prospects.filter(p => p.videoClicks > 0).length, [prospects]);
 
@@ -108,6 +117,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
         lastName={selectedProspect.lastName}
         email={selectedProspect.email}
         company={selectedProspect.company}
+        photoUrl={selectedProspect.photoUrl}
         onBack={() => setSelectedProspect(null)}
       />
     );
@@ -145,39 +155,46 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card rounded-lg border border-border p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <User className="w-4 h-4" />
-            <span className="text-sm">Total Prospects</span>
+            <span className="text-xs sm:text-sm">Prospects</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{prospects.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{prospects.length}</p>
         </div>
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Eye className="w-4 h-4" />
-            <span className="text-sm">Total Page Views</span>
+            <span className="text-xs sm:text-sm">Page Views</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{totalViews}</p>
-          <p className="text-xs text-muted-foreground">{uniqueViewers} unique viewer{uniqueViewers !== 1 ? "s" : ""}</p>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{totalViews}</p>
+          <p className="text-xs text-muted-foreground">{uniqueViewers} unique</p>
         </div>
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Play className="w-4 h-4" />
-            <span className="text-sm">Video Plays</span>
+            <span className="text-xs sm:text-sm">Video Plays</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{totalVideoClicks}</p>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{totalVideoClicks}</p>
           <p className="text-xs text-muted-foreground">{videoWatchers} watcher{videoWatchers !== 1 ? "s" : ""}</p>
         </div>
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <MousePointerClick className="w-4 h-4" />
+            <span className="text-xs sm:text-sm">Link Clicks</span>
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{totalLinkClicks}</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-3 sm:p-4">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Trophy className="w-4 h-4" />
-            <span className="text-sm">Engagement Rate</span>
+            <span className="text-xs sm:text-sm">Engagement</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">
+          <p className="text-xl sm:text-2xl font-bold text-foreground">
             {prospects.length > 0 ? Math.round((uniqueViewers / prospects.length) * 100) : 0}%
           </p>
-          <p className="text-xs text-muted-foreground">opened their page</p>
+          <p className="text-xs text-muted-foreground">opened page</p>
         </div>
       </div>
 
@@ -223,22 +240,23 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
 
       {/* Full Prospect Table */}
       <div className="bg-card rounded-lg border border-border overflow-x-auto">
-        <Table>
+         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Prospect</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead className="text-center">Page Views</TableHead>
-              <TableHead className="text-center">Video Plays</TableHead>
-              <TableHead>Last Viewed</TableHead>
+              <TableHead className="hidden sm:table-cell">Email</TableHead>
+              <TableHead className="hidden md:table-cell">Company</TableHead>
+              <TableHead className="text-center">Views</TableHead>
+              <TableHead className="text-center">Videos</TableHead>
+              <TableHead className="text-center">Clicks</TableHead>
+              <TableHead className="hidden sm:table-cell">Last Viewed</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedProspects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   No prospects in this campaign yet.
                 </TableCell>
               </TableRow>
@@ -252,10 +270,10 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
                   <TableCell className="font-medium">
                     {p.firstName} {p.lastName || ""}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
+                  <TableCell className="text-muted-foreground text-sm hidden sm:table-cell">
                     {p.email || "—"}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
+                  <TableCell className="text-muted-foreground text-sm hidden md:table-cell">
                     {p.company || "—"}
                   </TableCell>
                   <TableCell className="text-center">
@@ -268,7 +286,12 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
                       {p.videoClicks}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-center">
+                    <span className={`font-medium ${p.linkClicks > 0 ? "text-foreground" : "text-muted-foreground"}`}>
+                      {p.linkClicks}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
                     {p.lastViewed
                       ? new Date(p.lastViewed).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
                       : "—"
@@ -277,6 +300,8 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
                   <TableCell>
                     {p.viewCount === 0 ? (
                       <Badge variant="secondary" className="text-xs">Not viewed</Badge>
+                    ) : p.linkClicks > 0 ? (
+                      <Badge variant="default" className="text-xs bg-primary">Clicked link</Badge>
                     ) : p.videoClicks > 0 ? (
                       <Badge variant="default" className="text-xs bg-primary">Watched video</Badge>
                     ) : (

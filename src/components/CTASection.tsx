@@ -8,6 +8,7 @@ interface CTASectionProps {
   contactEmail?: string;
   showPrimaryButton?: boolean;
   showSecondaryButton?: boolean;
+  onLinkClick?: (label: string, url?: string) => void;
 }
 
 const CTASection = ({ 
@@ -16,6 +17,7 @@ const CTASection = ({
   contactEmail = "hello@kickervideo.com",
   showPrimaryButton = true,
   showSecondaryButton = true,
+  onLinkClick,
 }: CTASectionProps) => {
 
   // Parse title for gradient effect
@@ -51,7 +53,7 @@ const CTASection = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             {showPrimaryButton && (
             <Button variant="hero" size="xl" asChild>
-              <a href={`mailto:${contactEmail}`}>
+              <a href={`mailto:${contactEmail}`} onClick={() => onLinkClick?.("Contact Us", `mailto:${contactEmail}`)}>
                 <Mail className="w-5 h-5" />
                 Contact Us
               </a>
@@ -59,7 +61,7 @@ const CTASection = ({
             )}
             {showSecondaryButton && (
             <Button variant="heroOutline" size="xl" asChild>
-              <a href="https://kickervideo.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://kickervideo.com" target="_blank" rel="noopener noreferrer" onClick={() => onLinkClick?.("Visit Website", "https://kickervideo.com")}>
                 <ExternalLink className="w-5 h-5" />
                 Visit Website
               </a>

@@ -20,6 +20,7 @@ interface PersonalizedHeroSectionProps {
   showHeaderCta?: boolean;
   showCtaSecondary?: boolean;
   onVideoPlay?: () => void;
+  onLinkClick?: (label: string, url?: string) => void;
 }
 
 const PersonalizedHeroSection = ({ 
@@ -38,8 +39,10 @@ const PersonalizedHeroSection = ({
   showHeaderCta = true,
   showCtaSecondary = true,
   onVideoPlay,
+  onLinkClick,
 }: PersonalizedHeroSectionProps) => {
   const scrollToContact = () => {
+    onLinkClick?.("Get in Touch CTA", "#contact");
     document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -113,7 +116,10 @@ const PersonalizedHeroSection = ({
         {showCtaSecondary && (
         <div className="flex justify-center mt-12 lg:mt-16 animate-fade-up-delay-2">
           <button 
-            onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => {
+              onLinkClick?.("Learn More CTA", "#about");
+              document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+            }}
             className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
           >
             <span className="text-sm uppercase tracking-wider">{ctaSecondaryText}</span>

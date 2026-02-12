@@ -26,13 +26,85 @@ async function getSnovAccessToken(): Promise<string> {
   return data.access_token;
 }
 
+// Extract domain from company name or URL
+function extractDomain(company: string): string | null {
+  if (!company) return null;
+  // If it looks like a domain already
+  if (company.includes(".") && !company.includes(" ")) return company.toLowerCase();
+  // Try to derive domain from company name (simple heuristic)
+  return company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
+}
+
+// Use Snov.io email finder to get email from name + domain
+async function findEmailByName(token: string, firstName: string, lastName: string, domain: string): Promise<string | null> {
+  try {
+    // Step 1: Start email finder
+    const startRes = await fetch("https://api.snov.io/v2/email-finder/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        domain: domain,
+      }),
+    });
+
+    const startData = await startRes.json();
+    console.log("Email finder start:", JSON.stringify(startData));
+
+    const taskHash = startData.data?.task_hash;
+    if (!taskHash) {
+      // Try V1 fallback
+      const v1Res = await fetch("https://api.snov.io/v1/get-emails-from-names", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_token: token,
+          firstName,
+          lastName,
+          domain,
+        }),
+      });
+      const v1Data = await v1Res.json();
+      console.log("Email finder V1 fallback:", JSON.stringify(v1Data));
+      if (v1Data.data?.emails?.[0]?.email) return v1Data.data.emails[0].email;
+      if (v1Data.emails?.[0]?.email) return v1Data.emails[0].email;
+      return null;
+    }
+
+    // Step 2: Poll for results
+    for (let i = 0; i < 8; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const resultRes = await fetch(
+        `https://api.snov.io/v2/email-finder/result?task_hash=${taskHash}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const resultData = await resultRes.json();
+      console.log(`Email finder poll ${i + 1}:`, JSON.stringify(resultData));
+
+      if (resultData.status === "completed" || resultData.data?.status === "completed") {
+        const emails = resultData.data?.emails || resultData.emails;
+        if (emails?.[0]?.email) return emails[0].email;
+        return null;
+      }
+      if (resultData.status === "failed") return null;
+    }
+    return null;
+  } catch (err) {
+    console.error("Email finder error:", err);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -51,7 +123,7 @@ serve(async (req) => {
 
     const token = await getSnovAccessToken();
 
-    // Step 1: Start enrichment
+    // Step 1: Start LinkedIn profile enrichment
     const startRes = await fetch("https://api.snov.io/v2/li-profiles-by-urls/start", {
       method: "POST",
       headers: {
@@ -65,7 +137,7 @@ serve(async (req) => {
     console.log("Snov enrichment start response:", JSON.stringify(startData));
 
     if (!startData.success && !startData.data?.task_hash) {
-      // Try V1 fallback: get-emails-from-url
+      // Try V1 fallback
       console.log("V2 failed, trying V1 email finder by URL...");
       const v1Res = await fetch("https://api.snov.io/v1/get-profile-by-email", {
         method: "POST",
@@ -85,6 +157,7 @@ serve(async (req) => {
             email: d.emails?.[0]?.email || d.email || "",
             company: d.currentJob?.[0]?.companyName || d.company || "",
             job_title: d.currentJob?.[0]?.position || d.position || "",
+            photo_url: d.photo || d.avatar || d.image || "",
             linkedin_url,
           },
         }), {
@@ -100,22 +173,19 @@ serve(async (req) => {
 
     const taskHash = startData.data?.task_hash;
 
-    // Step 2: Poll for results (up to 30s)
+    // Step 2: Poll for profile results (up to 30s)
     const maxAttempts = 10;
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise((r) => setTimeout(r, 3000));
 
       const resultRes = await fetch(
         `https://api.snov.io/v2/li-profiles-by-urls/result?task_hash=${taskHash}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const resultData = await resultRes.json();
       console.log(`Poll attempt ${i + 1}:`, JSON.stringify(resultData));
 
-      // V2 API returns { status: "completed", data: [{ url, result: {...} }] }
       const isCompleted = resultData.status === "completed" || resultData.data?.status === "completed";
       const results = Array.isArray(resultData.data) ? resultData.data : resultData.data?.results;
 
@@ -129,19 +199,36 @@ serve(async (req) => {
           });
         }
 
-        // Extract company from positions array if available
         const position = profile.positions?.[0];
         const companyName = position?.name || profile.currentCompany || profile.company || "";
         const jobTitle = position?.title || profile.currentPosition || profile.position || "";
+        const firstName = profile.first_name || profile.firstName || "";
+        const lastName = profile.last_name || profile.lastName || "";
+        let email = profile.emails?.[0]?.email || profile.email || "";
+        const photoUrl = profile.photo || profile.avatar || profile.image || profile.profile_pic || "";
+
+        // Step 3: If no email found, use Email Finder with name + company domain
+        if (!email && firstName && lastName && companyName) {
+          const domain = extractDomain(companyName);
+          if (domain) {
+            console.log(`No email from profile. Trying email finder: ${firstName} ${lastName} @ ${domain}`);
+            const foundEmail = await findEmailByName(token, firstName, lastName, domain);
+            if (foundEmail) {
+              email = foundEmail;
+              console.log(`Email finder found: ${foundEmail}`);
+            }
+          }
+        }
 
         return new Response(JSON.stringify({
           success: true,
           contact: {
-            first_name: profile.first_name || profile.firstName || "",
-            last_name: profile.last_name || profile.lastName || "",
-            email: profile.emails?.[0]?.email || profile.email || "",
+            first_name: firstName,
+            last_name: lastName,
+            email,
             company: companyName,
             job_title: jobTitle,
+            photo_url: photoUrl,
             linkedin_url,
           },
         }), {

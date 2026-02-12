@@ -419,6 +419,41 @@ export type Database = {
         }
         Relationships: []
       }
+      link_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          link_label: string | null
+          link_url: string | null
+          personalized_page_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          link_label?: string | null
+          link_url?: string | null
+          personalized_page_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          link_label?: string | null
+          link_url?: string | null
+          personalized_page_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_clicks_personalized_page_id_fkey"
+            columns: ["personalized_page_id"]
+            isOneToOne: false
+            referencedRelation: "personalized_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_views: {
         Row: {
           id: string
@@ -462,6 +497,7 @@ export type Database = {
           id: string
           is_paused: boolean
           last_name: string | null
+          photo_url: string | null
           template_id: string | null
           token: string
         }
@@ -475,6 +511,7 @@ export type Database = {
           id?: string
           is_paused?: boolean
           last_name?: string | null
+          photo_url?: string | null
           template_id?: string | null
           token?: string
         }
@@ -488,6 +525,7 @@ export type Database = {
           id?: string
           is_paused?: boolean
           last_name?: string | null
+          photo_url?: string | null
           template_id?: string | null
           token?: string
         }

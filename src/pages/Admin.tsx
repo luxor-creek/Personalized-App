@@ -95,6 +95,7 @@ interface PersonalizedPage {
   created_at: string;
   view_count?: number;
   is_paused?: boolean;
+  photo_url?: string | null;
 }
 
 const Admin = () => {

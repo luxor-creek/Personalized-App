@@ -178,6 +178,20 @@ const PersonalizedLanding = () => {
     }
   };
 
+  const handleLinkClick = async (label: string, url?: string) => {
+    if (!pageData?.id) return;
+    try {
+      await supabase.from("link_clicks").insert({
+        personalized_page_id: pageData.id,
+        link_label: label,
+        link_url: url || null,
+        user_agent: navigator.userAgent,
+      } as any);
+    } catch (err) {
+      console.error("Error tracking link click:", err);
+    }
+  };
+
   if (template.is_builder_template && Array.isArray(template.sections) && template.sections.length > 0) {
     return (
       <TemplateAccentProvider accentColor={template.accent_color} className="min-h-screen bg-white">
@@ -223,6 +237,7 @@ const PersonalizedLanding = () => {
         showHeaderCta={isPoliceVisible("show_header_cta")}
         showCtaSecondary={isPoliceVisible("show_hero_cta_secondary")}
         onVideoPlay={handleVideoPlay}
+        onLinkClick={handleLinkClick}
       />
       {isPoliceVisible("show_trust") && (
         <LogoCarousel 
@@ -248,6 +263,7 @@ const PersonalizedLanding = () => {
           contactEmail={template.contact_email || undefined}
           showPrimaryButton={isPoliceVisible("show_contact_cta_primary")}
           showSecondaryButton={isPoliceVisible("show_contact_cta_secondary")}
+          onLinkClick={handleLinkClick}
         />
       )}
       <Footer logoUrl={template.logo_url} />
