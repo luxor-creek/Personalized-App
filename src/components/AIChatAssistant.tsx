@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Send, Loader2, Sparkles } from "lucide-react";
+import { X, Send, Loader2, Sparkles, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import botIcon from "@/assets/bot-icon.png";
 
@@ -112,9 +112,16 @@ const AIChatAssistant = () => {
               <img src={botIcon} alt="" className="w-7 h-7 rounded-full" />
               <span className="font-semibold text-sm">AI Assistant</span>
             </div>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setOpen(false)}>
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setMessages([])} title="New chat">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setOpen(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Messages */}
