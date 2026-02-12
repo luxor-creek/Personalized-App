@@ -1812,6 +1812,14 @@ const Admin = () => {
                           </div>
                         </div>
                         <ManualImportFlow
+                          templateSlug={(() => {
+                            const t = templates.find(t => t.id === selectedCampaign.template_id);
+                            return t?.slug || null;
+                          })()}
+                          isBuilderTemplate={(() => {
+                            const t = templates.find(t => t.id === selectedCampaign.template_id);
+                            return !!t?.is_builder_template;
+                          })()}
                           onImport={async (rows) => {
                             if (!selectedCampaign) return;
                             const pagesToCreate = rows.map((r) => ({
