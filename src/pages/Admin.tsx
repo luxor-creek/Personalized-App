@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X, Search, Pause, Play, Braces } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X, Search, Pause, Play, Braces, Settings, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
@@ -214,6 +214,11 @@ const Admin = () => {
   const [contactSearch, setContactSearch] = useState("");
   const [showContactMethods, setShowContactMethods] = useState(false);
 
+  // Custom domain
+  const [customDomain, setCustomDomain] = useState("");
+  const [customDomainDraft, setCustomDomainDraft] = useState("");
+  const [savingDomain, setSavingDomain] = useState(false);
+
   // Delete campaign confirmation
   const [deleteCampaignDialogOpen, setDeleteCampaignDialogOpen] = useState(false);
   const [deleteCampaignId, setDeleteCampaignId] = useState<string | null>(null);
@@ -290,12 +295,45 @@ const Admin = () => {
     if (user) {
       fetchCampaigns();
       fetchTemplates();
+      fetchCustomDomain();
       if (isAdmin) {
         fetchInfoRequests();
         fetchLiveTemplateIds();
       }
     }
   }, [user, isAdmin]);
+
+  const fetchCustomDomain = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("custom_domain")
+      .eq("user_id", user.id)
+      .single();
+    if (data?.custom_domain) {
+      setCustomDomain(data.custom_domain);
+      setCustomDomainDraft(data.custom_domain);
+    }
+  };
+
+  const saveCustomDomain = async () => {
+    if (!user) return;
+    setSavingDomain(true);
+    try {
+      const domain = customDomainDraft.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ custom_domain: domain || null })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setCustomDomain(domain);
+      toast({ title: domain ? "Custom domain saved" : "Custom domain removed" });
+    } catch (err: any) {
+      toast({ title: "Error saving domain", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingDomain(false);
+    }
+  };
 
   // Determine which templates are actively used by campaigns with contacts
   const fetchLiveTemplateIds = async () => {
@@ -1387,6 +1425,10 @@ const Admin = () => {
               <Braces className="w-4 h-4 mr-2" />
               Variables
             </TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </TabsTrigger>
           </TabsList>
           <LifetimeLinksMetric userId={user?.id} />
           </div>
@@ -1822,6 +1864,7 @@ const Admin = () => {
                             const t = templates.find(t => t.id === selectedCampaign.template_id);
                             return !!t?.is_builder_template;
                           })()}
+                          customDomain={customDomain || undefined}
                           onGenerationComplete={() => {
                             if (selectedCampaign) {
                               fetchPages(selectedCampaign.id);
@@ -2217,6 +2260,65 @@ const Admin = () => {
           {/* Variables Tab */}
           <TabsContent value="variables" className="space-y-6">
             <VariablesPanel />
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <div className="max-w-xl space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Custom Domain</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Set a custom domain for your personalized page URLs. Your links will use this domain instead of the default.
+                </p>
+              </div>
+
+              <div className="bg-card rounded-xl border p-5 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="custom-domain" className="text-sm font-medium">Domain</Label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Globe className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="custom-domain"
+                        placeholder="pages.yourdomain.com"
+                        value={customDomainDraft}
+                        onChange={(e) => setCustomDomainDraft(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Button
+                      onClick={saveCustomDomain}
+                      disabled={savingDomain || customDomainDraft.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "") === customDomain}
+                    >
+                      {savingDomain ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Enter your domain without http:// or trailing slashes. Example: <code className="bg-muted px-1 rounded">pages.yourcompany.com</code>
+                  </p>
+                </div>
+
+                {customDomain && (
+                  <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Current domain</p>
+                    <p className="text-sm text-foreground font-medium">{customDomain}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Your links will look like: <code className="bg-muted px-1 rounded">https://{customDomain}/p/abc123</code>
+                    </p>
+                  </div>
+                )}
+
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                    <div className="text-xs text-amber-700 dark:text-amber-400 space-y-1">
+                      <p className="font-medium">DNS setup required</p>
+                      <p>Point your domain to this app by adding a CNAME record pointing to <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">personalized.page</code> at your DNS provider.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
