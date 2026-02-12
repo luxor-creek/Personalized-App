@@ -1750,9 +1750,12 @@ const Admin = () => {
                       <div className="flex flex-wrap gap-2">
                         {pages.length > 0 && (
                           <>
-                            <Button variant="outline" size="sm" onClick={() => setShowCampaignAnalytics(true)}>
+                            <Button variant="outline" size="sm" onClick={() => setShowCampaignAnalytics(true)} className="relative">
                               <BarChart3 className="w-4 h-4 mr-2" />
                               Signal Hub
+                              {selectedCampaign && (selectedCampaign.page_count || 0) > 0 && (
+                                <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 animate-pulse border-2 border-card" />
+                              )}
                             </Button>
                             <Button variant="outline" size="sm" onClick={openTestEmail}>
                               <Mail className="w-4 h-4 mr-2" />

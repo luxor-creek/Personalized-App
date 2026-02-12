@@ -110,7 +110,7 @@ const AIChatAssistant = () => {
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-primary/5">
             <div className="flex items-center gap-2">
               <img src={botIcon} alt="" className="w-7 h-7 rounded-full" />
-              <span className="font-semibold text-sm">Kicker Assistant</span>
+              <span className="font-semibold text-sm">AI Assistant</span>
             </div>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setOpen(false)}>
               <X className="w-4 h-4" />
@@ -122,10 +122,9 @@ const AIChatAssistant = () => {
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  👋 Hi! I'm your Kicker assistant. Ask me anything about campaigns, templates, contacts, or integrations.
+                  👋 Hi! I'm the resident AI bot. Ask me anything about campaigns, templates, contacts, or integrations.
                 </p>
                 <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground font-medium">Try asking:</p>
                   {SUGGESTED_QUESTIONS.map((q) => (
                     <button
                       key={q}
@@ -167,7 +166,7 @@ const AIChatAssistant = () => {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a question…"
+              placeholder="Or ask me a question…"
               className="text-sm"
               disabled={loading}
             />
