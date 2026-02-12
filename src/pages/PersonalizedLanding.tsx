@@ -49,6 +49,14 @@ const PersonalizedLanding = () => {
         }
 
         const pageRecord = data[0];
+
+        // Check if page is paused
+        if (pageRecord.is_paused) {
+          setError("Page not found");
+          setLoading(false);
+          return;
+        }
+
         const resolvedTemplateId = pageRecord.template_id;
 
         setPageData({

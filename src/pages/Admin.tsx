@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X, Search, Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
@@ -94,6 +94,7 @@ interface PersonalizedPage {
   custom_message: string | null;
   created_at: string;
   view_count?: number;
+  is_paused?: boolean;
 }
 
 const Admin = () => {
@@ -204,6 +205,7 @@ const Admin = () => {
   const [showCampaignAnalytics, setShowCampaignAnalytics] = useState(false);
   const [liveWarningEditSlug, setLiveWarningEditSlug] = useState<string | null>(null);
   const [liveWarningIsBuilder, setLiveWarningIsBuilder] = useState(false);
+  const [contactSearch, setContactSearch] = useState("");
 
   // Delete campaign confirmation
   const [deleteCampaignDialogOpen, setDeleteCampaignDialogOpen] = useState(false);
@@ -864,6 +866,20 @@ const Admin = () => {
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const togglePagePause = async (pageId: string, currentlyPaused: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("personalized_pages")
+        .update({ is_paused: !currentlyPaused })
+        .eq("id", pageId);
+      if (error) throw error;
+      toast({ title: !currentlyPaused ? "Link paused" : "Link resumed" });
+      if (selectedCampaign) fetchPages(selectedCampaign.id);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
@@ -1752,7 +1768,7 @@ const Admin = () => {
                           <>
                             <Button variant="outline" size="sm" onClick={() => setShowCampaignAnalytics(true)} className="relative">
                               <BarChart3 className="w-4 h-4 mr-2" />
-                              Signal Hub
+                              View Stats
                               {selectedCampaign && (selectedCampaign.page_count || 0) > 0 && (
                                 <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 animate-pulse border-2 border-card" />
                               )}
@@ -2252,6 +2268,18 @@ const Admin = () => {
                       </div>
                     ) : (
                       <div className="bg-card rounded-lg border border-border overflow-x-auto">
+                        {/* Search bar */}
+                        <div className="p-3 border-b border-border">
+                          <div className="relative max-w-sm">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Search by name, company, or email..."
+                              value={contactSearch}
+                              onChange={(e) => setContactSearch(e.target.value)}
+                              className="pl-9"
+                            />
+                          </div>
+                        </div>
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -2261,12 +2289,24 @@ const Admin = () => {
                               <TableHead>Email</TableHead>
                               <TableHead>Landing Page</TableHead>
                               <TableHead>Views</TableHead>
+                              <TableHead>Status</TableHead>
                               <TableHead>Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {pages.map((page) => (
-                              <TableRow key={page.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEditDialog(page)}>
+                            {pages
+                              .filter((page) => {
+                                if (!contactSearch.trim()) return true;
+                                const q = contactSearch.toLowerCase();
+                                return (
+                                  page.first_name?.toLowerCase().includes(q) ||
+                                  page.last_name?.toLowerCase().includes(q) ||
+                                  page.company?.toLowerCase().includes(q) ||
+                                  (page as any).email?.toLowerCase().includes(q)
+                                );
+                              })
+                              .map((page) => (
+                              <TableRow key={page.id} className={`cursor-pointer hover:bg-muted/50 ${page.is_paused ? "opacity-60" : ""}`} onClick={() => openEditDialog(page)}>
                                 <TableCell>{page.first_name}</TableCell>
                                 <TableCell className="text-muted-foreground">
                                   {page.last_name || "-"}
@@ -2296,6 +2336,16 @@ const Admin = () => {
                                   >
                                     <Eye className="w-3 h-3" />
                                     {page.view_count}
+                                  </Button>
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={`gap-1 text-xs ${page.is_paused ? "text-destructive" : "text-muted-foreground"}`}
+                                    onClick={(e) => { e.stopPropagation(); togglePagePause(page.id, !!page.is_paused); }}
+                                  >
+                                    {page.is_paused ? <><Pause className="w-3 h-3" /> Paused</> : <><Play className="w-3 h-3" /> Live</>}
                                   </Button>
                                 </TableCell>
                                 <TableCell>
