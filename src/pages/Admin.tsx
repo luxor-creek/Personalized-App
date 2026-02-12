@@ -220,8 +220,7 @@ const Admin = () => {
   const [alertConfirmDialogOpen, setAlertConfirmDialogOpen] = useState(false);
   const [alertConfirmCampaign, setAlertConfirmCampaign] = useState<Campaign | null>(null);
   const [ownerEmail, setOwnerEmail] = useState<string>("");
-  const [pagesReadyDismissed, setPagesReadyDismissed] = useState<Set<string>>(new Set());
-  const [pagesReadyPopupOpen, setPagesReadyPopupOpen] = useState(false);
+  const [_pagesReadyDismissed] = useState<Set<string>>(new Set()); // kept for type compat
 
   // Check authentication and admin role
   useEffect(() => {
@@ -361,13 +360,7 @@ const Admin = () => {
     }
   }, [selectedCampaign]);
 
-  // Show pages-ready popup once when pages first load (one-time per campaign)
-  useEffect(() => {
-    if (pages.length > 0 && selectedCampaign && !pagesReadyDismissed.has(selectedCampaign.id)) {
-      setPagesReadyPopupOpen(true);
-      setWorkflowCardsExpanded(false);
-    }
-  }, [pages.length > 0]);
+  // Pages-ready popup removed per user request
 
   // Realtime browser notifications for page views
   useEffect(() => {
@@ -1918,55 +1911,7 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    {/* Pages Ready Popup - one-time dismissible */}
-                    <Dialog open={pagesReadyPopupOpen} onOpenChange={setPagesReadyPopupOpen}>
-                      <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <CheckCircle2 className="w-5 h-5 text-primary" />
-                            {pages.length} personalized page{pages.length !== 1 ? "s" : ""} ready
-                          </DialogTitle>
-                          <DialogDescription>
-                            {usedSnovWorkflow
-                              ? <>Your contacts have personalized landing pages. Go to Snov.io to start or monitor your drip campaign — the <code className="text-xs bg-muted px-1 py-0.5 rounded">{"{{Personalized Page}}"}</code> links are already synced.</>
-                              : <>Your contacts have personalized landing pages ready. Download the CSV to use with your preferred email platform.</>
-                            }
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex justify-end gap-2 pt-2">
-                          {usedSnovWorkflow && (
-                            <>
-                              <Button size="sm" variant="outline" onClick={() => { openSnovStatsDialog(); setPagesReadyPopupOpen(false); }}>
-                                <TrendingUp className="w-4 h-4 mr-2" />
-                                View Stats
-                              </Button>
-                              <Button size="sm" onClick={() => { setSnovGuideOpen(true); setPagesReadyPopupOpen(false); }}>
-                                Open Snov.io
-                                <ArrowRight className="w-4 h-4 ml-2" />
-                              </Button>
-                            </>
-                          )}
-                          {!usedSnovWorkflow && (
-                            <Button size="sm" onClick={() => { handleDownloadCsv(); setPagesReadyPopupOpen(false); }}>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download CSV
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setPagesReadyPopupOpen(false);
-                              if (selectedCampaign) {
-                                setPagesReadyDismissed(prev => new Set(prev).add(selectedCampaign.id));
-                              }
-                            }}
-                          >
-                            Close
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    {/* Pages Ready Popup removed */}
 
                     {/* Collapsible Workflow Cards */}
                     <div>
