@@ -18,6 +18,7 @@ import DashboardOnboarding from "@/components/admin/DashboardOnboarding";
 import CampaignAnalyticsPanel from "@/components/admin/CampaignAnalyticsPanel";
 import LinkedInEnrichDialog from "@/components/admin/LinkedInEnrichDialog";
 import AICsvMapper from "@/components/admin/AICsvMapper";
+import ManualImportFlow from "@/components/admin/ManualImportFlow";
 import AIChatAssistant from "@/components/AIChatAssistant";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -1799,9 +1800,9 @@ const Admin = () => {
                         </p>
                       </div>
 
-                      {/* Section 1: Manual Export — Primary */}
+                      {/* Section 1: Manual Import — Primary */}
                       <div className="bg-card rounded-xl border-2 border-primary/20 p-6 space-y-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 mb-2">
                           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                             <Upload className="w-5 h-5 text-primary" />
                           </div>
@@ -1810,82 +1811,35 @@ const Admin = () => {
                             <p className="text-sm text-muted-foreground">Upload contacts and download personalized links</p>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Dialog open={uploadDialogOpen} onOpenChange={(open) => { setUploadDialogOpen(open); }}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="flex-1">
-                                <Upload className="w-4 h-4 mr-2" />
-                                Upload CSV
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-lg">
-                              <DialogHeader>
-                                <DialogTitle>Upload CSV</DialogTitle>
-                                <DialogDescription>
-                                  Upload any CSV file — AI will auto-detect and map your columns.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <AICsvMapper
-                                onMappedUpload={async (rows) => {
-                                  if (!selectedCampaign) return;
-                                  const pagesToCreate = rows.map((r) => ({
-                                    campaign_id: selectedCampaign.id,
-                                    template_id: selectedCampaign.template_id,
-                                    ...r,
-                                  }));
-                                  const { error } = await supabase
-                                    .from("personalized_pages")
-                                    .insert(pagesToCreate);
-                                  if (error) throw error;
-                                  toast({
-                                    title: "Success!",
-                                    description: `Created ${pagesToCreate.length} personalized pages`,
-                                  });
-                                  setUploadDialogOpen(false);
-                                  fetchPages(selectedCampaign.id);
-                                  fetchCampaigns();
-                                  usageLimits.refetchLimits();
-                                }}
-                              />
-                            </DialogContent>
-                          </Dialog>
+                        <ManualImportFlow
+                          onImport={async (rows) => {
+                            if (!selectedCampaign) return;
+                            const pagesToCreate = rows.map((r) => ({
+                              campaign_id: selectedCampaign.id,
+                              template_id: selectedCampaign.template_id,
+                              ...r,
+                            }));
+                            const { error } = await supabase
+                              .from("personalized_pages")
+                              .insert(pagesToCreate);
+                            if (error) throw error;
+                            toast({
+                              title: "Success!",
+                              description: `Created ${pagesToCreate.length} personalized pages`,
+                            });
+                            fetchPages(selectedCampaign.id);
+                            fetchCampaigns();
+                            usageLimits.refetchLimits();
+                          }}
+                        />
 
-                          <Dialog open={gsheetDialogOpen} onOpenChange={(open) => { setGsheetDialogOpen(open); }}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="flex-1">
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                Connect Google Sheets
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Import from Google Sheet</DialogTitle>
-                                <DialogDescription>
-                                  Paste a Google Sheet URL. The sheet must be shared as "Anyone with the link can view" and have columns: first_name (required), last_name, company, email, custom_message.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4 pt-4">
-                                <Input
-                                  placeholder="https://docs.google.com/spreadsheets/d/..."
-                                  value={gsheetUrl}
-                                  onChange={(e) => setGsheetUrl(e.target.value)}
-                                />
-                                <Button
-                                  onClick={handleGsheetImport}
-                                  disabled={!gsheetUrl.trim() || importingGsheet}
-                                  className="w-full"
-                                >
-                                  {importingGsheet ? "Importing..." : "Import Contacts"}
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-
+                        {/* Add Person remains as a separate option */}
+                        <div className="pt-2 border-t border-border">
                           <Dialog open={addPersonDialogOpen} onOpenChange={(open) => { setAddPersonDialogOpen(open); }}>
                             <DialogTrigger asChild>
-                              <Button variant="outline" className="flex-1">
+                              <Button variant="ghost" size="sm" className="text-muted-foreground">
                                 <Plus className="w-4 h-4 mr-2" />
-                                Add Person
+                                Or add a single person manually
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
