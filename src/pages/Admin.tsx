@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import BrandLogo from "@/components/BrandLogo";
-import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, BarChart3, LogOut, Eye, Layout, Pencil, Shield, Send, Mail, Download, HelpCircle, Copy, Hammer, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, ArrowRight, Radio, AlertTriangle, FileText, CreditCard, Bell, BellRing, ArrowLeft, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroThumbnail from "@/assets/hero-thumbnail.jpg";
 import FormSubmissionsPanel from "@/components/admin/FormSubmissionsPanel";
@@ -218,6 +218,8 @@ const Admin = () => {
   const [alertConfirmDialogOpen, setAlertConfirmDialogOpen] = useState(false);
   const [alertConfirmCampaign, setAlertConfirmCampaign] = useState<Campaign | null>(null);
   const [ownerEmail, setOwnerEmail] = useState<string>("");
+  const [pagesReadyDismissed, setPagesReadyDismissed] = useState<Set<string>>(new Set());
+  const [pagesReadyPopupOpen, setPagesReadyPopupOpen] = useState(false);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -357,12 +359,49 @@ const Admin = () => {
     }
   }, [selectedCampaign]);
 
-  // Auto-collapse workflow cards once pages are loaded
+  // Show pages-ready popup once when pages first load (one-time per campaign)
   useEffect(() => {
-    if (pages.length > 0) {
+    if (pages.length > 0 && selectedCampaign && !pagesReadyDismissed.has(selectedCampaign.id)) {
+      setPagesReadyPopupOpen(true);
       setWorkflowCardsExpanded(false);
     }
   }, [pages.length > 0]);
+
+  // Realtime browser notifications for page views
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('page-view-notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'page_views' },
+        async (payload) => {
+          if (Notification.permission !== 'granted') return;
+          const pageId = payload.new.personalized_page_id;
+          // Look up the prospect info
+          const { data: page } = await supabase
+            .from('personalized_pages')
+            .select('first_name, last_name, company, campaign_id')
+            .eq('id', pageId)
+            .single();
+          if (!page) return;
+          // Check if this campaign belongs to current user
+          const { data: campaign } = await supabase
+            .from('campaigns')
+            .select('user_id, name')
+            .eq('id', page.campaign_id)
+            .single();
+          if (!campaign || campaign.user_id !== user.id) return;
+          const name = `${page.first_name} ${page.last_name || ''}`.trim();
+          new Notification(`👀 ${name} viewed their page`, {
+            body: `${page.company || 'Unknown company'} • ${campaign.name}`,
+            icon: '/favicon.png',
+          });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -1607,7 +1646,8 @@ const Admin = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Campaign List */}
+                {/* Campaign List - hidden when a campaign is selected */}
+                {!selectedCampaign && (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {campaigns.map((campaign) => (
                     <div
@@ -1653,6 +1693,7 @@ const Admin = () => {
                     </div>
                   ))}
                 </div>
+                )}
 
                 {/* Campaign Details - Full Width */}
                 {selectedCampaign ? (
@@ -1668,18 +1709,42 @@ const Admin = () => {
                     {/* Campaign Header */}
                     <div className="bg-card rounded-lg border border-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedCampaign(null)}>
+                          <ArrowLeft className="w-4 h-4" />
+                        </Button>
                         <h3 className="text-xl font-semibold text-foreground">
                           {selectedCampaign.name}
                         </h3>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={!!selectedCampaign.alert_on_view}
-                            onCheckedChange={() => handleAlertToggle(selectedCampaign)}
-                          />
-                          <Label className="text-sm text-muted-foreground flex items-center gap-1 cursor-pointer" onClick={() => handleAlertToggle(selectedCampaign)}>
-                            <Bell className="w-3.5 h-3.5" />
-                            Email Alerts
-                          </Label>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={!!selectedCampaign.alert_on_view}
+                              onCheckedChange={() => handleAlertToggle(selectedCampaign)}
+                            />
+                            <Label className="text-sm text-muted-foreground flex items-center gap-1 cursor-pointer" onClick={() => handleAlertToggle(selectedCampaign)}>
+                              <Bell className="w-3.5 h-3.5" />
+                              Email Alerts
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={Notification.permission === "granted"}
+                              onCheckedChange={async (checked) => {
+                                if (checked) {
+                                  const permission = await Notification.requestPermission();
+                                  if (permission === "granted") {
+                                    toast({ title: "Browser notifications enabled" });
+                                  } else {
+                                    toast({ title: "Permission denied", description: "Please allow notifications in your browser settings.", variant: "destructive" });
+                                  }
+                                }
+                              }}
+                            />
+                            <Label className="text-sm text-muted-foreground flex items-center gap-1 cursor-pointer">
+                              <BellRing className="w-3.5 h-3.5" />
+                              Browser Alerts
+                            </Label>
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -1687,7 +1752,7 @@ const Admin = () => {
                           <>
                             <Button variant="outline" size="sm" onClick={() => setShowCampaignAnalytics(true)}>
                               <BarChart3 className="w-4 h-4 mr-2" />
-                              Campaign Analytics
+                              Signal Hub
                             </Button>
                             <Button variant="outline" size="sm" onClick={openTestEmail}>
                               <Mail className="w-4 h-4 mr-2" />
@@ -1834,41 +1899,55 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    {/* Next Steps Status Banner - shown when pages exist */}
-                    {pages.length > 0 && (
-                      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    {/* Pages Ready Popup - one-time dismissible */}
+                    <Dialog open={pagesReadyPopupOpen} onOpenChange={setPagesReadyPopupOpen}>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
                             <CheckCircle2 className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {pages.length} personalized page{pages.length !== 1 ? "s" : ""} ready
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {usedSnovWorkflow
-                                ? <>Your contacts have personalized landing pages. Go to Snov.io to start or monitor your drip campaign — the <code className="text-xs bg-muted px-1 py-0.5 rounded">{"{{Personalized Page}}"}</code> links are already synced.</>
-                                : <>Your contacts have personalized landing pages ready. Download the CSV to use with your preferred email platform.</>
-                              }
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {pages.length} personalized page{pages.length !== 1 ? "s" : ""} ready
+                          </DialogTitle>
+                          <DialogDescription>
+                            {usedSnovWorkflow
+                              ? <>Your contacts have personalized landing pages. Go to Snov.io to start or monitor your drip campaign — the <code className="text-xs bg-muted px-1 py-0.5 rounded">{"{{Personalized Page}}"}</code> links are already synced.</>
+                              : <>Your contacts have personalized landing pages ready. Download the CSV to use with your preferred email platform.</>
+                            }
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end gap-2 pt-2">
                           {usedSnovWorkflow && (
                             <>
-                              <Button size="sm" variant="outline" onClick={openSnovStatsDialog}>
+                              <Button size="sm" variant="outline" onClick={() => { openSnovStatsDialog(); setPagesReadyPopupOpen(false); }}>
                                 <TrendingUp className="w-4 h-4 mr-2" />
                                 View Stats
                               </Button>
-                              <Button size="sm" onClick={() => setSnovGuideOpen(true)}>
+                              <Button size="sm" onClick={() => { setSnovGuideOpen(true); setPagesReadyPopupOpen(false); }}>
                                 Open Snov.io
                                 <ArrowRight className="w-4 h-4 ml-2" />
                               </Button>
                             </>
                           )}
+                          {!usedSnovWorkflow && (
+                            <Button size="sm" onClick={() => { handleDownloadCsv(); setPagesReadyPopupOpen(false); }}>
+                              <Download className="w-4 h-4 mr-2" />
+                              Download CSV
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setPagesReadyPopupOpen(false);
+                              if (selectedCampaign) {
+                                setPagesReadyDismissed(prev => new Set(prev).add(selectedCampaign.id));
+                              }
+                            }}
+                          >
+                            Close
+                          </Button>
                         </div>
-                      </div>
-                    )}
+                      </DialogContent>
+                    </Dialog>
 
                     {/* Collapsible Workflow Cards */}
                     <div>

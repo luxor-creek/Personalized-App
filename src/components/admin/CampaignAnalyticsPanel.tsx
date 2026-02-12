@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Eye, Play, Trophy, Mail, User, RefreshCw } from "lucide-react";
+import { ArrowLeft, Eye, Play, Trophy, User, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import ProspectDetailPanel from "./ProspectDetailPanel";
 
 interface CampaignAnalyticsPanelProps {
   campaignId: string;
@@ -28,6 +29,7 @@ interface ProspectEngagement {
 const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAnalyticsPanelProps) => {
   const [prospects, setProspects] = useState<ProspectEngagement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProspect, setSelectedProspect] = useState<ProspectEngagement | null>(null);
 
   useEffect(() => {
     fetchAnalytics();
@@ -36,7 +38,6 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      // Get all pages for this campaign
       const { data: pages } = await supabase
         .from("personalized_pages")
         .select("id, first_name, last_name, email, company")
@@ -50,35 +51,21 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
 
       const pageIds = pages.map(p => p.id);
 
-      // Fetch view counts and last viewed
-      const { data: views } = await supabase
-        .from("page_views")
-        .select("personalized_page_id, viewed_at")
-        .in("personalized_page_id", pageIds);
+      const [{ data: views }, { data: clicks }] = await Promise.all([
+        supabase.from("page_views").select("personalized_page_id, viewed_at").in("personalized_page_id", pageIds),
+        supabase.from("video_clicks").select("personalized_page_id").in("personalized_page_id", pageIds),
+      ]);
 
-      // Fetch video clicks
-      const { data: clicks } = await supabase
-        .from("video_clicks")
-        .select("personalized_page_id")
-        .in("personalized_page_id", pageIds);
-
-      // Aggregate
       const viewMap: Record<string, { count: number; lastViewed: string | null }> = {};
       (views || []).forEach(v => {
-        if (!viewMap[v.personalized_page_id]) {
-          viewMap[v.personalized_page_id] = { count: 0, lastViewed: null };
-        }
+        if (!viewMap[v.personalized_page_id]) viewMap[v.personalized_page_id] = { count: 0, lastViewed: null };
         viewMap[v.personalized_page_id].count++;
         const current = viewMap[v.personalized_page_id].lastViewed;
-        if (!current || v.viewed_at > current) {
-          viewMap[v.personalized_page_id].lastViewed = v.viewed_at;
-        }
+        if (!current || v.viewed_at > current) viewMap[v.personalized_page_id].lastViewed = v.viewed_at;
       });
 
       const clickMap: Record<string, number> = {};
-      (clicks || []).forEach(c => {
-        clickMap[c.personalized_page_id] = (clickMap[c.personalized_page_id] || 0) + 1;
-      });
+      (clicks || []).forEach(c => { clickMap[c.personalized_page_id] = (clickMap[c.personalized_page_id] || 0) + 1; });
 
       const enriched: ProspectEngagement[] = pages.map(p => ({
         pageId: p.id,
@@ -99,22 +86,32 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
     }
   };
 
-  // Computed stats
   const totalViews = useMemo(() => prospects.reduce((sum, p) => sum + p.viewCount, 0), [prospects]);
   const totalVideoClicks = useMemo(() => prospects.reduce((sum, p) => sum + p.videoClicks, 0), [prospects]);
   const uniqueViewers = useMemo(() => prospects.filter(p => p.viewCount > 0).length, [prospects]);
   const videoWatchers = useMemo(() => prospects.filter(p => p.videoClicks > 0).length, [prospects]);
 
-  // Sort by most views
-  const sortedProspects = useMemo(() => 
+  const sortedProspects = useMemo(() =>
     [...prospects].sort((a, b) => b.viewCount - a.viewCount || b.videoClicks - a.videoClicks),
     [prospects]
   );
 
   const maxViews = useMemo(() => Math.max(...prospects.map(p => p.viewCount), 1), [prospects]);
-
-  // Top viewers (viewed at least once)
   const topViewers = useMemo(() => sortedProspects.filter(p => p.viewCount > 0).slice(0, 10), [sortedProspects]);
+
+  // Show prospect detail view
+  if (selectedProspect) {
+    return (
+      <ProspectDetailPanel
+        pageId={selectedProspect.pageId}
+        firstName={selectedProspect.firstName}
+        lastName={selectedProspect.lastName}
+        email={selectedProspect.email}
+        company={selectedProspect.company}
+        onBack={() => setSelectedProspect(null)}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -132,7 +129,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-foreground">Campaign Analytics</h3>
+          <h3 className="text-xl font-semibold text-foreground">Signal Hub</h3>
           <p className="text-sm text-muted-foreground">{campaignName}</p>
         </div>
         <Button
@@ -193,7 +190,11 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
           </h4>
           <div className="space-y-2">
             {topViewers.map((p, i) => (
-              <div key={p.pageId} className="flex items-center gap-3">
+              <div
+                key={p.pageId}
+                className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 rounded-lg p-1.5 -mx-1.5 transition-colors"
+                onClick={() => setSelectedProspect(p)}
+              >
                 <span className="text-xs font-mono text-muted-foreground w-5 text-right">{i + 1}.</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -243,7 +244,11 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
               </TableRow>
             ) : (
               sortedProspects.map(p => (
-                <TableRow key={p.pageId}>
+                <TableRow
+                  key={p.pageId}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setSelectedProspect(p)}
+                >
                   <TableCell className="font-medium">
                     {p.firstName} {p.lastName || ""}
                   </TableCell>
@@ -264,7 +269,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
                     </span>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {p.lastViewed 
+                    {p.lastViewed
                       ? new Date(p.lastViewed).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
                       : "—"
                     }

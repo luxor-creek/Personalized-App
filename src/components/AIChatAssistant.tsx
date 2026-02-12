@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
+import { X, Send, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import botIcon from "@/assets/bot-icon.png";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -71,11 +71,9 @@ const AIChatAssistant = () => {
     sendMessage(input);
   };
 
-  // Simple markdown-like rendering for numbered lists and bold
   const renderContent = (text: string) => {
     const lines = text.split("\n");
     return lines.map((line, i) => {
-      // Bold
       const parts = line.split(/(\*\*[^*]+\*\*)/g);
       const rendered = parts.map((part, j) => {
         if (part.startsWith("**") && part.endsWith("**")) {
@@ -94,24 +92,24 @@ const AIChatAssistant = () => {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button - custom bot icon */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all flex items-center justify-center hover:scale-105"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center hover:scale-105 overflow-hidden bg-card border-2 border-primary/30"
           aria-label="Open AI assistant"
         >
-          <MessageCircle className="w-6 h-6" />
+          <img src={botIcon} alt="AI Assistant" className="w-full h-full object-cover" />
         </button>
       )}
 
-      {/* Chat panel */}
+      {/* Chat panel - mobile optimized */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] h-[520px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[380px] h-[100dvh] sm:h-[520px] bg-card border border-border sm:rounded-2xl rounded-none shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-primary/5">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
+              <img src={botIcon} alt="" className="w-7 h-7 rounded-full" />
               <span className="font-semibold text-sm">Kicker Assistant</span>
             </div>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setOpen(false)}>
@@ -164,7 +162,7 @@ const AIChatAssistant = () => {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-3 border-t border-border flex gap-2">
+          <form onSubmit={handleSubmit} className="p-3 border-t border-border flex gap-2 pb-safe">
             <Input
               ref={inputRef}
               value={input}
