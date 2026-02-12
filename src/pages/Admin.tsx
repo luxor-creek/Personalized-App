@@ -234,6 +234,7 @@ const Admin = () => {
   const [alertConfirmCampaign, setAlertConfirmCampaign] = useState<Campaign | null>(null);
   const [ownerEmail, setOwnerEmail] = useState<string>("");
   const [_pagesReadyDismissed] = useState<Set<string>>(new Set()); // kept for type compat
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(window.location.search).get("tab") || "landing-pages");
 
   // Check authentication and admin role
   useEffect(() => {
@@ -1366,8 +1367,7 @@ const Admin = () => {
           <BrandLogo className="h-8" />
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={() => {
-              const settingsTab = document.querySelector('[value="settings"]') as HTMLElement;
-              settingsTab?.click();
+              setActiveTab("settings");
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}>
               <Settings className="w-4 h-4 mr-2" />
@@ -1400,12 +1400,11 @@ const Admin = () => {
           activeCampaignCount={campaigns.filter(c => (c.page_count || 0) > 0).length}
           totalLinks={campaigns.reduce((sum, c) => sum + (c.page_count || 0), 0)}
           onGoToCampaigns={() => {
-            const el = document.querySelector('[data-state][value="campaigns"]') as HTMLElement;
-            el?.click();
+            setActiveTab("campaigns");
           }}
         />
 
-        <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") || "landing-pages"} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center justify-between gap-4">
           <TabsList>
 
@@ -1429,10 +1428,6 @@ const Admin = () => {
             <TabsTrigger value="variables" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Braces className="w-4 h-4 mr-2" />
               Variables
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
             </TabsTrigger>
           </TabsList>
           <LifetimeLinksMetric userId={user?.id} />
