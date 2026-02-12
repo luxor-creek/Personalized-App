@@ -89,7 +89,7 @@ const DRILLDOWN_LABELS: Record<string, string> = {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isAdmin, checkingAuth, handleLogout } = useAuth(true);
+  const { user, isAdmin, checkingAuth, profile, handleLogout } = useAuth(true);
 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [userPageCounts, setUserPageCounts] = useState<Record<string, number>>({});
@@ -121,6 +121,8 @@ const AdminDashboard = () => {
   const [newUserSendEmail, setNewUserSendEmail] = useState(true);
   const [newUserPlan, setNewUserPlan] = useState("trial");
   const [creatingUser, setCreatingUser] = useState(false);
+  const [newUserSnovEnabled, setNewUserSnovEnabled] = useState(false);
+  const [newUserLemlistEnabled, setNewUserLemlistEnabled] = useState(false);
 
   // Beta questions
   const [infoRequests, setInfoRequests] = useState<InfoRequest[]>([]);
@@ -309,6 +311,10 @@ const AdminDashboard = () => {
           plan: newUserPlan,
           password: newUserPassword.trim() || undefined,
           send_email: newUserSendEmail,
+          feature_flags: {
+            snov_enabled: newUserSnovEnabled,
+            lemlist_enabled: newUserLemlistEnabled,
+          },
         },
       });
       // data?.error contains the real message even on non-2xx responses
@@ -327,6 +333,8 @@ const AdminDashboard = () => {
       setNewUserPassword("");
       setNewUserSendEmail(true);
       setNewUserPlan("trial");
+      setNewUserSnovEnabled(false);
+      setNewUserLemlistEnabled(false);
       fetchUsers();
     } catch (err: any) {
       toast({ title: "Error creating user", description: err.message, variant: "destructive" });
@@ -854,7 +862,7 @@ const AdminDashboard = () => {
 
           {/* Integrations Tab */}
           <TabsContent value="integrations" className="space-y-6">
-            <IntegrationsPanel />
+            <IntegrationsPanel isAdmin={isAdmin} featureFlags={(profile as any)?.feature_flags || {}} />
           </TabsContent>
 
         </Tabs>
@@ -1075,6 +1083,29 @@ const AdminDashboard = () => {
                 onCheckedChange={(checked) => setNewUserSendEmail(!!checked)}
               />
               <Label htmlFor="send-email" className="cursor-pointer">Send invite / welcome email</Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Enable Integrations</Label>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="snov-enabled"
+                    checked={newUserSnovEnabled}
+                    onCheckedChange={(checked) => setNewUserSnovEnabled(!!checked)}
+                  />
+                  <Label htmlFor="snov-enabled" className="cursor-pointer text-sm">Snov.io</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="lemlist-enabled"
+                    checked={newUserLemlistEnabled}
+                    onCheckedChange={(checked) => setNewUserLemlistEnabled(!!checked)}
+                  />
+                  <Label htmlFor="lemlist-enabled" className="cursor-pointer text-sm">LemList</Label>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Selected integrations will be visible to this user in their dashboard.</p>
             </div>
             <div className="bg-muted rounded-lg p-3 text-sm">
               <p className="font-medium text-foreground mb-1">What happens:</p>

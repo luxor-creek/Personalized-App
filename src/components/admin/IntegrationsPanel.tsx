@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+
 interface IntegrationField {
   key: string;
   label: string;
@@ -31,28 +32,29 @@ interface IntegrationConfig {
   docsUrl?: string;
   fields: IntegrationField[];
   isCustom?: boolean;
+  featureFlag?: string;
 }
 
 const BUILT_IN_INTEGRATIONS: IntegrationConfig[] = [
   {
-    id: "tolt",
-    name: "Tolt",
-    description: "Affiliate & referral program management with automated payouts via PayPal, Wise, or wire transfer.",
-    docsUrl: "https://help.tolt.com/en/articles/6843411-how-to-set-up-stripe-with-tolt",
+    id: "snov",
+    name: "Snov.io",
+    description: "Email outreach and lead generation campaigns with list management.",
+    docsUrl: "https://snov.io/knowledgebase",
+    featureFlag: "snov_enabled",
     fields: [
-      { key: "tolt_script", label: "Tracking Script", type: "textarea", placeholder: '<script src="https://cdn.tolt.io/tolt.js" data-tolt="YOUR-ID"></script>', helpText: "Paste the Tolt tracking script from your Tolt dashboard → Settings → Install." },
-      { key: "tolt_api_key", label: "API Key", type: "password", placeholder: "tolt_live_...", helpText: "Found in Tolt → Settings → API Keys." },
-      { key: "tolt_webhook_url", label: "Webhook URL (outgoing)", type: "text", placeholder: "https://api.tolt.io/webhook/...", helpText: "Webhook endpoint for sending conversion events to Tolt." },
+      { key: "snov_user_id", label: "User ID", type: "text", placeholder: "Your Snov.io user ID" },
+      { key: "snov_secret", label: "API Secret", type: "password", placeholder: "Your Snov.io API secret" },
     ],
   },
   {
-    id: "stripe",
-    name: "Stripe",
-    description: "Payment processing for subscriptions and one-time charges.",
-    docsUrl: "https://stripe.com/docs",
+    id: "lemlist",
+    name: "LemList",
+    description: "Multi-channel outreach platform for personalized cold email and LinkedIn campaigns.",
+    docsUrl: "https://help.lemlist.com",
+    featureFlag: "lemlist_enabled",
     fields: [
-      { key: "stripe_publishable_key", label: "Publishable Key", type: "text", placeholder: "pk_live_..." },
-      { key: "stripe_webhook_secret", label: "Webhook Signing Secret", type: "password", placeholder: "whsec_...", helpText: "Found in Stripe → Developers → Webhooks → Signing secret." },
+      { key: "lemlist_api_key", label: "API Key", type: "password", placeholder: "Your LemList API key" },
     ],
   },
   {
@@ -63,16 +65,6 @@ const BUILT_IN_INTEGRATIONS: IntegrationConfig[] = [
     fields: [
       { key: "resend_api_key", label: "API Key", type: "password", placeholder: "re_..." },
       { key: "resend_from_email", label: "From Email", type: "text", placeholder: "hello@yourdomain.com" },
-    ],
-  },
-  {
-    id: "snov",
-    name: "Snov.io",
-    description: "Email outreach and lead generation campaigns with list management.",
-    docsUrl: "https://snov.io/knowledgebase",
-    fields: [
-      { key: "snov_user_id", label: "User ID", type: "text", placeholder: "Your Snov.io user ID" },
-      { key: "snov_secret", label: "API Secret", type: "password", placeholder: "Your Snov.io API secret" },
     ],
   },
 ];
@@ -105,8 +97,12 @@ function loadCustomIntegrations(): IntegrationConfig[] {
 function saveCustomIntegrations(integrations: IntegrationConfig[]) {
   sessionStorage.setItem(CUSTOM_INTEGRATIONS_KEY, JSON.stringify(integrations));
 }
+interface IntegrationsPanelProps {
+  isAdmin?: boolean;
+  featureFlags?: Record<string, boolean>;
+}
 
-export default function IntegrationsPanel() {
+export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }: IntegrationsPanelProps) {
   const { toast } = useToast();
   const [savedConfigs, setSavedConfigs] = useState<Record<string, Record<string, string>>>(loadSavedConfig);
   const [customIntegrations, setCustomIntegrations] = useState<IntegrationConfig[]>(loadCustomIntegrations);
@@ -123,7 +119,15 @@ export default function IntegrationsPanel() {
     { key: "", label: "", type: "text", placeholder: "" },
   ]);
 
-  const allIntegrations = [...BUILT_IN_INTEGRATIONS, ...customIntegrations];
+  // Filter integrations: admins see all, users only see integrations enabled via feature flags
+
+  // Filter integrations: admins see all, users only see integrations enabled via feature flags
+  const visibleIntegrations = [...BUILT_IN_INTEGRATIONS, ...customIntegrations].filter((integration) => {
+    if (isAdmin) return true;
+    if (!integration.featureFlag) return true; // non-gated integrations visible to all
+    return featureFlags[integration.featureFlag] === true;
+  });
+
   const BACKEND_CONNECTED = new Set(["snov", "resend"]);
 
   const isConnected = (id: string) => {
@@ -226,7 +230,7 @@ export default function IntegrationsPanel() {
     setNewFields([{ key: "", label: "", type: "text", placeholder: "" }]);
   };
 
-  const currentIntegration = allIntegrations.find((i) => i.id === editingId);
+  const currentIntegration = visibleIntegrations.find((i) => i.id === editingId);
 
   return (
     <div className="space-y-6">
@@ -243,7 +247,7 @@ export default function IntegrationsPanel() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {allIntegrations.map((integration) => {
+        {visibleIntegrations.map((integration) => {
           const connected = isConnected(integration.id);
           return (
             <div

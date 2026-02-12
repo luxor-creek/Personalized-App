@@ -59,7 +59,7 @@ serve(async (req: Request) => {
     if (roleData?.role !== "admin") throw new Error("Admin access required");
 
     // Parse request
-    const { email, full_name, plan, password, send_email = true } = await req.json();
+    const { email, full_name, plan, password, send_email = true, feature_flags = {} } = await req.json();
     if (!email || !full_name || !plan) throw new Error("Missing required fields: email, full_name, plan");
     if (!PLAN_LIMITS[plan]) throw new Error("Invalid plan");
 
@@ -91,6 +91,7 @@ serve(async (req: Request) => {
       max_pages: limits.max_pages,
       max_live_pages: limits.max_live_pages,
       max_campaigns: limits.max_campaigns,
+      feature_flags: feature_flags || {},
     };
 
     if (plan === "trial") {

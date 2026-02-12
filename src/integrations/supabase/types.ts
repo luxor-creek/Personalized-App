@@ -550,6 +550,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          feature_flags: Json
           full_name: string | null
           id: string
           max_campaigns: number
@@ -568,6 +569,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          feature_flags?: Json
           full_name?: string | null
           id?: string
           max_campaigns?: number
@@ -586,6 +588,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          feature_flags?: Json
           full_name?: string | null
           id?: string
           max_campaigns?: number
