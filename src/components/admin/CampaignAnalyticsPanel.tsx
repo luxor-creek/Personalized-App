@@ -129,7 +129,7 @@ const CampaignAnalyticsPanel = ({ campaignId, campaignName, onBack }: CampaignAn
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-foreground">Signal Hub</h3>
+          <h3 className="text-xl font-semibold text-foreground">View Stats</h3>
           <p className="text-sm text-muted-foreground">{campaignName}</p>
         </div>
         <Button

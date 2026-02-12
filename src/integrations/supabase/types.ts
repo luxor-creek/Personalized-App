@@ -460,6 +460,7 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
+          is_paused: boolean
           last_name: string | null
           template_id: string | null
           token: string
@@ -472,6 +473,7 @@ export type Database = {
           email?: string | null
           first_name: string
           id?: string
+          is_paused?: boolean
           last_name?: string | null
           template_id?: string | null
           token?: string
@@ -484,6 +486,7 @@ export type Database = {
           email?: string | null
           first_name?: string
           id?: string
+          is_paused?: boolean
           last_name?: string | null
           template_id?: string | null
           token?: string
@@ -671,6 +674,7 @@ export type Database = {
           custom_message: string
           first_name: string
           id: string
+          is_paused: boolean
           last_name: string
           template_id: string
           token: string
