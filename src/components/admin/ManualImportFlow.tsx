@@ -1,9 +1,10 @@
 import { useState, useCallback, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ExternalLink, ArrowLeft, ArrowRight, Check, Loader2, AlertCircle, FileSpreadsheet, ChevronLeft, ChevronRight, Eye, AlertTriangle } from "lucide-react";
+import { Upload, ExternalLink, ArrowLeft, ArrowRight, Check, Loader2, AlertCircle, FileSpreadsheet, ChevronLeft, ChevronRight, Eye, AlertTriangle, CheckCircle2, Download, RotateCcw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,10 +21,21 @@ export interface MappedRow {
   custom_message?: string | null;
 }
 
+interface GeneratedPage {
+  id: string;
+  token: string;
+  first_name: string;
+  last_name?: string | null;
+  email?: string | null;
+  company?: string | null;
+}
+
 interface ManualImportFlowProps {
-  onImport: (rows: MappedRow[]) => Promise<void>;
+  campaignId: string;
+  templateId: string | null;
   templateSlug?: string | null;
   isBuilderTemplate?: boolean;
+  onGenerationComplete?: () => void;
 }
 
 const TARGET_FIELDS = [
@@ -35,7 +47,7 @@ const TARGET_FIELDS = [
 ];
 
 type Source = null | "csv" | "gsheet";
-type Step = "choose" | "upload" | "gsheet-url" | "mapping" | "preview";
+type Step = "choose" | "upload" | "gsheet-url" | "mapping" | "preview" | "confirm" | "generating" | "complete";
 
 const parseCsvLine = (line: string): string[] => {
   const result: string[] = [];
@@ -56,7 +68,7 @@ const parseCsvLine = (line: string): string[] => {
   return result;
 };
 
-const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualImportFlowProps) => {
+const ManualImportFlow = ({ campaignId, templateId, templateSlug, isBuilderTemplate, onGenerationComplete }: ManualImportFlowProps) => {
   const { toast } = useToast();
   const [source, setSource] = useState<Source>(null);
   const [step, setStep] = useState<Step>("choose");
@@ -74,10 +86,16 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
   const [allRows, setAllRows] = useState<string[][]>([]);
   const [sampleRows, setSampleRows] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
-  const [importing, setImporting] = useState(false);
 
   // Preview state
   const [previewIndex, setPreviewIndex] = useState(0);
+
+  // Generation state
+  const [generating, setGenerating] = useState(false);
+  const [generatedPages, setGeneratedPages] = useState<GeneratedPage[]>([]);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [failedCount, setFailedCount] = useState(0);
+  const [generationRunId, setGenerationRunId] = useState<string | null>(null);
 
   const resetAll = () => {
     setSource(null);
@@ -90,6 +108,11 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
     setSampleRows([]);
     setMapping({});
     setPreviewIndex(0);
+    setGenerating(false);
+    setGeneratedPages([]);
+    setGenerationError(null);
+    setFailedCount(0);
+    setGenerationRunId(null);
   };
 
   const processLines = (lines: string[]) => {
@@ -159,7 +182,7 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
   }, [allRows, headers, mapping]);
 
   const mappedRows = useMemo(() => {
-    if (step === "preview" || step === "mapping") return buildMappedRows();
+    if (["preview", "mapping", "confirm"].includes(step)) return buildMappedRows();
     return [];
   }, [step, buildMappedRows]);
 
@@ -245,17 +268,107 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
     setStep("preview");
   };
 
-  const handleConfirmImport = async () => {
-    setImporting(true);
-    try {
-      if (mappedRows.length === 0) throw new Error("No valid rows found");
-      await onImport(mappedRows);
-      resetAll();
-    } catch (err: any) {
-      toast({ title: "Import failed", description: err.message, variant: "destructive" });
-    } finally {
-      setImporting(false);
+  // Bulk generation with duplicate protection
+  const handleGenerate = async () => {
+    const rows = buildMappedRows();
+    if (rows.length === 0) return;
+
+    // Generate a run ID for duplicate protection
+    const runId = crypto.randomUUID();
+    if (generationRunId === runId) return; // prevent double-click
+    setGenerationRunId(runId);
+    setGenerating(true);
+    setStep("generating");
+    setGenerationError(null);
+    setFailedCount(0);
+    setGeneratedPages([]);
+
+    // Check for existing pages with same emails to prevent duplicates
+    const emails = rows.map(r => r.email).filter(Boolean) as string[];
+    let existingEmails = new Set<string>();
+    if (emails.length > 0) {
+      const { data: existing } = await supabase
+        .from("personalized_pages")
+        .select("email")
+        .eq("campaign_id", campaignId)
+        .in("email", emails);
+      if (existing) {
+        existingEmails = new Set(existing.map(e => e.email).filter(Boolean) as string[]);
+      }
     }
+
+    const newRows = rows.filter(r => !r.email || !existingEmails.has(r.email));
+    if (newRows.length === 0) {
+      setGenerating(false);
+      setStep("confirm");
+      toast({ title: "All contacts already exist", description: "These contacts already have personalized pages in this campaign.", variant: "destructive" });
+      setGenerationRunId(null);
+      return;
+    }
+
+    // Insert in batches of 50
+    const batchSize = 50;
+    const allGenerated: GeneratedPage[] = [];
+    let totalFailed = 0;
+
+    for (let i = 0; i < newRows.length; i += batchSize) {
+      const batch = newRows.slice(i, i + batchSize).map(r => ({
+        campaign_id: campaignId,
+        template_id: templateId,
+        first_name: r.first_name,
+        last_name: r.last_name || null,
+        email: r.email || null,
+        company: r.company || null,
+        custom_message: r.custom_message || null,
+      }));
+
+      const { data, error } = await supabase
+        .from("personalized_pages")
+        .insert(batch)
+        .select("id, token, first_name, last_name, email, company");
+
+      if (error) {
+        totalFailed += batch.length;
+        console.error("Batch insert error:", error);
+      } else if (data) {
+        allGenerated.push(...data);
+      }
+    }
+
+    setGeneratedPages(allGenerated);
+    setFailedCount(totalFailed);
+    setGenerating(false);
+
+    if (allGenerated.length > 0) {
+      setStep("complete");
+      onGenerationComplete?.();
+    } else {
+      setGenerationError("Generation failed. No pages were created.");
+      setStep("confirm");
+    }
+    setGenerationRunId(null);
+  };
+
+  // CSV download of enriched data
+  const downloadEnrichedCsv = () => {
+    if (generatedPages.length === 0) return;
+    const baseUrl = window.location.origin;
+    const csvHeaders = ["first_name", "last_name", "email", "company", "personalized_link"];
+    const csvRows = generatedPages.map(p => [
+      p.first_name || "",
+      p.last_name || "",
+      p.email || "",
+      p.company || "",
+      `${baseUrl}/p/${p.token}`,
+    ]);
+    const csvContent = [csvHeaders.join(","), ...csvRows.map(r => r.map(v => `"${(v || "").replace(/"/g, '""')}"`).join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `personalized-links-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Step: Choose source
@@ -363,7 +476,6 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
           </span>
         </div>
 
-        {/* Column mapping */}
         <div className="space-y-3">
           {TARGET_FIELDS.map(({ key, label, required }) => (
             <div key={key} className="flex items-center gap-3">
@@ -396,7 +508,6 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
           ))}
         </div>
 
-        {/* Preview table */}
         {sampleRows.length > 0 && (
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Preview</p>
@@ -568,12 +679,30 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
                   </div>
                 )}
               </div>
+
+              {/* Fallback visibility */}
+              <div className="pt-2 border-t space-y-1">
+                {TARGET_FIELDS.filter(f => f.key !== "email").map(f => {
+                  const val = (currentContact as any)[f.key];
+                  const hasValue = val && val.trim();
+                  return (
+                    <div key={f.key} className="text-xs">
+                      <span className="text-muted-foreground">{f.key}:</span>{" "}
+                      {hasValue ? (
+                        <span className="text-foreground">"{val}"</span>
+                      ) : (
+                        <span className="text-amber-600 dark:text-amber-400">(empty) — Fallback will apply</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="pt-2 border-t">
                 <span className="text-xs text-muted-foreground">{sourceLabel}</span>
               </div>
             </div>
 
-            {/* Warnings */}
             {missingFieldWarnings.length > 0 && (
               <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-1">
                 <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700 dark:text-amber-400">
@@ -600,12 +729,180 @@ const ManualImportFlow = ({ onImport, templateSlug, isBuilderTemplate }: ManualI
             Back to Mapping
           </Button>
           <Button
-            onClick={handleConfirmImport}
-            disabled={importing}
+            onClick={() => setStep("confirm")}
             className="flex-1 gap-2"
           >
-            {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-            {importing ? "Generating..." : `Continue to Generate (${mappedRows.length} contacts)`}
+            <ArrowRight className="w-4 h-4" />
+            Continue to Generate
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Step: Confirm
+  if (step === "confirm") {
+    const hasFallbacks = missingFieldWarnings.length > 0;
+
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setStep("preview")}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h4 className="font-semibold text-foreground">Generate Personalized Links</h4>
+            <p className="text-sm text-muted-foreground">
+              You're about to create a unique landing page for each contact.
+            </p>
+          </div>
+        </div>
+
+        {/* Summary block */}
+        <div className="bg-card rounded-xl border p-5 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Summary</p>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="text-muted-foreground">Contacts staged</span>
+              <p className="text-foreground font-semibold text-lg">{mappedRows.length}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Pages to create</span>
+              <p className="text-foreground font-semibold text-lg">{mappedRows.length}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Export method</span>
+              <p className="text-foreground font-medium">{source === "gsheet" ? "Google Sheets" : "CSV"}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Fallbacks active</span>
+              <p className="text-foreground font-medium">{hasFallbacks ? "Yes" : "No"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Fallback details */}
+        {hasFallbacks && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-1">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="w-4 h-4" />
+              Fallback Notice
+            </div>
+            {missingFieldWarnings.map((w) => (
+              <p key={w.field} className="text-xs text-amber-600 dark:text-amber-500">
+                {w.count} contacts are missing: <strong>{w.field}</strong>. Template defaults will be used.
+              </p>
+            ))}
+          </div>
+        )}
+
+        {/* Generation error from a previous attempt */}
+        {generationError && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+              <AlertCircle className="w-4 h-4" />
+              {generationError}
+            </div>
+            {failedCount > 0 && (
+              <p className="text-xs text-destructive/80 mt-1">
+                {failedCount} pages failed to generate. You can retry.
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline" onClick={() => setStep("preview")}>
+            Back to Preview
+          </Button>
+          <Button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="flex-1 gap-2"
+          >
+            {generating ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+            ) : (
+              <><CheckCircle2 className="w-4 h-4" /> Generate {mappedRows.length} Personalized Links</>
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Step: Generating (progress)
+  if (step === "generating") {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="text-center">
+          <h4 className="font-semibold text-foreground">Generating personalized pages...</h4>
+          <p className="text-sm text-muted-foreground mt-1">
+            Creating unique landing pages for your contacts. This may take a moment.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Step: Complete
+  if (step === "complete") {
+    return (
+      <div className="space-y-5">
+        <div className="flex flex-col items-center text-center py-6 space-y-3">
+          <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center">
+            <CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-foreground text-lg">Generation Complete</h4>
+            <p className="text-sm text-muted-foreground mt-1">
+              Your personalized pages are ready.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-card rounded-xl border p-5 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+            <span><strong>{generatedPages.length}</strong> personalized pages created</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+            <span><strong>{generatedPages.length}</strong> unique links generated</span>
+          </div>
+          {failedCount > 0 && (
+            <div className="flex items-center gap-2 text-sm text-amber-600">
+              <AlertTriangle className="w-4 h-4" />
+              <span><strong>{failedCount}</strong> contacts failed — you can retry these later</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          {source === "gsheet" ? (
+            <Button
+              variant="outline"
+              className="flex-1 gap-2"
+              onClick={() => {
+                if (gsheetUrl) window.open(gsheetUrl, "_blank");
+              }}
+            >
+              <ExternalLink className="w-4 h-4" />
+              Open Sheet
+            </Button>
+          ) : (
+            <Button
+              onClick={downloadEnrichedCsv}
+              className="flex-1 gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download Enriched CSV
+            </Button>
+          )}
+          <Button variant="outline" onClick={resetAll} className="gap-2">
+            <RotateCcw className="w-4 h-4" />
+            Import More
           </Button>
         </div>
       </div>

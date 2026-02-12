@@ -1812,6 +1812,8 @@ const Admin = () => {
                           </div>
                         </div>
                         <ManualImportFlow
+                          campaignId={selectedCampaign.id}
+                          templateId={selectedCampaign.template_id}
                           templateSlug={(() => {
                             const t = templates.find(t => t.id === selectedCampaign.template_id);
                             return t?.slug || null;
@@ -1820,24 +1822,12 @@ const Admin = () => {
                             const t = templates.find(t => t.id === selectedCampaign.template_id);
                             return !!t?.is_builder_template;
                           })()}
-                          onImport={async (rows) => {
-                            if (!selectedCampaign) return;
-                            const pagesToCreate = rows.map((r) => ({
-                              campaign_id: selectedCampaign.id,
-                              template_id: selectedCampaign.template_id,
-                              ...r,
-                            }));
-                            const { error } = await supabase
-                              .from("personalized_pages")
-                              .insert(pagesToCreate);
-                            if (error) throw error;
-                            toast({
-                              title: "Success!",
-                              description: `Created ${pagesToCreate.length} personalized pages`,
-                            });
-                            fetchPages(selectedCampaign.id);
-                            fetchCampaigns();
-                            usageLimits.refetchLimits();
+                          onGenerationComplete={() => {
+                            if (selectedCampaign) {
+                              fetchPages(selectedCampaign.id);
+                              fetchCampaigns();
+                              usageLimits.refetchLimits();
+                            }
                           }}
                         />
 
