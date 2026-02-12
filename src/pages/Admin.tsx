@@ -1608,38 +1608,51 @@ const Admin = () => {
                       Name your campaign to organize personalized pages.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="campaign-name">Campaign Name</Label>
-                      <Input
-                        id="campaign-name"
-                        value={newCampaignName}
-                        onChange={(e) => setNewCampaignName(e.target.value)}
-                        placeholder="e.g., Q1 Outreach"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="template-select">Landing Page Template *</Label>
-                      <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                        <SelectTrigger id="template-select">
-                          <SelectValue placeholder="Select a landing page" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {templates.map((template) => (
-                            <SelectItem key={template.id} value={template.id}>
-                              {template.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        This template will be used for all personalized pages in this campaign.
+                  {templates.length === 0 ? (
+                    <div className="text-center py-6 space-y-3">
+                      <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto" />
+                      <p className="text-sm text-muted-foreground">
+                        You need at least one landing page template before you can create a campaign.
                       </p>
+                      <Button variant="outline" onClick={() => { setCreateDialogOpen(false); navigate("/builder"); }}>
+                        <Layout className="w-4 h-4 mr-2" />
+                        Create a Landing Page
+                      </Button>
                     </div>
-                    <Button onClick={createCampaign} className="w-full" disabled={!selectedTemplateId}>
-                      Create Campaign
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="campaign-name">Campaign Name</Label>
+                        <Input
+                          id="campaign-name"
+                          value={newCampaignName}
+                          onChange={(e) => setNewCampaignName(e.target.value)}
+                          placeholder="e.g., Q1 Outreach"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="template-select">Landing Page Template *</Label>
+                        <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                          <SelectTrigger id="template-select">
+                            <SelectValue placeholder="Select a landing page" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {templates.map((template) => (
+                              <SelectItem key={template.id} value={template.id}>
+                                {template.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          This template will be used for all personalized pages in this campaign.
+                        </p>
+                      </div>
+                      <Button onClick={createCampaign} className="w-full" disabled={!selectedTemplateId}>
+                        Create Campaign
+                      </Button>
+                    </div>
+                  )}
                 </DialogContent>
               </Dialog>
             </div>
