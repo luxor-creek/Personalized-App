@@ -458,21 +458,30 @@ export type Database = {
         Row: {
           id: string
           ip_address: string | null
+          is_return_visit: boolean | null
+          max_scroll_depth: number | null
           personalized_page_id: string
+          time_on_page_seconds: number | null
           user_agent: string | null
           viewed_at: string
         }
         Insert: {
           id?: string
           ip_address?: string | null
+          is_return_visit?: boolean | null
+          max_scroll_depth?: number | null
           personalized_page_id: string
+          time_on_page_seconds?: number | null
           user_agent?: string | null
           viewed_at?: string
         }
         Update: {
           id?: string
           ip_address?: string | null
+          is_return_visit?: boolean | null
+          max_scroll_depth?: number | null
           personalized_page_id?: string
+          time_on_page_seconds?: number | null
           user_agent?: string | null
           viewed_at?: string
         }

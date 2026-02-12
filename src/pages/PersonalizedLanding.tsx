@@ -116,10 +116,67 @@ const PersonalizedLanding = () => {
         }
 
         // Record the page view
-        await supabase.from("page_views").insert({
+        // Check for return visit via localStorage
+        const visitKey = `pv_${pageRecord.id}`;
+        const isReturn = !!localStorage.getItem(visitKey);
+        localStorage.setItem(visitKey, "1");
+
+        const { data: pvData } = await supabase.from("page_views").insert({
           personalized_page_id: pageRecord.id,
           user_agent: navigator.userAgent,
-        });
+          is_return_visit: isReturn,
+        }).select("id").single();
+
+        // Track time-on-page and scroll depth
+        if (pvData?.id) {
+          const pageViewId = pvData.id;
+          const startTime = Date.now();
+          let maxScroll = 0;
+
+          const handleScroll = () => {
+            const scrollPercent = Math.round(
+              ((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight) * 100
+            );
+            if (scrollPercent > maxScroll) maxScroll = scrollPercent;
+          };
+
+          window.addEventListener("scroll", handleScroll, { passive: true });
+
+          const sendEngagement = () => {
+            const seconds = Math.round((Date.now() - startTime) / 1000);
+            if (seconds < 1 && maxScroll === 0) return;
+            // Use fetch with keepalive for reliability on page unload (supports headers unlike sendBeacon)
+            const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/page_views?id=eq.${pageViewId}`;
+            fetch(url, {
+              method: "PATCH",
+              keepalive: true,
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                "Prefer": "return=minimal",
+              },
+              body: JSON.stringify({
+                time_on_page_seconds: seconds,
+                max_scroll_depth: maxScroll,
+              }),
+            }).catch(() => {});
+          };
+
+          // Use visibilitychange (more reliable than beforeunload on mobile)
+          const handleVisChange = () => {
+            if (document.visibilityState === "hidden") {
+              sendEngagement();
+            }
+          };
+          document.addEventListener("visibilitychange", handleVisChange);
+
+          // Cleanup on unmount
+          return () => {
+            window.removeEventListener("scroll", handleScroll);
+            document.removeEventListener("visibilitychange", handleVisChange);
+            sendEngagement();
+          };
+        }
 
         // Send real-time email alert to campaign owner (fire-and-forget)
         supabase.functions.invoke("notify-page-view", {
