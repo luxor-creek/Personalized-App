@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getSnovCredentials, getSnovAccessToken } from "../_shared/get-snov-credentials.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,50 +8,23 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function getSnovAccessToken(): Promise<string> {
-  const userId = Deno.env.get("SNOV_USER_ID");
-  const secret = Deno.env.get("SNOV_SECRET");
-  if (!userId || !secret) throw new Error("Snov.io credentials not configured");
-
-  const res = await fetch("https://api.snov.io/v1/oauth/access_token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      grant_type: "client_credentials",
-      client_id: userId,
-      client_secret: secret,
-    }),
-  });
-
-  const data = await res.json();
-  if (!data.access_token) throw new Error("Failed to get Snov.io access token");
-  return data.access_token;
-}
-
 // Extract domain from company name or URL
 function extractDomain(company: string): string | null {
   if (!company) return null;
-  // If it looks like a domain already
   if (company.includes(".") && !company.includes(" ")) return company.toLowerCase();
-  // Try to derive domain from company name (simple heuristic)
   return company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
 }
 
 // Use Snov.io email finder to get email from name + domain
 async function findEmailByName(token: string, firstName: string, lastName: string, domain: string): Promise<string | null> {
   try {
-    // Step 1: Start email finder
     const startRes = await fetch("https://api.snov.io/v2/email-finder/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        domain: domain,
-      }),
+      body: JSON.stringify({ first_name: firstName, last_name: lastName, domain }),
     });
 
     const startData = await startRes.json();
@@ -57,16 +32,10 @@ async function findEmailByName(token: string, firstName: string, lastName: strin
 
     const taskHash = startData.data?.task_hash;
     if (!taskHash) {
-      // Try V1 fallback
       const v1Res = await fetch("https://api.snov.io/v1/get-emails-from-names", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          access_token: token,
-          firstName,
-          lastName,
-          domain,
-        }),
+        body: JSON.stringify({ access_token: token, firstName, lastName, domain }),
       });
       const v1Data = await v1Res.json();
       console.log("Email finder V1 fallback:", JSON.stringify(v1Data));
@@ -75,7 +44,6 @@ async function findEmailByName(token: string, firstName: string, lastName: strin
       return null;
     }
 
-    // Step 2: Poll for results
     for (let i = 0; i < 8; i++) {
       await new Promise((r) => setTimeout(r, 2000));
       const resultRes = await fetch(
@@ -113,6 +81,23 @@ serve(async (req) => {
       });
     }
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const jwt = authHeader.replace("Bearer ", "").trim();
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(jwt);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userId = claimsData.claims.sub as string;
+
     const { linkedin_url } = await req.json();
     if (!linkedin_url || !linkedin_url.includes("linkedin.com")) {
       return new Response(JSON.stringify({ error: "Valid LinkedIn URL is required" }), {
@@ -121,7 +106,8 @@ serve(async (req) => {
       });
     }
 
-    const token = await getSnovAccessToken();
+    const { clientId, clientSecret } = await getSnovCredentials(supabaseClient, userId);
+    const token = await getSnovAccessToken(clientId, clientSecret);
 
     // Step 1: Start LinkedIn profile enrichment
     const startRes = await fetch("https://api.snov.io/v2/li-profiles-by-urls/start", {
@@ -137,7 +123,6 @@ serve(async (req) => {
     console.log("Snov enrichment start response:", JSON.stringify(startData));
 
     if (!startData.success && !startData.data?.task_hash) {
-      // Try V1 fallback
       console.log("V2 failed, trying V1 email finder by URL...");
       const v1Res = await fetch("https://api.snov.io/v1/get-profile-by-email", {
         method: "POST",

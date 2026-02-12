@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LemlistOnboardingDialog from "./LemlistOnboardingDialog";
+import SnovOnboardingDialog from "./SnovOnboardingDialog";
 
 
 interface IntegrationField {
@@ -111,6 +112,7 @@ export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [lemlistDialogOpen, setLemlistDialogOpen] = useState(false);
+  const [snovDialogOpen, setSnovDialogOpen] = useState(false);
 
   // Add custom integration state
   const [addCustomOpen, setAddCustomOpen] = useState(false);
@@ -141,6 +143,10 @@ export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }
   const openEdit = (integration: IntegrationConfig) => {
     if (integration.id === "lemlist") {
       setLemlistDialogOpen(true);
+      return;
+    }
+    if (integration.id === "snov") {
+      setSnovDialogOpen(true);
       return;
     }
     setEditingId(integration.id);
@@ -467,6 +473,11 @@ export default function IntegrationsPanel({ isAdmin = false, featureFlags = {} }
       <LemlistOnboardingDialog
         open={lemlistDialogOpen}
         onOpenChange={setLemlistDialogOpen}
+      />
+      {/* Snov.io Onboarding Dialog */}
+      <SnovOnboardingDialog
+        open={snovDialogOpen}
+        onOpenChange={setSnovDialogOpen}
       />
     </div>
   );
