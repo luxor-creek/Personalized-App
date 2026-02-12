@@ -211,6 +211,7 @@ const Admin = () => {
   const [liveWarningEditSlug, setLiveWarningEditSlug] = useState<string | null>(null);
   const [liveWarningIsBuilder, setLiveWarningIsBuilder] = useState(false);
   const [contactSearch, setContactSearch] = useState("");
+  const [showContactMethods, setShowContactMethods] = useState(false);
 
   // Delete campaign confirmation
   const [deleteCampaignDialogOpen, setDeleteCampaignDialogOpen] = useState(false);
@@ -361,7 +362,8 @@ const Admin = () => {
     if (selectedCampaign) {
       fetchPages(selectedCampaign.id);
       setWorkflowCardsExpanded(true);
-      setShowCampaignAnalytics(false); // Reset when switching campaigns
+      setShowCampaignAnalytics(false);
+      setShowContactMethods(false);
     }
   }, [selectedCampaign]);
 
@@ -1439,18 +1441,15 @@ const Admin = () => {
                     New Campaign
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Create New Campaign</DialogTitle>
-                    <DialogDescription>
-                      Name your campaign to organize personalized pages.
-                    </DialogDescription>
+                    <DialogTitle>Create Campaign</DialogTitle>
                   </DialogHeader>
                   {templates.length === 0 ? (
                     <div className="text-center py-6 space-y-3">
                       <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto" />
                       <p className="text-sm text-muted-foreground">
-                        You need at least one landing page template before you can create a campaign.
+                        You need at least one published landing page before creating a campaign.
                       </p>
                       <Button variant="outline" onClick={() => { setCreateDialogOpen(false); navigate("/builder"); }}>
                         <Layout className="w-4 h-4 mr-2" />
@@ -1458,7 +1457,7 @@ const Admin = () => {
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-4 pt-4">
+                    <div className="space-y-4 pt-2">
                       <div className="space-y-2">
                         <Label htmlFor="campaign-name">Campaign Name</Label>
                         <Input
@@ -1466,10 +1465,11 @@ const Admin = () => {
                           value={newCampaignName}
                           onChange={(e) => setNewCampaignName(e.target.value)}
                           placeholder="e.g., Q1 Outreach"
+                          autoFocus
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="template-select">Landing Page Template *</Label>
+                        <Label htmlFor="template-select">Landing Page</Label>
                         <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
                           <SelectTrigger id="template-select">
                             <SelectValue placeholder="Select a landing page" />
@@ -1482,13 +1482,15 @@ const Admin = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground">
-                          This template will be used for all personalized pages in this campaign.
-                        </p>
                       </div>
-                      <Button onClick={createCampaign} className="w-full" disabled={!selectedTemplateId}>
-                        Create Campaign
-                      </Button>
+                      <div className="flex gap-2 pt-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setCreateDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={createCampaign} className="flex-1" disabled={!selectedTemplateId || !newCampaignName.trim()}>
+                          Continue
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </DialogContent>
@@ -1770,7 +1772,23 @@ const Admin = () => {
 
                     {/* Pages Ready Popup removed */}
 
-                    {/* Collapsible Workflow Cards */}
+                    {/* Generate Personalized Links Landing — shown when no contacts and Add Contacts not yet clicked */}
+                    {pages.length === 0 && !showContactMethods ? (
+                      <div className="text-center py-16 bg-card rounded-lg border border-border space-y-4">
+                        <h3 className="text-xl font-semibold text-foreground">
+                          Generate Personalized Links
+                        </h3>
+                        <p className="text-muted-foreground max-w-md mx-auto">
+                          Upload your contacts to generate unique landing pages for each person.
+                        </p>
+                        <Button onClick={() => setShowContactMethods(true)}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Contacts
+                        </Button>
+                      </div>
+                    ) : (
+                    <>
+                    {/* Collapsible Workflow Cards — only after user clicks Add Contacts */}
                     <div>
                       <button
                         onClick={() => setWorkflowCardsExpanded(!workflowCardsExpanded)}
@@ -2063,12 +2081,12 @@ const Admin = () => {
                     </div>
 
                     {/* Contacts Table - Full Width */}
-                    {pages.length === 0 ? (
+                    {pages.length === 0 && showContactMethods ? (
                       <div className="text-center py-8 text-muted-foreground bg-card rounded-lg border border-border">
                         <p>No personalized pages yet.</p>
-                        <p className="text-sm">Connect your Snov.io list above to get started, or upload a CSV.</p>
+                        <p className="text-sm">Upload a CSV or add contacts manually above to get started.</p>
                       </div>
-                    ) : (
+                    ) : pages.length > 0 ? (
                       <div className="bg-card rounded-lg border border-border overflow-x-auto">
                         {/* Search bar */}
                         <div className="p-3 border-b border-border">
@@ -2173,6 +2191,8 @@ const Admin = () => {
                           </TableBody>
                         </Table>
                       </div>
+                    ) : null}
+                    </>
                     )}
                     </div>
                     )}
