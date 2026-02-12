@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Eye, Play, Globe, Clock, User, MousePointerClick } from "lucide-react";
+import { ArrowLeft, Eye, Play, Globe, Clock, User, MousePointerClick, ArrowDownToLine, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,6 +22,9 @@ interface ViewEvent {
   viewed_at: string;
   user_agent: string | null;
   ip_address: string | null;
+  time_on_page_seconds: number | null;
+  max_scroll_depth: number | null;
+  is_return_visit: boolean;
 }
 
 interface VideoClickEvent {
@@ -54,7 +57,7 @@ const ProspectDetailPanel = ({ pageId, firstName, lastName, email, company, phot
       const [viewsRes, clicksRes, linksRes] = await Promise.all([
         supabase
           .from("page_views")
-          .select("id, viewed_at, user_agent, ip_address")
+          .select("id, viewed_at, user_agent, ip_address, time_on_page_seconds, max_scroll_depth, is_return_visit")
           .eq("personalized_page_id", pageId)
           .order("viewed_at", { ascending: false }),
         supabase
@@ -82,9 +85,18 @@ const ProspectDetailPanel = ({ pageId, firstName, lastName, email, company, phot
   const fullName = `${firstName} ${lastName || ""}`.trim();
 
   const timeline = [
-    ...views.map(v => ({ type: "view" as const, time: v.viewed_at, userAgent: v.user_agent, id: v.id, label: null as string | null })),
-    ...videoClicks.map(c => ({ type: "video" as const, time: c.clicked_at, userAgent: c.user_agent, id: c.id, label: null as string | null })),
-    ...linkClicks.map(l => ({ type: "link" as const, time: l.clicked_at, userAgent: l.user_agent, id: l.id, label: l.link_label })),
+    ...views.map(v => ({
+      type: "view" as const,
+      time: v.viewed_at,
+      userAgent: v.user_agent,
+      id: v.id,
+      label: null as string | null,
+      timeOnPage: v.time_on_page_seconds,
+      scrollDepth: v.max_scroll_depth,
+      isReturn: v.is_return_visit,
+    })),
+    ...videoClicks.map(c => ({ type: "video" as const, time: c.clicked_at, userAgent: c.user_agent, id: c.id, label: null as string | null, timeOnPage: null as number | null, scrollDepth: null as number | null, isReturn: false })),
+    ...linkClicks.map(l => ({ type: "link" as const, time: l.clicked_at, userAgent: l.user_agent, id: l.id, label: l.link_label, timeOnPage: null as number | null, scrollDepth: null as number | null, isReturn: false })),
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   const formatTime = (dateStr: string) => {
@@ -166,6 +178,38 @@ const ProspectDetailPanel = ({ pageId, firstName, lastName, email, company, phot
             </div>
           </div>
 
+          {/* Engagement Metrics */}
+          {views.length > 0 && (() => {
+            const withTime = views.filter(v => v.time_on_page_seconds != null);
+            const avgTime = withTime.length > 0 ? Math.round(withTime.reduce((s, v) => s + (v.time_on_page_seconds || 0), 0) / withTime.length) : null;
+            const bestScroll = Math.max(...views.map(v => v.max_scroll_depth || 0));
+            const returnCount = views.filter(v => v.is_return_visit).length;
+            return (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-muted rounded-lg p-2 text-center">
+                  <p className="text-sm font-bold text-foreground">
+                    {avgTime != null ? `${Math.floor(avgTime / 60)}:${String(avgTime % 60).padStart(2, "0")}` : "—"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                    <Clock className="w-3 h-3" /> Avg Time
+                  </p>
+                </div>
+                <div className="bg-muted rounded-lg p-2 text-center">
+                  <p className="text-sm font-bold text-foreground">{bestScroll > 0 ? `${bestScroll}%` : "—"}</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                    <ArrowDownToLine className="w-3 h-3" /> Scroll
+                  </p>
+                </div>
+                <div className="bg-muted rounded-lg p-2 text-center">
+                  <p className="text-sm font-bold text-foreground">{returnCount}</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                    <RotateCw className="w-3 h-3" /> Returns
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
           {views.length > 0 && (
             <div>
               <p className="text-xs text-muted-foreground font-medium">First Visit</p>
@@ -203,6 +247,7 @@ const ProspectDetailPanel = ({ pageId, firstName, lastName, email, company, phot
                 <TableRow>
                   <TableHead>Time</TableHead>
                   <TableHead>Action</TableHead>
+                  <TableHead className="hidden sm:table-cell">Duration</TableHead>
                   <TableHead className="hidden sm:table-cell">Device</TableHead>
                 </TableRow>
               </TableHeader>
@@ -226,6 +271,12 @@ const ProspectDetailPanel = ({ pageId, firstName, lastName, email, company, phot
                           <MousePointerClick className="w-3 h-3" /> {event.label || "Link Click"}
                         </Badge>
                       )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
+                      {event.type === "view" && event.timeOnPage != null
+                        ? `${Math.floor(event.timeOnPage / 60)}:${String(event.timeOnPage % 60).padStart(2, "0")}${event.scrollDepth != null ? ` · ${event.scrollDepth}%` : ""}`
+                        : "—"
+                      }
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
                       {parseDevice(event.userAgent)}
